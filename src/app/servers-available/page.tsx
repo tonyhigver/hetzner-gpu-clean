@@ -1,6 +1,4 @@
-// src/app/servers-available/page.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 
 interface Server {
@@ -16,6 +14,7 @@ export default function ServersAvailablePage() {
   const [servers, setServers] = useState<Server[]>([]);
 
   useEffect(() => {
+    // Llamada a la API correcta
     fetch('/api/servers')
       .then(res => res.json())
       .then(data => setServers(data))

@@ -1,13 +1,21 @@
-// src/app/planes/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 
+interface Server {
+  id: string;
+  title: string;
+  cpu: string;
+  ram: string;
+  gpu: string;
+  price: number;
+}
+
 export default function PlanesPage() {
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<Server[]>([]);
 
   useEffect(() => {
-    // Cambiado a la ruta correcta de la API
+    // Llamada a la API correcta
     fetch("/api/servers")
       .then(res => res.json())
       .then(data => setPlans(data))
