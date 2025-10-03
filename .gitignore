@@ -1,0 +1,7 @@
+# Node modules
+node_modules/
+
+# Entornos locales
+.env
+.DS_Store
+
