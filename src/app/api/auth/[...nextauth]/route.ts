@@ -1,9 +1,10 @@
+// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 
-export const authOptions = {
+const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -29,8 +30,7 @@ export const authOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-};
+});
 
-const handler = NextAuth(authOptions);
-
+// En App Router hay que exportar el handler para cada método HTTP
 export { handler as GET, handler as POST };
