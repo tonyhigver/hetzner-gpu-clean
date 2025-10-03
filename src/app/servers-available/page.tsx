@@ -3,21 +3,33 @@
 
 import { useEffect, useState } from 'react';
 
+interface Server {
+  id: number;
+  name: string;
+}
+
 export default function ServersAvailablePage() {
-  const [servers, setServers] = useState<any[]>([]);
+  const [servers, setServers] = useState<Server[]>([]);
 
   useEffect(() => {
-    // Llamamos a tu API en src/app/api/servers-available/route.ts
     fetch('/api/servers-available')
-      .then((res) => res.json())
-      .then((data) => setServers(data))
-      .catch((err) => console.error('Error al cargar servidores:', err));
+      .then(res => res.json())
+      .then(data => setServers(data))
+      .catch(err => console.error('Error al cargar servidores:', err));
   }, []);
 
   return (
     <div>
       <h1>Servidores disponibles</h1>
-      <pre>{JSON.stringify(servers, null, 2)}</pre>
+      {servers.length === 0 ? (
+        <p>Cargando servidores...</p>
+      ) : (
+        <ul>
+          {servers.map(server => (
+            <li key={server.id}>{server.name}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
