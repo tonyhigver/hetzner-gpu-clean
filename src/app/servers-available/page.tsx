@@ -4,15 +4,19 @@
 import { useEffect, useState } from 'react';
 
 interface Server {
-  id: number;
-  name: string;
+  id: string;
+  title: string;
+  cpu: string;
+  ram: string;
+  gpu: string;
+  price: number;
 }
 
 export default function ServersAvailablePage() {
   const [servers, setServers] = useState<Server[]>([]);
 
   useEffect(() => {
-    fetch('/api/servers-available')
+    fetch('/api/servers')
       .then(res => res.json())
       .then(data => setServers(data))
       .catch(err => console.error('Error al cargar servidores:', err));
@@ -26,7 +30,9 @@ export default function ServersAvailablePage() {
       ) : (
         <ul>
           {servers.map(server => (
-            <li key={server.id}>{server.name}</li>
+            <li key={server.id}>
+              <strong>{server.title}</strong> - {server.cpu}, {server.ram}, {server.gpu} → {server.price}€
+            </li>
           ))}
         </ul>
       )}
