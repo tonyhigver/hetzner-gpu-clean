@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "NEXTAUTH_URL": "https://hetzner-gpu-clean.vercel.app"
+    },
+    "outputDirectory": ".next"
+  }
+}
