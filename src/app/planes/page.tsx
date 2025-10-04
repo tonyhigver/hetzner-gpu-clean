@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 
 interface Server {
@@ -12,15 +14,21 @@ interface Server {
 }
 
 export default function PlanesPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [plans, setPlans] = useState<Server[]>([]);
 
+  // ✅ Si no está logueado, lo mandamos a la página principal
   useEffect(() => {
-    // Llamada a la API correcta
-    fetch("/api/servers")
-      .then(res => res.json())
-      .then(data => setPlans(data))
-      .catch(err => console.error("Error al cargar planes:", err));
-  }, []);
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
+  // ✅ Mientras verifica sesión
+  if (status === "loading") {
+    return <p>Cargando...</p>;
+  }
 
   return (
     <>
