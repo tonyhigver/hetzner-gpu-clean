@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"  // Usa SQLite para empezar rápido. Luego cambiamos a PostgreSQL en producción.
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Prisma usará la base de datos que pongas en la variable de entorno DATABASE_URL
 }
 
 generator client {
@@ -8,25 +8,25 @@ generator client {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  name        String?
-  email       String   @unique
-  image       String?
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  image         String?
   emailVerified DateTime?
-  isAdmin     Boolean  @default(false)
-  hasPaid     Boolean  @default(false)
-  planId      String?   // plan elegido
-  servers     Server[]
-  createdAt   DateTime @default(now())
+  isAdmin       Boolean  @default(false)
+  hasPaid       Boolean  @default(false)
+  planId        String?   // plan elegido
+  servers       Server[]
+  createdAt     DateTime @default(now())
 }
 
 model Server {
-  id          String @id @default(cuid())
-  userId      String
-  hetznerId   String?  // id retornado por Hetzner
-  ip          String?
-  planId      String
-  state       String   // creating, running, stopped, error
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  id        String @id @default(cuid())
+  userId    String
+  hetznerId String?  // id retornado por Hetzner
+  ip        String?
+  planId    String
+  state     String   // creating, running, stopped, error
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
