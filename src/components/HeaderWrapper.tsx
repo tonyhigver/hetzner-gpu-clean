@@ -1,13 +1,19 @@
 // src/components/HeaderWrapper.tsx
-"use client"; // ✅ obligatorio para Client Component
+"use client";
 import { SessionProvider } from "next-auth/react";
 import Header from "./Header";
 
-export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
+export default function HeaderWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SessionProvider>
-      <Header /> {/* Header con login/logout y avatar */}
-      {children} {/* Aquí va el contenido de cada página */}
+      {/* Header visible en todas las páginas */}
+      <Header />
+      {/* Todo el contenido de la página */}
+      <div className="pt-4">{children}</div>
     </SessionProvider>
   );
 }
