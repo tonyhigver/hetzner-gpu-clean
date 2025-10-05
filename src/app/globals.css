@@ -1,4 +1,4 @@
-/* src/app/globals.css */
+/* ✅ src/app/globals.css */
 
 /* Reset básico */
 * {
@@ -7,17 +7,18 @@
   box-sizing: border-box;
 }
 
-/* Fuente global */
+/* Fuente global + fondo oscuro */
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #f3f4f6; /* gris claro para el fondo */
-  color: #111827; /* texto oscuro */
+  background-color: #000000; /* 🔥 Fondo negro */
+  color: #ffffff;            /* 🔥 Texto blanco */
   min-height: 100vh;
 }
 
 /* Botones globales */
 button {
   cursor: pointer;
+  color: inherit;
   transition: background-color 0.2s ease;
 }
 
@@ -27,7 +28,7 @@ a {
   color: inherit;
 }
 
-/* Utils */
+/* Imágenes */
 img {
   display: block;
   max-width: 100%;
