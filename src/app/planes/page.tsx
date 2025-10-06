@@ -32,7 +32,7 @@ export default function PlanesPage() {
     return <p className="text-white text-center mt-10">Cargando...</p>;
 
   return (
-    <section className="w-full max-w-6xl mx-auto mt-4 px-8"> {/* mt-4 baja la sección debajo de GPU SaaS, px-8 la desplaza a la derecha */}
+    <section className="w-full max-w-6xl mx-auto mt-6">
       <h1 className="text-3xl font-bold text-white mb-6">Servidores Disponibles</h1>
 
       {plans.length === 0 ? (

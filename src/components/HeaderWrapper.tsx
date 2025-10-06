@@ -7,10 +7,14 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
     <SessionProvider>
       {/* Header fijo arriba */}
       <Header />
-      {/* Spacer: empuja todo el contenido debajo del header */}
-      <div className="h-28" /> {/* igual que la altura del header */}
-      {/* Contenido de la página */}
-      {children}
+
+      {/* Espaciador: asegura que el contenido quede justo debajo del header */}
+      <div className="h-28" /> {/* Altura igual al header */}
+
+      {/* Contenido de las páginas */}
+      <div className="px-12 max-w-6xl mx-auto w-full">
+        {children}
+      </div>
     </SessionProvider>
   );
 }
