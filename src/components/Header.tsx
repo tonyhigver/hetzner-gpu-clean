@@ -8,9 +8,8 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
       {/* Contenedor interno con menos altura y padding arriba */}
-      <div className="max-w-6xl mx-auto px-12 h-24 flex items-center justify-between pt-2">
-        {/* Izquierda: Título */}
-        <h1 className="text-3xl font-bold tracking-wide leading-none">GPU SaaS</h1>
+      <div className="max-w-6xl mx-auto px-12 h-24 flex items-center justify-end pt-2">
+        {/* 🔹 Eliminado el título "GPU SaaS" para que solo aparezca centrado en HeaderWrapper */}
 
         {/* Derecha: Avatar + Email + Botón */}
         <div className="flex items-center gap-4">
