@@ -1,40 +1,38 @@
-/* ✅ src/app/globals.css */
-
-/* Reset básico */
+/* ✅ Reset básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Fuente global + fondo oscuro */
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #000000; /* 🔥 Fondo negro */
-  color: #ffffff;            /* 🔥 Texto blanco */
+/* ✅ Estilos globales */
+html, body {
+  width: 100%;
   min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #000000; /* Fondo negro */
+  color: #ffffff;            /* Texto blanco */
 }
 
-/* Botones globales */
+/* ✅ Evitamos que <main> meta padding por defecto */
+main {
+  padding: 0;
+}
+
+/* ✅ Botones */
 button {
   cursor: pointer;
-  color: inherit;
   transition: background-color 0.2s ease;
 }
 
-/* Links */
+/* ✅ Links */
 a {
   text-decoration: none;
   color: inherit;
 }
 
-/* Imágenes */
+/* ✅ Imágenes */
 img {
   display: block;
   max-width: 100%;
-}
-
-/* Contenedor principal */
-main {
-  padding: 1rem;
 }
