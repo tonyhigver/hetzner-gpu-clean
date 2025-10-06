@@ -5,9 +5,11 @@ import Header from "./Header";
 export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      {/* ✅ Header siempre visible */}
       <Header />
-      {/* Contenido con margen superior suficiente para el header fijo */}
-      <div className="pt-4">{children}</div>
+
+      {/* ✅ Contenido sin div adicional que rompa el diseño */}
+      {children}
     </SessionProvider>
   );
 }
