@@ -29,13 +29,13 @@ export default function ServersAvailablePage() {
   }, []);
 
   return (
-    <section className="w-full max-w-6xl mx-auto mt-16 px-6">
+    <section className="w-full max-w-6xl mx-auto mt-6 px-6">
       <h1 className="text-3xl font-bold text-white mb-10">Servidores Disponibles</h1>
 
       {servers.length === 0 ? (
         <p className="text-gray-300">Cargando servidores...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {servers.map(server => (
             <div
               key={server.id}

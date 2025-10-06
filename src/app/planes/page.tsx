@@ -21,9 +21,6 @@ export default function PlanesPage() {
     if (status === "unauthenticated") router.push("/");
   }, [status, router]);
 
-  if (status === "loading")
-    return <p className="text-white text-center mt-10">Cargando...</p>;
-
   useEffect(() => {
     fetch("/api/servers")
       .then(res => res.json())
@@ -31,14 +28,17 @@ export default function PlanesPage() {
       .catch(err => console.error("Error al cargar planes:", err));
   }, []);
 
+  if (status === "loading")
+    return <p className="text-white text-center mt-10">Cargando...</p>;
+
   return (
-    <section className="w-full max-w-6xl mx-auto mt-16 px-6">
+    <section className="w-full max-w-6xl mx-auto mt-6 px-6">
       <h1 className="text-3xl font-bold text-white mb-10">Servidores Disponibles</h1>
 
       {plans.length === 0 ? (
         <p className="text-gray-300">Cargando planes...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {plans.map(plan => (
             <div
               key={plan.id}

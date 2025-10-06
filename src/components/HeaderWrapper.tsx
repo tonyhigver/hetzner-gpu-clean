@@ -5,12 +5,12 @@ import Header from "./Header";
 export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      {/* Header fijo arriba */}
+      {/* Header fijo */}
       <Header />
-      {/* Spacer exacto: altura igual al header */}
-      <div className="h-28" /> {/* 112px */}
+      {/* Spacer para empujar el contenido debajo del header */}
+      <div className="h-28" /> {/* 112px = altura del header */}
       {/* Contenido de la página */}
-      <div>{children}</div>
+      {children}
     </SessionProvider>
   );
 }
