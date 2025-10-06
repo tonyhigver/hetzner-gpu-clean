@@ -7,7 +7,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-black text-white">
         {/* HeaderWrapper incluye Header y SessionProvider */}
         <HeaderWrapper>
-          {/* Main centrado, sin padding-top extra: el spacer del HeaderWrapper empuja el contenido */}
+          {/* Main centrado, sin padding-top extra */}
           <main className="px-12 max-w-6xl mx-auto">
             {children}
           </main>
