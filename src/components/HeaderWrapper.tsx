@@ -5,9 +5,11 @@ import Header from "./Header";
 export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      {/* ✅ Header siempre fijo arriba */}
+      {/* Header fijo arriba */}
       <Header />
-      {/* ✅ Contenido de la página (main en layout ya tiene los márgenes) */}
+      {/* Spacer: fuerza que el contenido quede debajo del header */}
+      <div className="h-28" /> {/* 112px de altura, igual que tu header */}
+      {/* Contenido de la página */}
       <div>{children}</div>
     </SessionProvider>
   );
