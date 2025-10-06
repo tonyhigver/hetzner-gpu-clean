@@ -5,8 +5,10 @@ import Header from "./Header";
 export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      {/* Header fijo arriba */}
       <Header />
-      {children} {/* el main ya tiene pt-28 */}
+      {/* Contenido de la página: el padding-top se gestiona en layout */}
+      {children}
     </SessionProvider>
   );
 }

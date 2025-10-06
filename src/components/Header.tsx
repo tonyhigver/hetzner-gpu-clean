@@ -7,7 +7,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
-      {/* Contenedor interno para alinear con el main */}
+      {/* Contenedor interno que alinea con el main */}
       <div className="max-w-6xl mx-auto px-12 h-28 flex items-center justify-between">
         {/* Izquierda: Título */}
         <h1 className="text-3xl font-bold tracking-wide">GPU SaaS</h1>
