@@ -1,3 +1,4 @@
+// layout.tsx
 import "./globals.css";
 import HeaderWrapper from "@/components/HeaderWrapper";
 
@@ -6,8 +7,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className="min-h-screen bg-black text-white">
         <HeaderWrapper>
-          {/* Main centrado, sin padding-top extra: el spacer del HeaderWrapper lo maneja */}
-          <main className="px-12 max-w-6xl mx-auto">
+          {/* Main con padding-top que empuja el contenido debajo del header */}
+          <main className="pt-28 px-12 max-w-6xl mx-auto">
             {children}
           </main>
         </HeaderWrapper>
