@@ -8,8 +8,13 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
       {/* Header fijo arriba */}
       <Header />
 
-      {/* Contenido de las páginas, separado correctamente del header */}
-      <main className="pt-24 px-12 max-w-6xl mx-auto">
+      {/* Sección con GPU SaaS centrado */}
+      <div className="h-28 flex items-center justify-center bg-gray-900">
+        <h1 className="text-4xl font-bold text-white tracking-wide">GPU SaaS</h1>
+      </div>
+
+      {/* Contenido de las páginas (como Servidores disponibles) */}
+      <main className="px-12 max-w-6xl mx-auto w-full mt-8">
         {children}
       </main>
     </SessionProvider>
