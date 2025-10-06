@@ -1,5 +1,7 @@
-'use client';
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface Server {
   id: string;
@@ -11,30 +13,43 @@ interface Server {
 }
 
 export default function ServersAvailablePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [servers, setServers] = useState<Server[]>([]);
 
   useEffect(() => {
-    // Llamada a la API correcta
-    fetch('/api/servers')
+    if (status === "unauthenticated") router.push("/");
+  }, [status, router]);
+
+  if (status === "loading") return <p className="text-white text-center mt-10">Cargando...</p>;
+
+  useEffect(() => {
+    fetch("/api/servers")
       .then(res => res.json())
       .then(data => setServers(data))
-      .catch(err => console.error('Error al cargar servidores:', err));
+      .catch(err => console.error("Error al cargar servidores:", err));
   }, []);
 
   return (
-    <div>
-      <h1>Servidores disponibles</h1>
+    <section className="max-w-6xl mx-auto mt-8 px-6">
+      <h1 className="text-3xl font-bold text-white mb-8 text-left">Servidores Disponibles</h1>
+
       {servers.length === 0 ? (
-        <p>Cargando servidores...</p>
+        <p className="text-gray-300">Cargando servidores...</p>
       ) : (
-        <ul>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {servers.map(server => (
-            <li key={server.id}>
-              <strong>{server.title}</strong> - {server.cpu}, {server.ram}, {server.gpu} → {server.price}€
-            </li>
+            <div key={server.id} className="bg-gray-800 text-white rounded-lg p-6 shadow-xl border border-gray-700">
+              <h2 className="text-2xl font-semibold mb-2">{server.title}</h2>
+              <p className="text-sm text-gray-300 mb-3">{server.cpu} • {server.ram} • {server.gpu}</p>
+              <p className="text-lg font-bold mb-5">{server.price} €/mes</p>
+              <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition">
+                Elegir servidor
+              </button>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-    </div>
+    </section>
   );
 }

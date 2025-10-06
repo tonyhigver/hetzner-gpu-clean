@@ -6,11 +6,11 @@ export default function Header() {
   const { data: session } = useSession();
 
   return (
-    <header className="w-full bg-black text-white flex items-center justify-between px-12 py-4 shadow-md sticky top-0 z-50">
-      {/* Título grande alineado a la izquierda con margen */}
-      <h1 className="text-3xl font-bold tracking-wide ml-2">GPU SaaS</h1>
+    <header className="w-full bg-black text-white flex items-center justify-between px-12 py-4 shadow-md fixed top-0 left-0 z-50">
+      {/* GPU SaaS a la izquierda */}
+      <h1 className="text-3xl font-bold tracking-wide">GPU SaaS</h1>
 
-      {/* Derecha: Avatar + Email + Botón Salir */}
+      {/* Derecha: avatar + email + salir */}
       <div className="flex items-center gap-4">
         {!session ? (
           <button
@@ -21,7 +21,6 @@ export default function Header() {
           </button>
         ) : (
           <>
-            {/* Avatar del usuario */}
             {session.user?.image && (
               <Image
                 src={session.user.image}
@@ -31,13 +30,9 @@ export default function Header() {
                 className="rounded-full border border-gray-500"
               />
             )}
-
-            {/* Email del usuario, compacto */}
             <span className="text-sm text-gray-200 font-light">
               {session.user?.email}
             </span>
-
-            {/* Botón salir */}
             <button
               onClick={() => signOut()}
               className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition text-sm"
