@@ -1,25 +1,31 @@
-/* ✅ Reset básico */
+/* ✅ 1. Importar Tailwind primero */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ 2. Reset básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ✅ Estilos globales */
-html, body {
+/* ✅ 3. Estilos globales */
+html,
+body {
   width: 100%;
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #000000; /* Fondo negro */
-  color: #ffffff;            /* Texto blanco */
+  background-color: #000000; /* 🔥 Fondo negro */
+  color: #ffffff;            /* 🔥 Texto blanco */
 }
 
-/* ✅ Evitamos que <main> meta padding por defecto */
+/* ✅ 4. Evitar padding por defecto en <main> */
 main {
   padding: 0;
 }
 
-/* ✅ Botones */
+/* ✅ 5. Botones globales */
 button {
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -28,19 +34,19 @@ button {
   background: none;
 }
 
-/* ✅ Links */
+/* ✅ 6. Links */
 a {
   text-decoration: none;
   color: inherit;
 }
 
-/* ✅ Imágenes */
+/* ✅ 7. Imágenes */
 img {
   display: block;
   max-width: 100%;
 }
 
-/* ✅ Scrollbar opcional: estilo oscuro */
+/* ✅ 8. Scrollbar opcional: estilo oscuro */
 ::-webkit-scrollbar {
   width: 8px;
 }
