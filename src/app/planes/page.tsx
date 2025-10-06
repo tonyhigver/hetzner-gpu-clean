@@ -33,12 +33,12 @@ export default function PlanesPage() {
 
   return (
     <section className="w-full max-w-6xl mx-auto mt-0 px-6">
-      <h1 className="text-3xl font-bold text-white mb-10">Servidores Disponibles</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">Servidores Disponibles</h1>
 
       {plans.length === 0 ? (
         <p className="text-gray-300">Cargando planes...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {plans.map(plan => (
             <div
               key={plan.id}
