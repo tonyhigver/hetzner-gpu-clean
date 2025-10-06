@@ -17,19 +17,19 @@ export default function PlanesPage() {
   const router = useRouter();
   const [plans, setPlans] = useState<Server[]>([]);
 
-  // ✅ Redirección si no ha iniciado sesión
+  // Redirección si no ha iniciado sesión
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
     }
   }, [status, router]);
 
-  // ✅ Cargando sesión
+  // Mostrar loading mientras valida sesión
   if (status === "loading") {
     return <p className="text-white text-center mt-10">Cargando...</p>;
   }
 
-  // ✅ Obtener los planes desde la API
+  // Obtener los planes desde la API
   useEffect(() => {
     fetch("/api/servers")
       .then((res) => res.json())
@@ -38,7 +38,7 @@ export default function PlanesPage() {
   }, []);
 
   return (
-    <section className="w-full max-w-6xl mx-auto mt-10 px-4">
+    <section className="w-full max-w-6xl mx-auto mt-10 px-6">
       <h1 className="text-3xl font-bold text-white mb-8 text-left">
         Servidores Disponibles
       </h1>
