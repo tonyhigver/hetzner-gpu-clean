@@ -5,8 +5,10 @@ import Header from "./Header";
 export default function HeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      {/* ✅ Header siempre fijo arriba */}
       <Header />
-      {children}
+      {/* ✅ Contenido de la página (main en layout ya tiene los márgenes) */}
+      <div>{children}</div>
     </SessionProvider>
   );
 }
