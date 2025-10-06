@@ -5,10 +5,11 @@ import HeaderWrapper from "@/components/HeaderWrapper";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="min-h-screen"> 
-        {/* ✅ Ya NO usamos bg-gray-100 aquí, el fondo lo define globals.css */}
+      <body className="min-h-screen bg-black text-white"> 
+        {/* ✅ Fondo negro aplicado aquí */}
         <HeaderWrapper>
-          <main className="p-4">
+          {/* ✅ Añadimos padding top para que el contenido no quede tapado por el Header */}
+          <main className="pt-20 px-6">
             {children}
           </main>
         </HeaderWrapper>
