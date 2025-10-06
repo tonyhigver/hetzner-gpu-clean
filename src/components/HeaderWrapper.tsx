@@ -8,13 +8,13 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
       {/* Header fijo arriba */}
       <Header />
 
-      {/* Espaciador: asegura que el contenido quede justo debajo del header */}
-      <div className="h-28" /> {/* Altura igual al header */}
+      {/* Espaciador exacto para empujar el contenido */}
+      <div className="mt-[7.5rem]" /> {/* 7.5rem ≈ 120px → un pelín más que h-28 */}
 
       {/* Contenido de las páginas */}
-      <div className="px-12 max-w-6xl mx-auto w-full">
+      <main className="px-12 max-w-6xl mx-auto w-full">
         {children}
-      </div>
+      </main>
     </SessionProvider>
   );
 }
