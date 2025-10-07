@@ -76,7 +76,7 @@ export default function ServersAvailablePage() {
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 overflow-y-auto max-h-[90vh]">
+    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 min-h-screen pb-20">
       <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">
         Selecciona tu Servidor y GPU
       </h1>
@@ -163,8 +163,8 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* ESPACIO GRANDE ENTRE LA TABLA Y LA LÍNEA */}
-      <div className="h-40"></div>
+      {/* ESPACIO REAL Y GRANDE ENTRE LA TABLA Y LA LÍNEA */}
+      <div className="mt-24 mb-24"></div>
 
       {/* Línea discontinua + total + botón */}
       <div className="mb-10 w-full">
