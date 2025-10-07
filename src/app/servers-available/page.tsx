@@ -58,7 +58,7 @@ export default function ServersAvailablePage() {
     setSelectedGPU(prev => (prev === id ? null : id));
   };
 
-  // Tomamos la longitud máxima para emparejar filas
+  // Longitud máxima para emparejar filas
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
@@ -67,7 +67,7 @@ export default function ServersAvailablePage() {
         Selecciona tu Servidor y GPU
       </h1>
 
-      {/* TABLA DE DOS COLUMNAS (Servidor | GPU) */}
+      {/* TABLA DE DOS COLUMNAS */}
       <div className="grid grid-cols-2 gap-6">
         {/* Encabezados */}
         <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-2">
@@ -84,7 +84,7 @@ export default function ServersAvailablePage() {
 
           return (
             <React.Fragment key={index}>
-              {/* Celda servidor */}
+              {/* SERVIDOR */}
               <div>
                 {server ? (
                   <button
@@ -92,13 +92,21 @@ export default function ServersAvailablePage() {
                     disabled={selectedServer && selectedServer !== server.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedServer === server.id
-                        ? "bg-blue-900 border-blue-400 shadow-[0_0_15px_3px_rgba(30,64,175,0.8)]"
+                        ? "bg-blue-950 border-blue-300 shadow-[0_0_25px_6px_rgba(96,165,250,1)] text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
                         : selectedServer && selectedServer !== server.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className="text-2xl font-bold">{server.title}</h3>
+                    <h3
+                      className={`text-2xl font-bold ${
+                        selectedServer === server.id
+                          ? "text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                          : ""
+                      }`}
+                    >
+                      {server.title}
+                    </h3>
                     <p className="text-lg text-gray-300">
                       {server.cpu} • {server.ram}
                     </p>
@@ -109,7 +117,7 @@ export default function ServersAvailablePage() {
                 )}
               </div>
 
-              {/* Celda GPU */}
+              {/* GPU */}
               <div>
                 {gpu ? (
                   <button
@@ -117,13 +125,21 @@ export default function ServersAvailablePage() {
                     disabled={selectedGPU && selectedGPU !== gpu.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedGPU === gpu.id
-                        ? "bg-blue-900 border-blue-400 shadow-[0_0_15px_3px_rgba(30,64,175,0.8)]"
+                        ? "bg-blue-950 border-blue-300 shadow-[0_0_25px_6px_rgba(96,165,250,1)] text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
                         : selectedGPU && selectedGPU !== gpu.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className="text-xl font-semibold">{gpu.name}</h3>
+                    <h3
+                      className={`text-xl font-semibold ${
+                        selectedGPU === gpu.id
+                          ? "text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                          : ""
+                      }`}
+                    >
+                      {gpu.name}
+                    </h3>
                     <p className="text-md text-gray-300">
                       {gpu.vram} • {gpu.architecture}
                     </p>
