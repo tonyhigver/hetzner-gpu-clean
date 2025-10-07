@@ -152,8 +152,8 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* ⬇️ AHORA EL ESPACIO ESTÁ FUERA DEL GRID */}
-      <div className="mt-48 mb-24"></div>
+      {/* 🧪 PRUEBA VISUAL: franja roja para comprobar espacio */}
+      <div className="mt-[12rem] mb-[6rem] bg-red-500 h-24"></div>
 
       {/* LÍNEA DISCONTINUA + TOTAL + BOTÓN */}
       <div className="w-full mb-10">
