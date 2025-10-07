@@ -100,7 +100,7 @@ export default function ServersAvailablePage() {
                     disabled={selectedServer && selectedServer !== server.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedServer === server.id
-                        ? "bg-blue-950 border-blue-300 shadow-[0_0_25px_6px_rgba(96,165,250,1)] text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
                         : selectedServer && selectedServer !== server.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
@@ -109,7 +109,7 @@ export default function ServersAvailablePage() {
                     <h3
                       className={`text-2xl font-bold ${
                         selectedServer === server.id
-                          ? "text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                          ? "text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
                           : ""
                       }`}
                     >
@@ -133,7 +133,7 @@ export default function ServersAvailablePage() {
                     disabled={selectedGPU && selectedGPU !== gpu.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedGPU === gpu.id
-                        ? "bg-blue-950 border-blue-300 shadow-[0_0_25px_6px_rgba(96,165,250,1)] text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
                         : selectedGPU && selectedGPU !== gpu.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
@@ -142,7 +142,7 @@ export default function ServersAvailablePage() {
                     <h3
                       className={`text-xl font-semibold ${
                         selectedGPU === gpu.id
-                          ? "text-blue-300 drop-shadow-[0_0_8px_rgba(147,197,253,1)]"
+                          ? "text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
                           : ""
                       }`}
                     >
@@ -163,8 +163,8 @@ export default function ServersAvailablePage() {
       </div>
 
       {/* Línea discontinua y total */}
-      <div className="mt-40 mb-10 w-full text-center">
-        {/* Línea discontinua única y más separación */}
+      <div className="mt-[400px] mb-10 w-full text-center">
+        {/* Línea discontinua */}
         <hr className="border-t-4 border-dashed border-gray-500 mb-10" />
 
         {/* Total */}
