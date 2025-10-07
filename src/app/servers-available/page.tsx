@@ -24,7 +24,6 @@ export default function ServersAvailablePage() {
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
   const router = useRouter();
 
-  // Cargar servidores Hetzner
   useEffect(() => {
     const hetznerServers: Server[] = [
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -35,7 +34,6 @@ export default function ServersAvailablePage() {
     setServers(hetznerServers);
   }, []);
 
-  // GPUs de Salad
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
@@ -97,7 +95,7 @@ export default function ServersAvailablePage() {
                     disabled={selectedServer && selectedServer !== server.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedServer === server.id
-                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
+                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
                         : selectedServer && selectedServer !== server.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
@@ -127,7 +125,7 @@ export default function ServersAvailablePage() {
                     disabled={selectedGPU && selectedGPU !== gpu.id}
                     className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedGPU === gpu.id
-                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
+                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
                         : selectedGPU && selectedGPU !== gpu.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
@@ -154,7 +152,7 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* ESPACIO MUY GRANDE ENTRE TABLA Y LÍNEA DISCONTINUA */}
+      {/* ⬇️ AHORA EL ESPACIO ESTÁ FUERA DEL GRID */}
       <div className="mt-48 mb-24"></div>
 
       {/* LÍNEA DISCONTINUA + TOTAL + BOTÓN */}
