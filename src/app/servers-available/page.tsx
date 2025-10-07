@@ -21,7 +21,7 @@ export default function ServersAvailablePage() {
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
-  // Datos simulados de Hetzner
+  // Cargar servidores Hetzner
   useEffect(() => {
     const hetznerServers: Server[] = [
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -32,7 +32,7 @@ export default function ServersAvailablePage() {
     setServers(hetznerServers);
   }, []);
 
-  // Lista completa de GPUs de Salad
+  // GPUs de Salad
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere" },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere" },
@@ -58,62 +58,77 @@ export default function ServersAvailablePage() {
     setSelectedGPU(prev => (prev === id ? null : id));
   };
 
+  // Tomamos la longitud máxima para emparejar filas
+  const maxRows = Math.max(servers.length, saladGPUs.length);
+
   return (
     <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6">
-      {/* ====== GRID DE DOS COLUMNAS (Servidores / GPUs) ====== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-        {/* ====================== SERVIDORES ====================== */}
-        <div className="bg-gray-900 rounded-2xl p-6 flex flex-col h-full shadow-lg border border-gray-800">
-          <h2 className="text-4xl font-bold mb-5 text-center text-green-400">Servidores Hetzner</h2>
-          <div className="flex-1 flex flex-col justify-between space-y-4">
-            {servers.map(server => (
-              <button
-                key={server.id}
-                onClick={() => handleSelectServer(server.id)}
-                disabled={selectedServer && selectedServer !== server.id}
-                className={`p-6 rounded-lg text-left border-2 transition-all ${
-                  selectedServer === server.id
-                    ? "bg-green-700 border-green-400 shadow-md"
-                    : selectedServer && selectedServer !== server.id
-                    ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 border-gray-700 hover:border-green-500"
-                }`}
-              >
-                <h3 className="text-3xl font-semibold mb-1">{server.title}</h3>
-                <p className="text-lg text-gray-300">
-                  {server.cpu} • {server.ram}
-                </p>
-                <p className="text-xl text-gray-400 mt-1">{server.price} €/mes</p>
-              </button>
-            ))}
-          </div>
+      <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">Selecciona tu Servidor y GPU</h1>
+
+      {/* TABLA DE DOS COLUMNAS (Servidor | GPU) */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Encabezados */}
+        <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-2">
+          Servidores Hetzner
+        </div>
+        <div className="text-center text-2xl font-semibold text-blue-400 border-b border-gray-700 pb-2">
+          GPUs disponibles (Salad)
         </div>
 
-        {/* ====================== GPUS ====================== */}
-        <div className="bg-gray-900 rounded-2xl p-6 flex flex-col h-full shadow-lg border border-gray-800">
-          <h2 className="text-4xl font-bold mb-5 text-center text-blue-400">GPUs disponibles (Salad)</h2>
-          <div className="flex-1 overflow-y-auto pr-2 grid gap-4 max-h-[700px]">
-            {saladGPUs.map(gpu => (
-              <button
-                key={gpu.id}
-                onClick={() => handleSelectGPU(gpu.id)}
-                disabled={selectedGPU && selectedGPU !== gpu.id}
-                className={`p-4 rounded-lg text-left border-2 transition-all ${
-                  selectedGPU === gpu.id
-                    ? "bg-blue-700 border-blue-400 shadow-md"
-                    : selectedGPU && selectedGPU !== gpu.id
-                    ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 border-gray-700 hover:border-blue-500"
-                }`}
-              >
-                <h3 className="text-2xl font-semibold">{gpu.name}</h3>
-                <p className="text-md text-gray-300">
-                  {gpu.vram} • {gpu.architecture}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Filas */}
+        {Array.from({ length: maxRows }).map((_, index) => {
+          const server = servers[index];
+          const gpu = saladGPUs[index];
+
+          return (
+            <React.Fragment key={index}>
+              {/* Celda servidor */}
+              <div>
+                {server ? (
+                  <button
+                    onClick={() => handleSelectServer(server.id)}
+                    disabled={selectedServer && selectedServer !== server.id}
+                    className={`w-full p-5 rounded-lg text-left border-2 transition-all ${
+                      selectedServer === server.id
+                        ? "bg-green-700 border-green-400"
+                        : selectedServer && selectedServer !== server.id
+                        ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-800 border-gray-700 hover:border-green-400"
+                    }`}
+                  >
+                    <h3 className="text-2xl font-bold">{server.title}</h3>
+                    <p className="text-lg text-gray-300">{server.cpu} • {server.ram}</p>
+                    <p className="text-md text-gray-400">{server.price} €/mes</p>
+                  </button>
+                ) : (
+                  <div className="h-24"></div>
+                )}
+              </div>
+
+              {/* Celda GPU */}
+              <div>
+                {gpu ? (
+                  <button
+                    onClick={() => handleSelectGPU(gpu.id)}
+                    disabled={selectedGPU && selectedGPU !== gpu.id}
+                    className={`w-full p-5 rounded-lg text-left border-2 transition-all ${
+                      selectedGPU === gpu.id
+                        ? "bg-blue-700 border-blue-400"
+                        : selectedGPU && selectedGPU !== gpu.id
+                        ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-800 border-gray-700 hover:border-blue-400"
+                    }`}
+                  >
+                    <h3 className="text-xl font-semibold">{gpu.name}</h3>
+                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                  </button>
+                ) : (
+                  <div className="h-24"></div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
