@@ -69,7 +69,6 @@ export default function ServersAvailablePage() {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
-    // Redirigir a la página de alquiler de Hetzner
     router.push("/hetzner-rent");
   };
 
@@ -164,19 +163,19 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* Línea discontinua y total */}
-      <div className="mt-20 mb-10 w-full">
-        {/* Línea discontinua */}
+      {/* ESPACIO VACÍO ENTRE LA TABLA Y LA LÍNEA */}
+      <div className="h-20"></div>
+
+      {/* Línea discontinua + total + botón */}
+      <div className="mb-10 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-8" />
 
-        {/* Total */}
         <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-6">
           {totalCost > 0
             ? `💰 Total: ${totalCost} €/mes`
             : "Selecciona un servidor y una GPU para ver el total"}
         </div>
 
-        {/* Botón Aceptar y continuar */}
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
