@@ -13,8 +13,8 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
         <h1 className="text-4xl font-bold text-white tracking-wide">GPU SaaS</h1>
       </div>
 
-      {/* Contenido de las páginas (como Servidores disponibles) */}
-      <main className="px-12 max-w-6xl mx-auto w-full mt-8">
+      {/* Contenido de las páginas */}
+      <main className="px-12 max-w-6xl mx-auto w-full mt-8 flex flex-col">
         {children}
       </main>
     </SessionProvider>
