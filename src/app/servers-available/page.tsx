@@ -49,21 +49,17 @@ export default function ServersAvailablePage() {
   ];
 
   const handleSelectServer = (id: string) => {
-    setSelectedServer((prev) => (prev === id ? null : id));
+    setSelectedServer(prev => (prev === id ? null : id));
   };
 
   const handleSelectGPU = (id: string) => {
-    setSelectedGPU((prev) => (prev === id ? null : id));
+    setSelectedGPU(prev => (prev === id ? null : id));
   };
 
-  // Calcular coste total
-  const selectedServerObj = servers.find((s) => s.id === selectedServer);
-  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
-  const totalCost =
-    (selectedServerObj ? selectedServerObj.price : 0) +
-    (selectedGPUObj ? selectedGPUObj.price : 0);
+  const selectedServerObj = servers.find(s => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
+  const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // Acción al hacer clic en Aceptar
   const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -72,7 +68,6 @@ export default function ServersAvailablePage() {
     router.push("/hetzner-rent");
   };
 
-  // Longitud máxima de filas
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
@@ -83,7 +78,6 @@ export default function ServersAvailablePage() {
 
       {/* TABLA DE DOS COLUMNAS */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Encabezados */}
         <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-2">
           Servidores Hetzner
         </div>
@@ -91,13 +85,11 @@ export default function ServersAvailablePage() {
           GPUs disponibles (Salad)
         </div>
 
-        {/* Filas */}
         {Array.from({ length: maxRows }).map((_, index) => {
           const server = servers[index];
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
-              {/* SERVIDOR */}
               <div>
                 {server ? (
                   <button
@@ -111,24 +103,15 @@ export default function ServersAvailablePage() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3
-                      className={`text-2xl font-bold ${
-                        selectedServer === server.id ? "text-blue-300" : ""
-                      }`}
-                    >
+                    <h3 className={`text-2xl font-bold ${selectedServer === server.id ? "text-blue-300" : ""}`}>
                       {server.title}
                     </h3>
-                    <p className="text-lg text-gray-300">
-                      {server.cpu} • {server.ram}
-                    </p>
+                    <p className="text-lg text-gray-300">{server.cpu} • {server.ram}</p>
                     <p className="text-md text-gray-400">{server.price} €/mes</p>
                   </button>
-                ) : (
-                  <div className="h-24"></div>
-                )}
+                ) : <div className="h-24"></div>}
               </div>
 
-              {/* GPU */}
               <div>
                 {gpu ? (
                   <button
@@ -142,38 +125,28 @@ export default function ServersAvailablePage() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3
-                      className={`text-xl font-semibold ${
-                        selectedGPU === gpu.id ? "text-blue-300" : ""
-                      }`}
-                    >
+                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
+                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : (
-                  <div className="h-24"></div>
-                )}
+                ) : <div className="h-24"></div>}
               </div>
             </React.Fragment>
           );
         })}
       </div>
 
-      {/* ESPACIO REAL Y GRANDE ENTRE LA TABLA Y LA LÍNEA */}
-      <div className="mt-24 mb-24"></div>
+      {/* ESPACIO VISIBLE GRANDE */}
+      <div className="h-40"></div>
 
-      {/* Línea discontinua + total + botón */}
-      <div className="mb-10 w-full">
+      {/* LÍNEA DISCONTINUA + TOTAL + BOTÓN */}
+      <div className="w-full mb-10">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
         <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-10">
-          {totalCost > 0
-            ? `💰 Total: ${totalCost} €/mes`
-            : "Selecciona un servidor y una GPU para ver el total"}
+          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
         </div>
 
         <div className="flex justify-end">
