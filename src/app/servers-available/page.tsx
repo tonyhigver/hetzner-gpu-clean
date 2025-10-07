@@ -70,7 +70,7 @@ export default function ServersAvailablePage() {
     (selectedGPUObj ? selectedGPUObj.price : 0);
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6">
+    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 overflow-y-auto max-h-[90vh]">
       <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">
         Selecciona tu Servidor y GPU
       </h1>
@@ -163,9 +163,9 @@ export default function ServersAvailablePage() {
       </div>
 
       {/* Línea discontinua y total */}
-      <div className="mt-20 w-full text-center">
+      <div className="mt-40 mb-10 w-full text-center">
         {/* Línea discontinua única y más separación */}
-        <hr className="border-t-4 border-dashed border-gray-500 mb-6" />
+        <hr className="border-t-4 border-dashed border-gray-500 mb-10" />
 
         {/* Total */}
         <div className="text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)]">
