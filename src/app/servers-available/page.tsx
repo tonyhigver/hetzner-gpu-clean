@@ -49,15 +49,15 @@ export default function ServersAvailablePage() {
   ];
 
   const handleSelectServer = (id: string) => {
-    setSelectedServer(prev => (prev === id ? null : id));
+    setSelectedServer((prev) => (prev === id ? null : id));
   };
 
   const handleSelectGPU = (id: string) => {
-    setSelectedGPU(prev => (prev === id ? null : id));
+    setSelectedGPU((prev) => (prev === id ? null : id));
   };
 
-  const selectedServerObj = servers.find(s => s.id === selectedServer);
-  const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
+  const selectedServerObj = servers.find((s) => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
   const handleContinue = () => {
@@ -103,13 +103,21 @@ export default function ServersAvailablePage() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-2xl font-bold ${selectedServer === server.id ? "text-blue-300" : ""}`}>
+                    <h3
+                      className={`text-2xl font-bold ${
+                        selectedServer === server.id ? "text-blue-300" : ""
+                      }`}
+                    >
                       {server.title}
                     </h3>
-                    <p className="text-lg text-gray-300">{server.cpu} • {server.ram}</p>
+                    <p className="text-lg text-gray-300">
+                      {server.cpu} • {server.ram}
+                    </p>
                     <p className="text-md text-gray-400">{server.price} €/mes</p>
                   </button>
-                ) : <div className="h-24"></div>}
+                ) : (
+                  <div className="h-24"></div>
+                )}
               </div>
 
               <div>
@@ -125,28 +133,38 @@ export default function ServersAvailablePage() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                    <h3
+                      className={`text-xl font-semibold ${
+                        selectedGPU === gpu.id ? "text-blue-300" : ""
+                      }`}
+                    >
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : <div className="h-24"></div>}
+                ) : (
+                  <div className="h-24"></div>
+                )}
               </div>
             </React.Fragment>
           );
         })}
       </div>
 
-      {/* ESPACIO VISIBLE GRANDE */}
-      <div className="h-40"></div>
+      {/* ESPACIO MUY GRANDE ENTRE TABLA Y LÍNEA DISCONTINUA */}
+      <div className="mt-48 mb-24"></div>
 
       {/* LÍNEA DISCONTINUA + TOTAL + BOTÓN */}
       <div className="w-full mb-10">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
         <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-10">
-          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
+          {totalCost > 0
+            ? `💰 Total: ${totalCost} €/mes`
+            : "Selecciona un servidor y una GPU para ver el total"}
         </div>
 
         <div className="flex justify-end">
