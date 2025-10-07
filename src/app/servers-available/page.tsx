@@ -63,7 +63,9 @@ export default function ServersAvailablePage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6">
-      <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">Selecciona tu Servidor y GPU</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">
+        Selecciona tu Servidor y GPU
+      </h1>
 
       {/* TABLA DE DOS COLUMNAS (Servidor | GPU) */}
       <div className="grid grid-cols-2 gap-6">
@@ -88,16 +90,18 @@ export default function ServersAvailablePage() {
                   <button
                     onClick={() => handleSelectServer(server.id)}
                     disabled={selectedServer && selectedServer !== server.id}
-                    className={`w-full p-5 rounded-lg text-left border-2 transition-all ${
+                    className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedServer === server.id
-                        ? "bg-green-700 border-green-400"
+                        ? "bg-blue-900 border-blue-400 shadow-[0_0_15px_3px_rgba(30,64,175,0.8)]"
                         : selectedServer && selectedServer !== server.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-800 border-gray-700 hover:border-green-400"
+                        : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
                     <h3 className="text-2xl font-bold">{server.title}</h3>
-                    <p className="text-lg text-gray-300">{server.cpu} • {server.ram}</p>
+                    <p className="text-lg text-gray-300">
+                      {server.cpu} • {server.ram}
+                    </p>
                     <p className="text-md text-gray-400">{server.price} €/mes</p>
                   </button>
                 ) : (
@@ -111,16 +115,18 @@ export default function ServersAvailablePage() {
                   <button
                     onClick={() => handleSelectGPU(gpu.id)}
                     disabled={selectedGPU && selectedGPU !== gpu.id}
-                    className={`w-full p-5 rounded-lg text-left border-2 transition-all ${
+                    className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
                       selectedGPU === gpu.id
-                        ? "bg-blue-700 border-blue-400"
+                        ? "bg-blue-900 border-blue-400 shadow-[0_0_15px_3px_rgba(30,64,175,0.8)]"
                         : selectedGPU && selectedGPU !== gpu.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
                     <h3 className="text-xl font-semibold">{gpu.name}</h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                   </button>
                 ) : (
                   <div className="h-24"></div>
