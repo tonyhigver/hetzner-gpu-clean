@@ -14,7 +14,7 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
       </div>
 
       {/* Contenido de las páginas */}
-      <main className="px-12 max-w-6xl mx-auto w-full mt-8 flex flex-col">
+      <main className="px-12 max-w-6xl mx-auto w-full mt-8 flex flex-col pt-36">
         {children}
       </main>
     </SessionProvider>
