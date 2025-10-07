@@ -14,6 +14,7 @@ interface GPU {
   name: string;
   vram: string;
   architecture: string;
+  price: number;
 }
 
 export default function ServersAvailablePage() {
@@ -32,34 +33,41 @@ export default function ServersAvailablePage() {
     setServers(hetznerServers);
   }, []);
 
-  // GPUs de Salad
+  // GPUs de Salad (con precios aproximados)
   const saladGPUs: GPU[] = [
-    { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere" },
-    { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere" },
-    { id: "3", name: "NVIDIA RTX 3080", vram: "10 GB", architecture: "Ampere" },
-    { id: "4", name: "NVIDIA RTX 3090", vram: "24 GB", architecture: "Ampere" },
-    { id: "5", name: "NVIDIA RTX 4070", vram: "12 GB", architecture: "Ada Lovelace" },
-    { id: "6", name: "NVIDIA RTX 4080", vram: "16 GB", architecture: "Ada Lovelace" },
-    { id: "7", name: "NVIDIA RTX 4090", vram: "24 GB", architecture: "Ada Lovelace" },
-    { id: "8", name: "NVIDIA A100", vram: "80 GB", architecture: "Ampere" },
-    { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper" },
-    { id: "10", name: "NVIDIA A6000", vram: "48 GB", architecture: "Ampere" },
-    { id: "11", name: "NVIDIA T4", vram: "16 GB", architecture: "Turing" },
-    { id: "12", name: "NVIDIA V100", vram: "32 GB", architecture: "Volta" },
-    { id: "13", name: "NVIDIA P100", vram: "16 GB", architecture: "Pascal" },
-    { id: "14", name: "NVIDIA K80", vram: "24 GB", architecture: "Kepler" },
+    { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
+    { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
+    { id: "3", name: "NVIDIA RTX 3080", vram: "10 GB", architecture: "Ampere", price: 70 },
+    { id: "4", name: "NVIDIA RTX 3090", vram: "24 GB", architecture: "Ampere", price: 90 },
+    { id: "5", name: "NVIDIA RTX 4070", vram: "12 GB", architecture: "Ada Lovelace", price: 80 },
+    { id: "6", name: "NVIDIA RTX 4080", vram: "16 GB", architecture: "Ada Lovelace", price: 100 },
+    { id: "7", name: "NVIDIA RTX 4090", vram: "24 GB", architecture: "Ada Lovelace", price: 130 },
+    { id: "8", name: "NVIDIA A100", vram: "80 GB", architecture: "Ampere", price: 200 },
+    { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
+    { id: "10", name: "NVIDIA A6000", vram: "48 GB", architecture: "Ampere", price: 160 },
+    { id: "11", name: "NVIDIA T4", vram: "16 GB", architecture: "Turing", price: 45 },
+    { id: "12", name: "NVIDIA V100", vram: "32 GB", architecture: "Volta", price: 120 },
+    { id: "13", name: "NVIDIA P100", vram: "16 GB", architecture: "Pascal", price: 60 },
+    { id: "14", name: "NVIDIA K80", vram: "24 GB", architecture: "Kepler", price: 30 },
   ];
 
   const handleSelectServer = (id: string) => {
-    setSelectedServer(prev => (prev === id ? null : id));
+    setSelectedServer((prev) => (prev === id ? null : id));
   };
 
   const handleSelectGPU = (id: string) => {
-    setSelectedGPU(prev => (prev === id ? null : id));
+    setSelectedGPU((prev) => (prev === id ? null : id));
   };
 
   // Longitud máxima para emparejar filas
   const maxRows = Math.max(servers.length, saladGPUs.length);
+
+  // Calcular coste total
+  const selectedServerObj = servers.find((s) => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
+  const totalCost =
+    (selectedServerObj ? selectedServerObj.price : 0) +
+    (selectedGPUObj ? selectedGPUObj.price : 0);
 
   return (
     <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6">
@@ -143,6 +151,7 @@ export default function ServersAvailablePage() {
                     <p className="text-md text-gray-300">
                       {gpu.vram} • {gpu.architecture}
                     </p>
+                    <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 ) : (
                   <div className="h-24"></div>
@@ -151,6 +160,19 @@ export default function ServersAvailablePage() {
             </React.Fragment>
           );
         })}
+      </div>
+
+      {/* Línea discontinua y total */}
+      <div className="mt-10 w-full text-center">
+        {/* Línea discontinua semi gorda */}
+        <div className="border-t-4 border-dashed border-gray-500 w-full mb-4"></div>
+
+        {/* Total */}
+        <div className="text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)]">
+          {totalCost > 0
+            ? `💰 Total: ${totalCost} €/mes`
+            : "Selecciona un servidor y una GPU para ver el total"}
+        </div>
       </div>
     </div>
   );
