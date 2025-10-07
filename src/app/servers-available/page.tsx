@@ -163,9 +163,9 @@ export default function ServersAvailablePage() {
       </div>
 
       {/* Línea discontinua y total */}
-      <div className="mt-10 w-full text-center">
-        {/* Línea discontinua semi gorda */}
-        <div className="border-t-4 border-dashed border-gray-500 w-full mb-4"></div>
+      <div className="mt-20 w-full text-center">
+        {/* Línea discontinua única y más separación */}
+        <hr className="border-t-4 border-dashed border-gray-500 mb-6" />
 
         {/* Total */}
         <div className="text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)]">
