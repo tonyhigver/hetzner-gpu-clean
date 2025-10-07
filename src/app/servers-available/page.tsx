@@ -163,14 +163,14 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* ESPACIO VACÍO ENTRE LA TABLA Y LA LÍNEA */}
-      <div className="h-20"></div>
+      {/* ESPACIO GRANDE ENTRE LA TABLA Y LA LÍNEA */}
+      <div className="h-40"></div>
 
       {/* Línea discontinua + total + botón */}
       <div className="mb-10 w-full">
-        <hr className="border-t-4 border-dashed border-gray-500 mb-8" />
+        <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
-        <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-6">
+        <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-10">
           {totalCost > 0
             ? `💰 Total: ${totalCost} €/mes`
             : "Selecciona un servidor y una GPU para ver el total"}
@@ -180,7 +180,7 @@ export default function ServersAvailablePage() {
           <button
             onClick={handleContinue}
             disabled={!selectedServer}
-            className={`px-6 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
+            className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
               selectedServer
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
