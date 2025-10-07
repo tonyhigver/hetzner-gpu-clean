@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface Server {
   id: string;
@@ -21,6 +22,7 @@ export default function ServersAvailablePage() {
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
+  const router = useRouter();
 
   // Cargar servidores Hetzner
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function ServersAvailablePage() {
     setServers(hetznerServers);
   }, []);
 
-  // GPUs de Salad (con precios aproximados)
+  // GPUs de Salad
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
@@ -44,11 +46,6 @@ export default function ServersAvailablePage() {
     { id: "7", name: "NVIDIA RTX 4090", vram: "24 GB", architecture: "Ada Lovelace", price: 130 },
     { id: "8", name: "NVIDIA A100", vram: "80 GB", architecture: "Ampere", price: 200 },
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
-    { id: "10", name: "NVIDIA A6000", vram: "48 GB", architecture: "Ampere", price: 160 },
-    { id: "11", name: "NVIDIA T4", vram: "16 GB", architecture: "Turing", price: 45 },
-    { id: "12", name: "NVIDIA V100", vram: "32 GB", architecture: "Volta", price: 120 },
-    { id: "13", name: "NVIDIA P100", vram: "16 GB", architecture: "Pascal", price: 60 },
-    { id: "14", name: "NVIDIA K80", vram: "24 GB", architecture: "Kepler", price: 30 },
   ];
 
   const handleSelectServer = (id: string) => {
@@ -59,15 +56,25 @@ export default function ServersAvailablePage() {
     setSelectedGPU((prev) => (prev === id ? null : id));
   };
 
-  // Longitud máxima para emparejar filas
-  const maxRows = Math.max(servers.length, saladGPUs.length);
-
   // Calcular coste total
   const selectedServerObj = servers.find((s) => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost =
     (selectedServerObj ? selectedServerObj.price : 0) +
     (selectedGPUObj ? selectedGPUObj.price : 0);
+
+  // Acción al hacer clic en Aceptar
+  const handleContinue = () => {
+    if (!selectedServer) {
+      alert("Por favor selecciona un servidor antes de continuar.");
+      return;
+    }
+    // Redirigir a la página de alquiler de Hetzner
+    router.push("/hetzner-rent");
+  };
+
+  // Longitud máxima de filas
+  const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
     <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 overflow-y-auto max-h-[90vh]">
@@ -89,7 +96,6 @@ export default function ServersAvailablePage() {
         {Array.from({ length: maxRows }).map((_, index) => {
           const server = servers[index];
           const gpu = saladGPUs[index];
-
           return (
             <React.Fragment key={index}>
               {/* SERVIDOR */}
@@ -108,9 +114,7 @@ export default function ServersAvailablePage() {
                   >
                     <h3
                       className={`text-2xl font-bold ${
-                        selectedServer === server.id
-                          ? "text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
-                          : ""
+                        selectedServer === server.id ? "text-blue-300" : ""
                       }`}
                     >
                       {server.title}
@@ -141,9 +145,7 @@ export default function ServersAvailablePage() {
                   >
                     <h3
                       className={`text-xl font-semibold ${
-                        selectedGPU === gpu.id
-                          ? "text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,1)]"
-                          : ""
+                        selectedGPU === gpu.id ? "text-blue-300" : ""
                       }`}
                     >
                       {gpu.name}
@@ -163,15 +165,30 @@ export default function ServersAvailablePage() {
       </div>
 
       {/* Línea discontinua y total */}
-      <div className="mt-[400px] mb-10 w-full text-center">
+      <div className="mt-20 mb-10 w-full">
         {/* Línea discontinua */}
-        <hr className="border-t-4 border-dashed border-gray-500 mb-10" />
+        <hr className="border-t-4 border-dashed border-gray-500 mb-8" />
 
         {/* Total */}
-        <div className="text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)]">
+        <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-6">
           {totalCost > 0
             ? `💰 Total: ${totalCost} €/mes`
             : "Selecciona un servidor y una GPU para ver el total"}
+        </div>
+
+        {/* Botón Aceptar y continuar */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleContinue}
+            disabled={!selectedServer}
+            className={`px-6 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
+              selectedServer
+                ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            ✅ Aceptar y continuar
+          </button>
         </div>
       </div>
     </div>
