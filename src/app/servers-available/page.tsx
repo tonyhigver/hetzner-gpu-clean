@@ -66,7 +66,7 @@ export default function ServersAvailablePage() {
     }
 
     try {
-      const response = await fetch("http://TU_IP_DEL_SERVIDOR:4000/api/create-user-server", {
+      const response = await fetch("http://157.180.118.67:4000/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
