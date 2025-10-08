@@ -58,7 +58,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Enviar datos al Node.js del servidor director
+  // 🔹 Cambiado: enviar datos directamente al Node.js del servidor director
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -112,7 +112,7 @@ export default function ServersAvailablePage() {
           return (
             <React.Fragment key={index}>
               <div>
-                {server && (
+                {server ? (
                   <button
                     onClick={() => handleSelectServer(server.id)}
                     disabled={selectedServer && selectedServer !== server.id}
@@ -126,11 +126,13 @@ export default function ServersAvailablePage() {
                   >
                     {server.title}
                   </button>
+                ) : (
+                  <div className="h-20"></div>
                 )}
               </div>
 
               <div>
-                {gpu && (
+                {gpu ? (
                   <button
                     onClick={() => handleSelectGPU(gpu.id)}
                     disabled={selectedGPU && selectedGPU !== gpu.id}
@@ -148,6 +150,8 @@ export default function ServersAvailablePage() {
                     <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
+                ) : (
+                  <div className="h-20"></div>
                 )}
               </div>
             </React.Fragment>
@@ -155,23 +159,29 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* 🔹 BOTÓN FUERA DEL GRID */}
-      <div className="mt-12 text-center">
-        <div className="text-2xl font-semibold text-blue-400 mb-6">
-          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
+      {/* 🔹 Botón de continuar y total fuera del grid */}
+      <div className="mt-24 mb-24 w-full">
+        <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
+
+        <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-10">
+          {totalCost > 0
+            ? `💰 Total: ${totalCost} €/mes`
+            : "Selecciona un servidor y una GPU para ver el total"}
         </div>
 
-        <button
-          onClick={handleContinue}
-          disabled={!selectedServer}
-          className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
-            selectedServer
-              ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
-              : "bg-gray-700 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          ✅ Aceptar y continuar
-        </button>
+        <div className="flex justify-end">
+          <button
+            onClick={handleContinue}
+            disabled={!selectedServer}
+            className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
+              selectedServer
+                ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            ✅ Aceptar y continuar
+          </button>
+        </div>
       </div>
     </div>
   );
