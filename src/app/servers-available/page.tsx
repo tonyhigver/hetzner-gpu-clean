@@ -54,7 +54,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Envío al backend Hetzner
+  // 🔹 Envío al backend mediante el proxy /api/proxy/*
   const handleContinue = async () => {
     console.log("▶️ Botón continuar pulsado");
 
@@ -64,52 +64,50 @@ export default function ServersAvailablePage() {
       return;
     }
 
-    const backendUrl = "http://157.180.118.67:4000/api/create-user-server";
-    console.log(`📡 Intentando conectar al backend: ${backendUrl}`);
+    console.log("📤 Enviando request al backend (vía /api/proxy)...");
+    console.log("Servidor seleccionado:", selectedServerObj);
+    console.log("GPU seleccionada:", selectedGPUObj);
 
     try {
-      const payload = {
-        userId: "usuario-actual-id",
-        serverType: selectedServerObj?.title,
-        gpuType: selectedGPUObj?.name || null,
-        osImage: "ubuntu-22.04",
-      };
-
-      console.log("📤 Payload enviado:", payload);
-
-      const response = await fetch(backendUrl, {
+      const response = await fetch("/api/proxy/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          userId: "usuario-actual-id",
+          serverType: selectedServerObj?.title,
+          gpuType: selectedGPUObj?.name || null,
+          osImage: "ubuntu-22.04",
+        }),
       });
 
-      console.log("💬 Estado de respuesta:", response.status);
+      console.log("💬 Response status:", response.status);
+      console.log("💬 Response headers:", response.headers);
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("❌ Error del servidor Hetzner:", text);
-        alert("Error al crear el servidor: " + text);
-        return;
+        console.error("❌ Response text:", text);
+        throw new Error("Error al crear el servidor. Intenta de nuevo.");
       }
 
-      const data = await response.json();
-      console.log("✅ Respuesta backend Hetzner:", data);
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error("⚠️ Error parseando JSON:", err);
+        data = null;
+      }
+
+      console.log("✅ Servidor creado:", data);
 
       if (data?.hetznerId) {
         router.push(`/user-server/${data.hetznerId}`);
       } else {
-        alert("Servidor creado, pero no se recibió ID del backend.");
+        alert("Servidor creado pero no se recibió ID.");
+        console.warn("⚠️ ID del servidor no recibido:", data);
       }
     } catch (error: any) {
-      console.error("🔥 Error en el fetch (posible CORS o Mixed Content):", error);
-
-      if (window.location.protocol === "https:") {
-        console.warn(
-          "⚠️ Estás ejecutando desde HTTPS (Vercel) hacia HTTP (Hetzner). El navegador puede estar bloqueando la conexión."
-        );
-      }
-
-      alert("No se pudo conectar con el backend. Revisa la consola para más detalles.");
+      console.error("🔥 Fetch error:", error);
+      alert(error.message || "Error desconocido");
     }
   };
 
@@ -170,9 +168,7 @@ export default function ServersAvailablePage() {
                     <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
+                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 ) : (
