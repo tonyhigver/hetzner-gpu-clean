@@ -24,7 +24,6 @@ export default function ServersAvailablePage() {
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
   const router = useRouter();
 
-  // Servidores Hetzner
   useEffect(() => {
     const hetznerServers: Server[] = [
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -35,7 +34,6 @@ export default function ServersAvailablePage() {
     setServers(hetznerServers);
   }, []);
 
-  // GPUs de Salad
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
@@ -60,7 +58,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Cambiado: enviar datos al backend maestro
+  // 🔹 Cambiado: enviar datos al backend serverless de Next.js
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -72,8 +70,10 @@ export default function ServersAvailablePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          serverId: selectedServer,
-          gpuId: selectedGPU,
+          userId: "usuario-actual-id",
+          serverType: selectedServerObj?.title,
+          gpuType: selectedGPUObj?.name || null,
+          osImage: "ubuntu-22.04",
         }),
       });
 
@@ -84,8 +84,7 @@ export default function ServersAvailablePage() {
       const data = await response.json();
       console.log("Servidor creado:", data);
 
-      // Redirigir a página de detalles del servidor de usuario
-      router.push(`/user-server/${data.serverId}`);
+      router.push(`/user-server/${data.hetznerId}`);
     } catch (error: any) {
       alert(error.message || "Error desconocido");
     }
