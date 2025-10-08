@@ -60,7 +60,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 NUEVO: enviar datos al backend maestro
+  // 🔹 Cambiado: enviar datos al backend maestro
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
