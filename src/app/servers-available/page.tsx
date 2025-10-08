@@ -60,12 +60,35 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  const handleContinue = () => {
+  // 🔹 NUEVO: enviar datos al backend maestro
+  const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
-    router.push("/hetzner-rent");
+
+    try {
+      const response = await fetch("/api/create-user-server", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serverId: selectedServer,
+          gpuId: selectedGPU,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al crear el servidor. Intenta de nuevo.");
+      }
+
+      const data = await response.json();
+      console.log("Servidor creado:", data);
+
+      // Redirigir a página de detalles del servidor de usuario
+      router.push(`/user-server/${data.serverId}`);
+    } catch (error: any) {
+      alert(error.message || "Error desconocido");
+    }
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
@@ -76,9 +99,7 @@ export default function ServersAvailablePage() {
         Selecciona tu Servidor y GPU
       </h1>
 
-      {/* TABLA DE DOS COLUMNAS */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Encabezados */}
         <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-2">
           Servidores Hetzner
         </div>
@@ -86,13 +107,11 @@ export default function ServersAvailablePage() {
           GPUs disponibles (Salad)
         </div>
 
-        {/* Filas */}
         {Array.from({ length: maxRows }).map((_, index) => {
           const server = servers[index];
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
-              {/* 🔹 SERVIDOR: solo muestra el nombre */}
               <div>
                 {server ? (
                   <button
@@ -113,7 +132,6 @@ export default function ServersAvailablePage() {
                 )}
               </div>
 
-              {/* 🔹 GPU: mantiene toda la info */}
               <div>
                 {gpu ? (
                   <button
@@ -127,16 +145,10 @@ export default function ServersAvailablePage() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3
-                      className={`text-xl font-semibold ${
-                        selectedGPU === gpu.id ? "text-blue-300" : ""
-                      }`}
-                    >
+                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
+                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 ) : (
@@ -148,10 +160,8 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* ESPACIO GRANDE ENTRE TABLA Y TOTAL */}
       <div className="mt-24 mb-24"></div>
 
-      {/* LÍNEA DISCONTINUA + TOTAL + BOTÓN */}
       <div className="w-full mb-10">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
