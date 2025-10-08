@@ -58,7 +58,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Cambiado: enviar datos al backend serverless de Next.js
+  // 🔹 Cambiado: enviar datos directamente al Node.js del servidor director
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -66,7 +66,7 @@ export default function ServersAvailablePage() {
     }
 
     try {
-      const response = await fetch("/api/create-user-server", {
+      const response = await fetch("http://TU_IP_DEL_SERVIDOR:4000/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
