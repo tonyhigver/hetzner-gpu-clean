@@ -58,12 +58,16 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Cambiado: enviar datos directamente al Node.js del servidor director
+  // 🔹 Envío al servidor director con logs de depuración
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
+
+    console.log("📤 Enviando request al backend...");
+    console.log("Servidor seleccionado:", selectedServerObj);
+    console.log("GPU seleccionada:", selectedGPUObj);
 
     try {
       const response = await fetch("http://157.180.118.67:4000/api/create-user-server", {
@@ -77,15 +81,31 @@ export default function ServersAvailablePage() {
         }),
       });
 
+      console.log("💬 Response status:", response.status);
+
       if (!response.ok) {
+        const text = await response.text();
+        console.error("❌ Response text:", text);
         throw new Error("Error al crear el servidor. Intenta de nuevo.");
       }
 
-      const data = await response.json();
-      console.log("Servidor creado:", data);
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error("⚠️ Error parseando JSON:", err);
+        data = null;
+      }
 
-      router.push(`/user-server/${data.hetznerId}`);
+      console.log("✅ Servidor creado:", data);
+
+      if (data?.hetznerId) {
+        router.push(`/user-server/${data.hetznerId}`);
+      } else {
+        alert("Servidor creado pero no se recibió ID.");
+      }
     } catch (error: any) {
+      console.error("🔥 Fetch error:", error);
       alert(error.message || "Error desconocido");
     }
   };
@@ -159,7 +179,7 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* 🔹 Botón de continuar y total fuera del grid */}
+      {/* 🔹 Total y botón totalmente fuera del grid */}
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
