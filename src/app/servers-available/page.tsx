@@ -32,6 +32,7 @@ export default function ServersAvailablePage() {
       { id: "4", title: "AX161", cpu: "48 vCPU", ram: "256GB", price: 200 },
     ];
     setServers(hetznerServers);
+    console.log("📥 Servidores cargados:", hetznerServers);
   }, []);
 
   const saladGPUs: GPU[] = [
@@ -46,67 +47,69 @@ export default function ServersAvailablePage() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) => {
-    setSelectedServer((prev) => (prev === id ? null : id));
-  };
-
-  const handleSelectGPU = (id: string) => {
-    setSelectedGPU((prev) => (prev === id ? null : id));
-  };
+  const handleSelectServer = (id: string) => setSelectedServer((prev) => (prev === id ? null : id));
+  const handleSelectGPU = (id: string) => setSelectedGPU((prev) => (prev === id ? null : id));
 
   const selectedServerObj = servers.find((s) => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Envío al servidor director con logs de depuración
+  // 🔹 Envío al backend Hetzner
   const handleContinue = async () => {
+    console.log("▶️ Botón continuar pulsado");
+
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
+      console.warn("⚠️ No se seleccionó servidor");
       return;
     }
 
-    console.log("📤 Enviando request al backend...");
-    console.log("Servidor seleccionado:", selectedServerObj);
-    console.log("GPU seleccionada:", selectedGPUObj);
+    const backendUrl = "http://157.180.118.67:4000/api/create-user-server";
+    console.log(`📡 Intentando conectar al backend: ${backendUrl}`);
 
     try {
-      const response = await fetch("http://157.180.118.67:4000/api/create-user-server", {
+      const payload = {
+        userId: "usuario-actual-id",
+        serverType: selectedServerObj?.title,
+        gpuType: selectedGPUObj?.name || null,
+        osImage: "ubuntu-22.04",
+      };
+
+      console.log("📤 Payload enviado:", payload);
+
+      const response = await fetch(backendUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "usuario-actual-id",
-          serverType: selectedServerObj?.title,
-          gpuType: selectedGPUObj?.name || null,
-          osImage: "ubuntu-22.04",
-        }),
+        body: JSON.stringify(payload),
       });
 
-      console.log("💬 Response status:", response.status);
+      console.log("💬 Estado de respuesta:", response.status);
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("❌ Response text:", text);
-        throw new Error("Error al crear el servidor. Intenta de nuevo.");
+        console.error("❌ Error del servidor Hetzner:", text);
+        alert("Error al crear el servidor: " + text);
+        return;
       }
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (err) {
-        console.error("⚠️ Error parseando JSON:", err);
-        data = null;
-      }
-
-      console.log("✅ Servidor creado:", data);
+      const data = await response.json();
+      console.log("✅ Respuesta backend Hetzner:", data);
 
       if (data?.hetznerId) {
         router.push(`/user-server/${data.hetznerId}`);
       } else {
-        alert("Servidor creado pero no se recibió ID.");
+        alert("Servidor creado, pero no se recibió ID del backend.");
       }
     } catch (error: any) {
-      console.error("🔥 Fetch error:", error);
-      alert(error.message || "Error desconocido");
+      console.error("🔥 Error en el fetch (posible CORS o Mixed Content):", error);
+
+      if (window.location.protocol === "https:") {
+        console.warn(
+          "⚠️ Estás ejecutando desde HTTPS (Vercel) hacia HTTP (Hetzner). El navegador puede estar bloqueando la conexión."
+        );
+      }
+
+      alert("No se pudo conectar con el backend. Revisa la consola para más detalles.");
     }
   };
 
@@ -167,7 +170,9 @@ export default function ServersAvailablePage() {
                     <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 ) : (
@@ -179,7 +184,7 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* 🔹 Total y botón totalmente fuera del grid */}
+      {/* 🔹 Total y botón fuera del grid */}
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
