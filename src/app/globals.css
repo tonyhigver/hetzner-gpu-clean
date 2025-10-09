@@ -1,12 +1,7 @@
-/* ✅ 1. Importar Tailwind primero */
+/* ✅ 1. Importar Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ✅ 1b. Definir layers opcionales (para tus componentes/utilidades personalizadas) */
-@layer base {}
-@layer components {}
-@layer utilities {}
 
 /* ✅ 2. Reset básico */
 * {
@@ -51,7 +46,7 @@ img {
   max-width: 100%;
 }
 
-/* ✅ 8. Scrollbar opcional: estilo oscuro */
+/* ✅ 8. Scrollbar estilo oscuro */
 ::-webkit-scrollbar {
   width: 8px;
 }
