@@ -4,19 +4,17 @@ const nextConfig = {
 
   images: {
     domains: [
-      "lh3.googleusercontent.com", // Google avatars
+      "lh3.googleusercontent.com",
       "secure.gravatar.com",
       "avatars.githubusercontent.com"
-      // 🔹 Agrega aquí otros dominios de imágenes si los necesitas
     ],
   },
 
-  // 🔹 Proxy interno para evitar CORS y Mixed Content
   async rewrites() {
     return [
       {
-        source: "/api/proxy/:path*", // Todo lo que empiece por /api/proxy
-        destination: "http://157.180.118.67:4000/api/:path*", // Se reenvía al backend en Hetzner
+        source: "/api/proxy/:path*",
+        destination: "http://157.180.118.67:4000/api/:path*",
       },
     ];
   },
