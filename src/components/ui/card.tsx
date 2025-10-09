@@ -12,3 +12,15 @@ export const Card: React.FC<CardProps> = ({ children }) => {
     </div>
   );
 };
+
+export const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="border-b border-gray-700 mb-2">{children}</div>
+);
+
+export const CardTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <h2 className="text-lg font-bold">{children}</h2>
+);
+
+export const CardContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div>{children}</div>
+);
