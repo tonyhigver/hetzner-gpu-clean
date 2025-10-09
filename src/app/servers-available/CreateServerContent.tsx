@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // ✅ importar correctamente
+import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface Server {
   id: string;
@@ -21,8 +21,6 @@ interface GPU {
 }
 
 export default function CreateServerContent() {
-  // ✅ useSearchParams solo se usa en cliente, sin problema ahora
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   const [servers, setServers] = useState<Server[]>([]);
@@ -59,54 +57,30 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  const handleContinue = async () => {
-    console.log("▶️ Botón continuar pulsado");
-
+  // 🔹 Cambiado: redirige inmediatamente a /processing mientras el fetch ocurre en background
+  const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
-      console.warn("⚠️ No se seleccionó servidor");
       return;
     }
 
-    console.log("📤 Enviando request al backend...");
-    console.log("Servidor seleccionado:", selectedServerObj);
-    console.log("GPU seleccionada:", selectedGPUObj);
+    // Redirige inmediatamente
+    router.push("/processing");
 
-    try {
-      const response = await fetch("/api/create-user-server", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "usuario-actual-id",
-          serverType: selectedServerObj?.title,
-          gpuType: selectedGPUObj?.name || null,
-          osImage: "ubuntu-22.04",
-        }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        console.error("❌ Response text:", text);
-        throw new Error("Error al crear el servidor. Intenta de nuevo.");
-      }
-
-      const data = await response.json();
-      console.log("✅ Servidor creado:", data);
-
-      if (data?.hetznerId) {
-        router.push(
-          `/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(
-            selectedServerObj?.title || ""
-          )}&userId=usuario-actual-id`
-        );
-      } else {
-        alert("Servidor creado pero no se recibió ID.");
-        console.warn("⚠️ ID del servidor no recibido:", data);
-      }
-    } catch (error: any) {
-      console.error("🔥 Fetch error:", error);
-      alert(error.message || "Error desconocido");
-    }
+    // Petición al backend en background
+    fetch("/api/create-user-server", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "usuario-actual-id",
+        serverType: selectedServerObj?.title,
+        gpuType: selectedGPUObj?.name || null,
+        osImage: "ubuntu-22.04",
+      }),
+    })
+      .then(res => res.json())
+      .then(data => console.log("✅ Servidor creado:", data))
+      .catch(err => console.error("🔥 Error creando servidor:", err));
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
