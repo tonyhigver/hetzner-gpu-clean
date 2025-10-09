@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import CreateServerContent from "./CreateServerContent";
 
-export const dynamic = "force-dynamic"; // 👈 evita prerender durante el build
+// 👇 Esto evita que Next.js intente prerender la página durante el build
+export const dynamic = "force-dynamic";
 
 export default function CreateServerPage() {
   return (
