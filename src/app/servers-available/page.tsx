@@ -54,7 +54,7 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Envío al backend mediante el proxy /api/proxy/*
+  // 🔹 Envío al backend y redirección al servidor creado
   const handleContinue = async () => {
     console.log("▶️ Botón continuar pulsado");
 
@@ -64,24 +64,21 @@ export default function ServersAvailablePage() {
       return;
     }
 
-    console.log("📤 Enviando request al backend (vía /api/proxy)...");
+    console.log("📤 Enviando request al backend...");
     console.log("Servidor seleccionado:", selectedServerObj);
     console.log("GPU seleccionada:", selectedGPUObj);
 
     try {
-      const response = await fetch("/api/proxy/create-user-server", {
+      const response = await fetch("/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "usuario-actual-id",
+          userId: "usuario-actual-id", // 🔹 Aquí puedes usar el id real del usuario
           serverType: selectedServerObj?.title,
           gpuType: selectedGPUObj?.name || null,
           osImage: "ubuntu-22.04",
         }),
       });
-
-      console.log("💬 Response status:", response.status);
-      console.log("💬 Response headers:", response.headers);
 
       if (!response.ok) {
         const text = await response.text();
@@ -89,18 +86,12 @@ export default function ServersAvailablePage() {
         throw new Error("Error al crear el servidor. Intenta de nuevo.");
       }
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (err) {
-        console.error("⚠️ Error parseando JSON:", err);
-        data = null;
-      }
-
+      const data = await response.json();
       console.log("✅ Servidor creado:", data);
 
+      // 🔹 Redirige al usuario a la página del servidor creado
       if (data?.hetznerId) {
-        router.push(`/user-server/${data.hetznerId}`);
+        router.push(`/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(selectedServerObj?.title || "")}&userId=usuario-actual-id`);
       } else {
         alert("Servidor creado pero no se recibió ID.");
         console.warn("⚠️ ID del servidor no recibido:", data);
