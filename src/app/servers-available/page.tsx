@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // ✅ importar correctamente
 
 interface Server {
@@ -19,7 +20,9 @@ interface GPU {
   price: number;
 }
 
-export default function ServersAvailablePage() {
+// 🔹 Contenido principal que usa useSearchParams()
+function CreateServerContent() {
+  const searchParams = useSearchParams(); // ✅ ya dentro de Suspense
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
@@ -91,7 +94,9 @@ export default function ServersAvailablePage() {
 
       if (data?.hetznerId) {
         router.push(
-          `/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(selectedServerObj?.title || "")}&userId=usuario-actual-id`
+          `/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(
+            selectedServerObj?.title || ""
+          )}&userId=usuario-actual-id`
         );
       } else {
         alert("Servidor creado pero no se recibió ID.");
@@ -196,5 +201,14 @@ export default function ServersAvailablePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🔹 Componente principal exportado con Suspense
+export default function CreateServerPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-gray-400 mt-20">Cargando página...</div>}>
+      <CreateServerContent />
+    </Suspense>
   );
 }
