@@ -1,1 +1,1 @@
-{"/_not-found/page":"/_not-found","/servers-available/page":"/servers-available","/api/auth/[...nextauth]/route":"/api/auth/[...nextauth]","/api/servers/route":"/api/servers","/page":"/","/create-server/page":"/create-server"}
+{"/_not-found/page":"/_not-found","/api/auth/[...nextauth]/route":"/api/auth/[...nextauth]","/api/servers/route":"/api/servers","/servers-available/page":"/servers-available","/create-server/page":"/create-server","/page":"/"}

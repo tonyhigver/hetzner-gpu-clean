@@ -21,11 +21,13 @@ interface GPU {
 }
 
 export default function CreateServerContent() {
-  const searchParams = useSearchParams(); // ✅ ya dentro de componente cliente
+  // ✅ useSearchParams solo se usa en cliente, sin problema ahora
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const hetznerServers: Server[] = [
