@@ -13,9 +13,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": "src",            // ✅ base para los alias
+    "baseUrl": ".",              // ✅ base para los alias
     "paths": {
-      "@/*": ["*"]              // ✅ @/ apunta a src/
+      "@/*": ["src/*"]           // ✅ @/ apunta a src/
     },
     "plugins": [
       { "name": "next" }
