@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // ✅ importar correctamente
 
 interface Server {
   id: string;
@@ -54,7 +55,6 @@ export default function ServersAvailablePage() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Envío al backend y redirección al servidor creado
   const handleContinue = async () => {
     console.log("▶️ Botón continuar pulsado");
 
@@ -73,7 +73,7 @@ export default function ServersAvailablePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "usuario-actual-id", // 🔹 Aquí puedes usar el id real del usuario
+          userId: "usuario-actual-id",
           serverType: selectedServerObj?.title,
           gpuType: selectedGPUObj?.name || null,
           osImage: "ubuntu-22.04",
@@ -89,9 +89,10 @@ export default function ServersAvailablePage() {
       const data = await response.json();
       console.log("✅ Servidor creado:", data);
 
-      // 🔹 Redirige al usuario a la página del servidor creado
       if (data?.hetznerId) {
-        router.push(`/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(selectedServerObj?.title || "")}&userId=usuario-actual-id`);
+        router.push(
+          `/create-server?gpuType=${encodeURIComponent(selectedGPUObj?.name || "")}&serverType=${encodeURIComponent(selectedServerObj?.title || "")}&userId=usuario-actual-id`
+        );
       } else {
         alert("Servidor creado pero no se recibió ID.");
         console.warn("⚠️ ID del servidor no recibido:", data);
@@ -171,7 +172,6 @@ export default function ServersAvailablePage() {
         })}
       </div>
 
-      {/* 🔹 Total y botón fuera del grid */}
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
 
