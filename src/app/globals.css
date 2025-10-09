@@ -3,6 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ✅ 1b. Definir layers opcionales (para tus componentes/utilidades personalizadas) */
+@layer base {}
+@layer components {}
+@layer utilities {}
+
 /* ✅ 2. Reset básico */
 * {
   margin: 0;
