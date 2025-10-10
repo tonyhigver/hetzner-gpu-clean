@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic"; // 🔹 Evita prerender
+
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
@@ -26,7 +28,6 @@ export default function ProcessingPage() {
       try {
         let currentServerId = serverIdParam;
 
-        // 🔹 Crear servidor si no hay serverId en query
         if (!currentServerId) {
           const res = await fetch(
             "https://157.180.118.67:4000/api/create-user-server",
@@ -44,7 +45,6 @@ export default function ProcessingPage() {
           currentServerId = data.hetznerId;
         }
 
-        // 🔹 Polling para consultar el estado del servidor
         pollingInterval = window.setInterval(async () => {
           try {
             const statusRes = await fetch(
@@ -58,7 +58,6 @@ export default function ProcessingPage() {
               setMessage("Servidor listo 🚀");
               if (pollingInterval) window.clearInterval(pollingInterval);
 
-              // Redirigir al dashboard
               router.push(`/dashboard?serverId=${currentServerId}`);
             } else {
               setStatus("loading");
@@ -111,7 +110,11 @@ export default function ProcessingPage() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al procesar el servidor</h1>
           <p className="text-red-400">{message}</p>
-          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="mt-4"
+          >
             Reintentar
           </Button>
         </div>

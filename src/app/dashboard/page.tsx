@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic"; // 🔹 Evita prerender
+
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -37,10 +39,8 @@ export default function DashboardPage() {
       }
     }
 
-    // Fetch inicial
     fetchServer();
 
-    // Polling cada 5 segundos
     pollingInterval = window.setInterval(fetchServer, 5000);
 
     return () => {
