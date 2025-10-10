@@ -17,22 +17,25 @@ export default function ProcessingPage() {
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
-  const serverId = searchParams.get("serverId"); // para reabrir la página
+  const serverIdParam = searchParams.get("serverId"); // Para reabrir página
 
   useEffect(() => {
-    let pollingInterval: NodeJS.Timer;
+    let pollingInterval: number | undefined;
 
     async function createOrPollServer() {
       try {
-        let currentServerId = serverId;
+        let currentServerId = serverIdParam;
 
-        // 🔹 Si no hay serverId en query params, crear el servidor
+        // 🔹 Crear servidor si no hay serverId en query
         if (!currentServerId) {
-          const res = await fetch("https://157.180.118.67:4000/api/create-user-server", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, serverType, gpuType, osImage }),
-          });
+          const res = await fetch(
+            "https://157.180.118.67:4000/api/create-user-server",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId, serverType, gpuType, osImage }),
+            }
+          );
 
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Error al crear servidor");
@@ -42,7 +45,7 @@ export default function ProcessingPage() {
         }
 
         // 🔹 Polling para consultar el estado del servidor
-        pollingInterval = setInterval(async () => {
+        pollingInterval = window.setInterval(async () => {
           try {
             const statusRes = await fetch(
               `https://157.180.118.67:4000/api/get-server-status?serverId=${currentServerId}`
@@ -53,9 +56,9 @@ export default function ProcessingPage() {
             if (serverStatus === "running") {
               setStatus("success");
               setMessage("Servidor listo 🚀");
-              clearInterval(pollingInterval);
+              if (pollingInterval) window.clearInterval(pollingInterval);
 
-              // Redirigir al dashboard con el serverId
+              // Redirigir al dashboard
               router.push(`/dashboard?serverId=${currentServerId}`);
             } else {
               setStatus("loading");
@@ -65,9 +68,9 @@ export default function ProcessingPage() {
             console.error("❌ Error consultando el estado del servidor:", err);
             setStatus("error");
             setMessage(err.message || "Error desconocido al consultar servidor");
-            clearInterval(pollingInterval);
+            if (pollingInterval) window.clearInterval(pollingInterval);
           }
-        }, 5000); // cada 5 segundos
+        }, 5000);
       } catch (err: any) {
         console.error("❌ Error al crear servidor:", err);
         setStatus("error");
@@ -77,7 +80,9 @@ export default function ProcessingPage() {
 
     createOrPollServer();
 
-    return () => clearInterval(pollingInterval);
+    return () => {
+      if (pollingInterval) window.clearInterval(pollingInterval);
+    };
   }, []);
 
   return (

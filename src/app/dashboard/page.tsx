@@ -13,35 +13,39 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!serverId) return;
 
-    let pollingInterval: NodeJS.Timer;
+    let pollingInterval: number | undefined;
 
     async function fetchServer() {
       try {
-        const res = await fetch(`https://157.180.118.67:4000/api/get-server-status?serverId=${serverId}`);
+        const res = await fetch(
+          `https://157.180.118.67:4000/api/get-server-status?serverId=${serverId}`
+        );
         const data = await res.json();
         setServerData(data);
-        setLoading(false);
 
-        if (data.status !== "running") {
-          setLoading(true);
+        if (data.status === "running") {
+          setLoading(false);
+          if (pollingInterval) window.clearInterval(pollingInterval);
         } else {
-          clearInterval(pollingInterval);
+          setLoading(true);
         }
       } catch (err: any) {
         console.error("❌ Error cargando servidor:", err);
         setError(err.message || "Error desconocido");
         setLoading(false);
-        clearInterval(pollingInterval);
+        if (pollingInterval) window.clearInterval(pollingInterval);
       }
     }
 
     // Fetch inicial
     fetchServer();
 
-    // Polling cada 5 segundos hasta que esté running
-    pollingInterval = setInterval(fetchServer, 5000);
+    // Polling cada 5 segundos
+    pollingInterval = window.setInterval(fetchServer, 5000);
 
-    return () => clearInterval(pollingInterval);
+    return () => {
+      if (pollingInterval) window.clearInterval(pollingInterval);
+    };
   }, [serverId]);
 
   if (!serverId) {
@@ -73,11 +77,21 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-6">Panel del Servidor</h1>
 
       <div className="bg-gray-800 p-6 rounded-lg space-y-4">
-        <p><strong>🆔 ID Hetzner:</strong> {serverData.hetzner_server_id}</p>
-        <p><strong>💻 Tipo:</strong> {serverData.server_type}</p>
-        <p><strong>🎮 GPU:</strong> {serverData.gpu_type}</p>
-        <p><strong>🌐 IP Pública:</strong> {serverData.ip}</p>
-        <p><strong>📡 Estado:</strong> {serverData.status}</p>
+        <p>
+          <strong>🆔 ID Hetzner:</strong> {serverData.hetzner_server_id}
+        </p>
+        <p>
+          <strong>💻 Tipo:</strong> {serverData.server_type}
+        </p>
+        <p>
+          <strong>🎮 GPU:</strong> {serverData.gpu_type}
+        </p>
+        <p>
+          <strong>🌐 IP Pública:</strong> {serverData.ip}
+        </p>
+        <p>
+          <strong>📡 Estado:</strong> {serverData.status}
+        </p>
       </div>
     </div>
   );
