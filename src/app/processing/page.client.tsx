@@ -20,6 +20,12 @@ export default function ProcessingPage() {
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
   const serverIdParam = searchParams.get("serverId");
 
+  // 🔹 Base URL según entorno
+  const BASE_URL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:4000"
+      : "https://157.180.118.67:4000";
+
   useEffect(() => {
     let pollingInterval: number | undefined;
 
@@ -27,34 +33,47 @@ export default function ProcessingPage() {
       try {
         let currentServerId = serverIdParam;
 
+        // 🔹 Crear servidor si no hay serverId
         if (!currentServerId) {
-          const res = await fetch(
-            "https://157.180.118.67:4000/api/create-user-server",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ userId, serverType, gpuType, osImage }),
-            }
-          );
+          console.log("📥 Creando servidor para usuario:", userId);
+
+          const res = await fetch(`${BASE_URL}/api/create-user-server`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, serverType, gpuType, osImage }),
+          });
+
           const data = await res.json();
+          console.log("📤 Respuesta backend create-user-server:", data);
+
           if (!res.ok) throw new Error(data.error || "Error al crear servidor");
+
           setServerInfo(data);
           currentServerId = data.hetznerId;
         }
 
+        // 🔹 Polling para estado del servidor
         pollingInterval = window.setInterval(async () => {
           try {
             const statusRes = await fetch(
-              `https://157.180.118.67:4000/api/get-server-status?serverId=${currentServerId}`
+              `${BASE_URL}/api/get-server-status?serverId=${currentServerId}`
             );
             const statusData = await statusRes.json();
+            console.log("📤 Respuesta backend get-server-status:", statusData);
+
             const serverStatus = statusData.status;
 
             if (serverStatus === "running") {
               setStatus("success");
               setMessage("Servidor listo 🚀");
               if (pollingInterval) window.clearInterval(pollingInterval);
-              router.push(`/dashboard?serverId=${currentServerId}`);
+
+              // 🔹 Redirige según tu carpeta en /app
+              // Si la carpeta es /server:
+              router.push(`/server?serverId=${currentServerId}`);
+
+              // Si la carpeta es /servers-available:
+              // router.push(`/servers-available?serverId=${currentServerId}`);
             } else {
               setStatus("loading");
               setMessage(`Servidor en estado: ${serverStatus}...`);
@@ -96,7 +115,7 @@ export default function ProcessingPage() {
           <h1 className="text-3xl font-bold">¡Servidor listo!</h1>
           <p className="text-gray-400">{message}</p>
           <p className="text-gray-500 text-sm mt-2">
-            Serás redirigido automáticamente al panel principal...
+            Serás redirigido automáticamente a la página principal...
           </p>
         </div>
       )}
