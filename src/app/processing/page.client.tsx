@@ -1,102 +1,61 @@
 "use client";
-export const dynamic = "force-dynamic"; // 🔹 Evita prerender
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ProcessingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("Creando tu servidor en Hetzner...");
-  const [serverInfo, setServerInfo] = useState<any>(null);
+  const [status, setStatus] = useState<"loading" | "error">("loading");
+  const [message, setMessage] = useState("Creando tu servidor...");
 
   const userId = searchParams.get("userId") || "usuario-actual-id";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
-  const serverIdParam = searchParams.get("serverId");
 
-  // 🔹 Base URL según entorno
+  // 🔹 Usa tu servidor backend real (ajusta si lo tienes en otro puerto/IP)
   const BASE_URL =
     process.env.NODE_ENV === "development"
       ? "http://localhost:4000"
       : "https://157.180.118.67:4000";
 
   useEffect(() => {
-    let pollingInterval: number | undefined;
-
-    async function createOrPollServer() {
+    async function createServer() {
       try {
-        let currentServerId = serverIdParam;
+        console.log("📡 Enviando solicitud de creación al backend...");
 
-        // 🔹 Crear servidor si no hay serverId
-        if (!currentServerId) {
-          console.log("📥 Creando servidor para usuario:", userId);
+        const res = await fetch(`${BASE_URL}/api/create-user-server`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, serverType, gpuType, osImage }),
+        });
 
-          const res = await fetch(`${BASE_URL}/api/create-user-server`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, serverType, gpuType, osImage }),
-          });
+        const data = await res.json();
+        console.log("📤 Respuesta del backend:", data);
 
-          const data = await res.json();
-          console.log("📤 Respuesta backend create-user-server:", data);
+        if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-          if (!res.ok) throw new Error(data.error || "Error al crear servidor");
-
-          setServerInfo(data);
-          currentServerId = data.hetznerId;
+        // 🔹 Si el backend devuelve un ID, redirigimos directamente al dashboard del servidor
+        const serverId = data.hetznerId || data.serverId || data.id;
+        if (serverId) {
+          console.log("✅ Redirigiendo a /server?serverId=", serverId);
+          router.push(`/server?serverId=${serverId}`);
+        } else {
+          throw new Error("No se recibió un ID de servidor válido");
         }
-
-        // 🔹 Polling para estado del servidor
-        pollingInterval = window.setInterval(async () => {
-          try {
-            const statusRes = await fetch(
-              `${BASE_URL}/api/get-server-status?serverId=${currentServerId}`
-            );
-            const statusData = await statusRes.json();
-            console.log("📤 Respuesta backend get-server-status:", statusData);
-
-            const serverStatus = statusData.status;
-
-            if (serverStatus === "running") {
-              setStatus("success");
-              setMessage("Servidor listo 🚀");
-              if (pollingInterval) window.clearInterval(pollingInterval);
-
-              // 🔹 Redirige según tu carpeta en /app
-              // Si la carpeta es /server:
-              router.push(`/server?serverId=${currentServerId}`);
-
-              // Si la carpeta es /servers-available:
-              // router.push(`/servers-available?serverId=${currentServerId}`);
-            } else {
-              setStatus("loading");
-              setMessage(`Servidor en estado: ${serverStatus}...`);
-            }
-          } catch (err: any) {
-            console.error("❌ Error consultando el estado del servidor:", err);
-            setStatus("error");
-            setMessage(err.message || "Error desconocido al consultar servidor");
-            if (pollingInterval) window.clearInterval(pollingInterval);
-          }
-        }, 5000);
       } catch (err: any) {
-        console.error("❌ Error al crear servidor:", err);
+        console.error("❌ Error creando el servidor:", err);
         setStatus("error");
-        setMessage(err.message || "Error desconocido al crear servidor");
+        setMessage(err.message || "Error desconocido al crear el servidor");
       }
     }
 
-    createOrPollServer();
-
-    return () => {
-      if (pollingInterval) window.clearInterval(pollingInterval);
-    };
+    createServer();
   }, []);
 
   return (
@@ -109,21 +68,10 @@ export default function ProcessingPage() {
         </>
       )}
 
-      {status === "success" && (
-        <div className="flex flex-col items-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-green-500" />
-          <h1 className="text-3xl font-bold">¡Servidor listo!</h1>
-          <p className="text-gray-400">{message}</p>
-          <p className="text-gray-500 text-sm mt-2">
-            Serás redirigido automáticamente a la página principal...
-          </p>
-        </div>
-      )}
-
       {status === "error" && (
         <div className="flex flex-col items-center space-y-3">
           <XCircle className="w-12 h-12 text-red-500" />
-          <h1 className="text-3xl font-bold">Error al procesar el servidor</h1>
+          <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
           <p className="text-red-400">{message}</p>
           <Button
             onClick={() => window.location.reload()}
