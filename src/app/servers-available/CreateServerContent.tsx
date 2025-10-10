@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface Server {
   id: string;
@@ -28,14 +27,12 @@ export default function CreateServerContent() {
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
   useEffect(() => {
-    const hetznerServers: Server[] = [
+    setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
       { id: "2", title: "CX42", cpu: "16 vCPU", ram: "64GB", price: 80 },
       { id: "3", title: "AX101", cpu: "32 vCPU", ram: "128GB", price: 130 },
       { id: "4", title: "AX161", cpu: "48 vCPU", ram: "256GB", price: 200 },
-    ];
-    setServers(hetznerServers);
-    console.log("📥 Servidores cargados:", hetznerServers);
+    ]);
   }, []);
 
   const saladGPUs: GPU[] = [
@@ -50,37 +47,39 @@ export default function CreateServerContent() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) => setSelectedServer((prev) => (prev === id ? null : id));
-  const handleSelectGPU = (id: string) => setSelectedGPU((prev) => (prev === id ? null : id));
+  const handleSelectServer = (id: string) => setSelectedServer(prev => prev === id ? null : id);
+  const handleSelectGPU = (id: string) => setSelectedGPU(prev => prev === id ? null : id);
 
-  const selectedServerObj = servers.find((s) => s.id === selectedServer);
-  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
+  const selectedServerObj = servers.find(s => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Cambiado: redirige inmediatamente a /processing mientras el fetch ocurre en background
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    // Redirige inmediatamente
     router.push("/processing");
 
-    // Petición al backend en background
-    fetch("/api/create-user-server", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: "usuario-actual-id",
-        serverType: selectedServerObj?.title,
-        gpuType: selectedGPUObj?.name || null,
-        osImage: "ubuntu-22.04",
-      }),
-    })
-      .then(res => res.json())
-      .then(data => console.log("✅ Servidor creado:", data))
-      .catch(err => console.error("🔥 Error creando servidor:", err));
+    try {
+      const response = await fetch("/api/create-user-server", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "usuario-actual-id",
+          serverType: selectedServerObj?.title,
+          gpuType: selectedGPUObj?.name || null,
+          osImage: "ubuntu-22.04",
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Error al crear servidor");
+      console.log("✅ Servidor creado con éxito:", data);
+    } catch (err) {
+      console.error("🔥 Error creando servidor:", err);
+    }
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
@@ -119,9 +118,7 @@ export default function CreateServerContent() {
                   >
                     {server.title}
                   </button>
-                ) : (
-                  <div className="h-20"></div>
-                )}
+                ) : <div className="h-20" />}
               </div>
 
               <div>
@@ -143,9 +140,7 @@ export default function CreateServerContent() {
                     <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : (
-                  <div className="h-20"></div>
-                )}
+                ) : <div className="h-20" />}
               </div>
             </React.Fragment>
           );
@@ -154,13 +149,11 @@ export default function CreateServerContent() {
 
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
-
-        <div className="text-center text-2xl font-semibold text-blue-400 drop-shadow-[0_0_8px_rgba(147,197,253,1)] mb-10">
+        <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
           {totalCost > 0
             ? `💰 Total: ${totalCost} €/mes`
             : "Selecciona un servidor y una GPU para ver el total"}
         </div>
-
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
