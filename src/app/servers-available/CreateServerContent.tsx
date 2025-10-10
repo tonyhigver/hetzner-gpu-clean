@@ -47,39 +47,31 @@ export default function CreateServerContent() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) => setSelectedServer(prev => prev === id ? null : id);
-  const handleSelectGPU = (id: string) => setSelectedGPU(prev => prev === id ? null : id);
+  const handleSelectServer = (id: string) =>
+    setSelectedServer(prev => (prev === id ? null : id));
+
+  const handleSelectGPU = (id: string) =>
+    setSelectedGPU(prev => (prev === id ? null : id));
 
   const selectedServerObj = servers.find(s => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  const handleContinue = async () => {
+  // 🔹 Solo redirige a /processing, sin llamar al backend
+  const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    router.push("/processing");
+    const params = new URLSearchParams({
+      userId: "usuario-actual-id",
+      serverType: selectedServerObj?.title || "",
+      gpuType: selectedGPUObj?.name || "",
+      osImage: "ubuntu-22.04",
+    });
 
-    try {
-      const response = await fetch("/api/create-user-server", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "usuario-actual-id",
-          serverType: selectedServerObj?.title,
-          gpuType: selectedGPUObj?.name || null,
-          osImage: "ubuntu-22.04",
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Error al crear servidor");
-      console.log("✅ Servidor creado con éxito:", data);
-    } catch (err) {
-      console.error("🔥 Error creando servidor:", err);
-    }
+    router.push(`/processing?${params.toString()}`);
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
@@ -118,7 +110,9 @@ export default function CreateServerContent() {
                   >
                     {server.title}
                   </button>
-                ) : <div className="h-20" />}
+                ) : (
+                  <div className="h-20" />
+                )}
               </div>
 
               <div>
@@ -134,13 +128,21 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                    <h3
+                      className={`text-xl font-semibold ${
+                        selectedGPU === gpu.id ? "text-blue-300" : ""
+                      }`}
+                    >
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : <div className="h-20" />}
+                ) : (
+                  <div className="h-20" />
+                )}
               </div>
             </React.Fragment>
           );
