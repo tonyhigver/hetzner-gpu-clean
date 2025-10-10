@@ -1,5 +1,4 @@
 "use client";
-
 export const dynamic = "force-dynamic"; // 🔹 Evita prerender
 
 import { useEffect, useState } from "react";
@@ -28,6 +27,7 @@ export default function ProcessingPage() {
       try {
         let currentServerId = serverIdParam;
 
+        // 🔹 Crear servidor si no hay serverId
         if (!currentServerId) {
           const res = await fetch(
             "https://157.180.118.67:4000/api/create-user-server",
@@ -45,6 +45,7 @@ export default function ProcessingPage() {
           currentServerId = data.hetznerId;
         }
 
+        // 🔹 Polling para estado del servidor
         pollingInterval = window.setInterval(async () => {
           try {
             const statusRes = await fetch(
