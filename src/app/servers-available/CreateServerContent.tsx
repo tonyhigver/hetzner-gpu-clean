@@ -27,8 +27,13 @@ export default function CreateServerContent() {
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // 🔹 URL del backend según entorno
+  const BACKEND_URL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:4000"
+      : "https://157.180.118.67:4000";
+
   useEffect(() => {
-    // Simula los tipos de servidor disponibles
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
       { id: "2", title: "CX42", cpu: "16 vCPU", ram: "64GB", price: 80 },
@@ -65,8 +70,7 @@ export default function CreateServerContent() {
     setLoading(true);
 
     try {
-      // 🔹 Crear servidor en el backend
-      const response = await fetch("/api/create-user-server", {
+      const response = await fetch(`${BACKEND_URL}/api/create-user-server`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +86,7 @@ export default function CreateServerContent() {
 
       console.log("✅ Servidor creado correctamente:", data);
 
-      // 🔹 Redirigir al estado del servidor (página /server)
+      // 🔹 Redirigir a la página de estado del servidor
       router.push(`/server?serverId=${data.hetznerId}`);
     } catch (err) {
       console.error("🔥 Error creando servidor:", err);
@@ -146,11 +150,7 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3
-                      className={`text-xl font-semibold ${
-                        selectedGPU === gpu.id ? "text-blue-300" : ""
-                      }`}
-                    >
+                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
                     <p className="text-md text-gray-300">
