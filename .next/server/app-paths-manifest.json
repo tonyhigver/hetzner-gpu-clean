@@ -1,8 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/create-user-server/route": "app/api/create-user-server/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/page": "app/page.js",
+  "/api/create-user-server/route": "app/api/create-user-server/route.js",
   "/api/servers/route": "app/api/servers/route.js",
+  "/page": "app/page.js",
   "/servers-available/page": "app/servers-available/page.js"
 }

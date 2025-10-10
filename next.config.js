@@ -20,10 +20,10 @@ const nextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: "http://157.180.118.67:4000/api/:path*", // 🔹 Redirige al backend de Hetzner
+        destination: "http://157.180.118.67:4000/api/:path*",
       },
     ];
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

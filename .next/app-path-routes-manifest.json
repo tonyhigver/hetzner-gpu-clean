@@ -1,1 +1,1 @@
-{"/_not-found/page":"/_not-found","/api/create-user-server/route":"/api/create-user-server","/api/auth/[...nextauth]/route":"/api/auth/[...nextauth]","/page":"/","/api/servers/route":"/api/servers","/servers-available/page":"/servers-available"}
+{"/_not-found/page":"/_not-found","/api/auth/[...nextauth]/route":"/api/auth/[...nextauth]","/api/create-user-server/route":"/api/create-user-server","/api/servers/route":"/api/servers","/page":"/","/servers-available/page":"/servers-available"}
