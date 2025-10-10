@@ -9,7 +9,7 @@ interface ServerData {
   server_type: string;
   gpu_type: string;
   ip?: string;
-  status: string;
+  status: "creating" | "running" | "error";
 }
 
 export default function ServerPage() {
@@ -22,18 +22,21 @@ export default function ServerPage() {
     if (!serverId) return;
 
     let polling: number;
+    let processingTimeout: number;
 
     const fetchServer = async () => {
       try {
-        const res = await fetch(`/api/proxy/get-server-status?serverId=${serverId}`);
+        const res = await fetch(`/api/get-server-status?serverId=${serverId}`);
         const data: ServerData = await res.json();
         setServerData(data);
 
-        if (data.status === "running") {
-          setLoading(false);
-          clearInterval(polling);
-        } else {
+        // 🔹 Primeros 30 segundos mostrar "Procesando..."
+        if (data.status === "creating") {
           setLoading(true);
+          clearTimeout(processingTimeout);
+          processingTimeout = window.setTimeout(() => setLoading(false), 30000);
+        } else if (data.status === "running") {
+          setLoading(false);
         }
       } catch (err) {
         console.error("Error fetching server status:", err);
@@ -43,7 +46,10 @@ export default function ServerPage() {
     fetchServer();
     polling = window.setInterval(fetchServer, 5000);
 
-    return () => clearInterval(polling);
+    return () => {
+      clearInterval(polling);
+      clearTimeout(processingTimeout);
+    };
   }, [serverId]);
 
   if (!serverId)
@@ -62,20 +68,17 @@ export default function ServerPage() {
       {/* Barra de progreso */}
       <div className="w-full max-w-md bg-gray-700 rounded-full h-6 overflow-hidden mb-2">
         <div
-          className="h-full bg-blue-500 transition-all duration-500"
+          className={`h-full transition-all duration-500 ${
+            loading ? "bg-blue-500" : "bg-green-500"
+          }`}
           style={{
-            width:
-              serverData?.status === "running"
-                ? "100%"
-                : serverData?.status === "creating"
-                ? "50%"
-                : "10%",
+            width: loading ? "50%" : "100%",
           }}
         />
       </div>
 
-      <p className="mt-2">
-        Estado: <strong>{serverData?.status || "Cargando..."}</strong>
+      <p className="mt-2 text-lg">
+        Estado: <strong>{loading ? "Procesando..." : "Activo"}</strong>
       </p>
     </div>
   );
