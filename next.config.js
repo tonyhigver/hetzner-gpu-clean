@@ -2,11 +2,17 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  experimental: {
+    appDir: true, // ✅ Asegura que App Router se use correctamente
+  },
+
+  output: "standalone", // ✅ Evita problemas de prerender y facilita despliegue en Vercel
+
   images: {
     domains: [
       "lh3.googleusercontent.com",
       "secure.gravatar.com",
-      "avatars.githubusercontent.com"
+      "avatars.githubusercontent.com",
     ],
   },
 
