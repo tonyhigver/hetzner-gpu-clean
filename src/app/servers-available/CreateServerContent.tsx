@@ -25,8 +25,10 @@ export default function CreateServerContent() {
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Simula los tipos de servidor disponibles
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
       { id: "2", title: "CX42", cpu: "16 vCPU", ram: "64GB", price: 80 },
@@ -47,8 +49,8 @@ export default function CreateServerContent() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) => setSelectedServer(prev => prev === id ? null : id);
-  const handleSelectGPU = (id: string) => setSelectedGPU(prev => prev === id ? null : id);
+  const handleSelectServer = (id: string) => setSelectedServer(prev => (prev === id ? null : id));
+  const handleSelectGPU = (id: string) => setSelectedGPU(prev => (prev === id ? null : id));
 
   const selectedServerObj = servers.find(s => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
@@ -60,9 +62,10 @@ export default function CreateServerContent() {
       return;
     }
 
-    router.push("/processing");
+    setLoading(true);
 
     try {
+      // 🔹 Crear servidor en el backend
       const response = await fetch("/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,10 +78,17 @@ export default function CreateServerContent() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Error al crear servidor");
-      console.log("✅ Servidor creado con éxito:", data);
+      if (!response.ok) throw new Error(data.error || "Error al crear el servidor");
+
+      console.log("✅ Servidor creado correctamente:", data);
+
+      // 🔹 Redirigir al estado del servidor (página /server)
+      router.push(`/server?serverId=${data.hetznerId}`);
     } catch (err) {
       console.error("🔥 Error creando servidor:", err);
+      alert("Error al crear el servidor. Revisa la consola para más detalles.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,7 +128,9 @@ export default function CreateServerContent() {
                   >
                     {server.title}
                   </button>
-                ) : <div className="h-20" />}
+                ) : (
+                  <div className="h-20" />
+                )}
               </div>
 
               <div>
@@ -134,13 +146,21 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                    <h3
+                      className={`text-xl font-semibold ${
+                        selectedGPU === gpu.id ? "text-blue-300" : ""
+                      }`}
+                    >
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : <div className="h-20" />}
+                ) : (
+                  <div className="h-20" />
+                )}
               </div>
             </React.Fragment>
           );
@@ -157,14 +177,14 @@ export default function CreateServerContent() {
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
-            disabled={!selectedServer}
+            disabled={!selectedServer || loading}
             className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
-              selectedServer
+              selectedServer && !loading
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}
           >
-            ✅ Aceptar y continuar
+            {loading ? "Creando servidor..." : "✅ Aceptar y continuar"}
           </button>
         </div>
       </div>
