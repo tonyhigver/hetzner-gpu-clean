@@ -57,8 +57,8 @@ export default function CreateServerContent() {
   const totalCost =
     (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Crea el servidor primero, luego redirige
-  const handleContinue = async () => {
+  // 🔹 Envía al backend y redirige inmediatamente
+  const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
@@ -69,32 +69,20 @@ export default function CreateServerContent() {
         ? "http://localhost:4000"
         : "https://157.180.118.67:4000";
 
-    try {
-      console.log("📦 Enviando datos al backend...");
-      const response = await fetch(`${BASE_URL}/api/create-user-server`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: "usuario-actual-id",
-          serverType: selectedServerObj?.title,
-          gpuType: selectedGPUObj?.name || null,
-          osImage: "ubuntu-22.04",
-        }),
-      });
+    // Enviar en segundo plano (sin esperar)
+    fetch(`${BASE_URL}/api/create-user-server`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: "usuario-actual-id",
+        serverType: selectedServerObj?.title,
+        gpuType: selectedGPUObj?.name || null,
+        osImage: "ubuntu-22.04",
+      }),
+    }).catch((err) => console.error("⚠️ Error enviando al backend:", err));
 
-      const data = await response.json();
-
-      if (!response.ok)
-        throw new Error(data.error || "Error al crear el servidor");
-
-      console.log("✅ Servidor creado con éxito:", data);
-
-      // 🔹 Redirige a /processing pasando el serverId
-      router.push(`/processing?serverId=${data.hetznerId}`);
-    } catch (err) {
-      console.error("🔥 Error creando servidor:", err);
-      alert("❌ Error al crear el servidor. Revisa la consola.");
-    }
+    // 🔸 Redirige inmediatamente sin esperar respuesta
+    router.push("/processing");
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
