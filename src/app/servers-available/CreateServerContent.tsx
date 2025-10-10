@@ -48,30 +48,53 @@ export default function CreateServerContent() {
   ];
 
   const handleSelectServer = (id: string) =>
-    setSelectedServer(prev => (prev === id ? null : id));
-
+    setSelectedServer((prev) => (prev === id ? null : id));
   const handleSelectGPU = (id: string) =>
-    setSelectedGPU(prev => (prev === id ? null : id));
+    setSelectedGPU((prev) => (prev === id ? null : id));
 
-  const selectedServerObj = servers.find(s => s.id === selectedServer);
-  const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
-  const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
+  const selectedServerObj = servers.find((s) => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
+  const totalCost =
+    (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Solo redirige a /processing, sin llamar al backend
-  const handleContinue = () => {
+  // 🔹 Crea el servidor primero, luego redirige
+  const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    const params = new URLSearchParams({
-      userId: "usuario-actual-id",
-      serverType: selectedServerObj?.title || "",
-      gpuType: selectedGPUObj?.name || "",
-      osImage: "ubuntu-22.04",
-    });
+    const BASE_URL =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:4000"
+        : "https://157.180.118.67:4000";
 
-    router.push(`/processing?${params.toString()}`);
+    try {
+      console.log("📦 Enviando datos al backend...");
+      const response = await fetch(`${BASE_URL}/api/create-user-server`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "usuario-actual-id",
+          serverType: selectedServerObj?.title,
+          gpuType: selectedGPUObj?.name || null,
+          osImage: "ubuntu-22.04",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok)
+        throw new Error(data.error || "Error al crear el servidor");
+
+      console.log("✅ Servidor creado con éxito:", data);
+
+      // 🔹 Redirige a /processing pasando el serverId
+      router.push(`/processing?serverId=${data.hetznerId}`);
+    } catch (err) {
+      console.error("🔥 Error creando servidor:", err);
+      alert("❌ Error al crear el servidor. Revisa la consola.");
+    }
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
