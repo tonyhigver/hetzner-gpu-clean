@@ -58,7 +58,7 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // ✅ Envía la info al backend (por el proxy Next.js) y redirige
+  // ✅ Envía la info al backend de Hetzner (IP pública)
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -66,7 +66,9 @@ export default function CreateServerContent() {
     }
 
     try {
-      await fetch("/api/create-user-server", {
+      console.log("📡 Enviando datos al backend de Hetzner...");
+
+      const res = await fetch("http://157.180.118.67:4000/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,11 +78,14 @@ export default function CreateServerContent() {
           osImage: "ubuntu-22.04",
         }),
       });
+
+      const data = await res.json();
+      console.log("📤 Respuesta del backend:", data);
     } catch (err) {
       console.error("⚠️ Error enviando al backend:", err);
     }
 
-    // 🔸 Redirige sin esperar la respuesta del backend
+    // 🔸 Redirige sin esperar la respuesta completa
     router.push("/processing");
   };
 
