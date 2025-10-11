@@ -13,7 +13,7 @@ export default function ProcessingPage() {
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
-  // 🔹 Datos pasados desde la página anterior
+  // 🔹 Datos recibidos desde la pantalla anterior
   const userId = searchParams.get("userId") || "usuario-actual-id";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
@@ -22,9 +22,8 @@ export default function ProcessingPage() {
   useEffect(() => {
     async function createServer() {
       try {
-        console.log("📡 Enviando solicitud al proxy interno de Next.js...");
+        console.log("📡 Enviando solicitud a /api/create-user-server ...");
 
-        // 🔹 Llamada al endpoint interno de Next.js
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -32,20 +31,26 @@ export default function ProcessingPage() {
         });
 
         const data = await res.json();
-        console.log("📤 Respuesta desde proxy Next.js:", data);
+        console.log("📤 Respuesta desde el backend:", data);
 
-        if (!res.ok) throw new Error(data.error || "Error al crear servidor");
+        if (!res.ok) throw new Error(data.error || "Error al crear el servidor");
 
-        // ✅ Si hay ID, redirigimos a /dashboard
+        // ✅ Extraemos el ID del servidor
         const serverId = data.hetznerId || data.serverId || data.id;
+
         if (serverId) {
-          console.log("✅ Servidor creado con éxito. Redirigiendo a /dashboard...");
-          router.push(`/dashboard?serverId=${serverId}`);
+          console.log(`✅ Servidor creado con éxito (ID: ${serverId})`);
+          setMessage("Servidor creado correctamente. Redirigiendo...");
+
+          // 🕒 Pausa breve para asegurar la carga de /dashboard
+          setTimeout(() => {
+            router.push(`/dashboard?serverId=${serverId}`);
+          }, 1200);
         } else {
           throw new Error("No se recibió un ID de servidor válido");
         }
       } catch (err: any) {
-        console.error("❌ Error creando el servidor:", err);
+        console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
         setMessage(err.message || "Error desconocido al crear el servidor");
       }
