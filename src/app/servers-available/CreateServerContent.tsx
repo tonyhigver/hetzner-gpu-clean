@@ -25,7 +25,6 @@ export default function CreateServerContent() {
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // 🔹 Cargar servidores al montar
   useEffect(() => {
@@ -59,16 +58,16 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // ✅ Envía al backend y espera la creación antes de redirigir
+  // ✅ Envía la info al backend de Hetzner (IP pública)
   const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    setLoading(true);
-
     try {
+      console.log("📡 Enviando datos al backend de Hetzner...");
+
       const res = await fetch("http://157.180.118.67:4000/api/create-user-server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,17 +80,13 @@ export default function CreateServerContent() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Error creando el servidor");
-
-      // 🔹 Redirige al dashboard con el servidor recién creado
-      router.push(`/dashboard?serverId=${data.hetznerId}&serverName=${selectedServerObj?.title}`);
-    } catch (err: any) {
-      console.error("⚠️ Error creando el servidor:", err);
-      alert(err.message || "Error desconocido");
-    } finally {
-      setLoading(false);
+      console.log("📤 Respuesta del backend:", data);
+    } catch (err) {
+      console.error("⚠️ Error enviando al backend:", err);
     }
+
+    // 🔸 Redirige sin esperar la respuesta completa
+    router.push("/processing");
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
@@ -115,6 +110,7 @@ export default function CreateServerContent() {
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
+              {/* Columna de Servidores */}
               <div>
                 {server ? (
                   <button
@@ -135,6 +131,7 @@ export default function CreateServerContent() {
                 )}
               </div>
 
+              {/* Columna de GPUs */}
               <div>
                 {gpu ? (
                   <button
@@ -148,7 +145,11 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                    <h3
+                      className={`text-xl font-semibold ${
+                        selectedGPU === gpu.id ? "text-blue-300" : ""
+                      }`}
+                    >
                       {gpu.name}
                     </h3>
                     <p className="text-md text-gray-300">
@@ -175,14 +176,14 @@ export default function CreateServerContent() {
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
-            disabled={!selectedServer || loading}
+            disabled={!selectedServer}
             className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
               selectedServer
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}
           >
-            {loading ? "⏳ Procesando..." : "✅ Aceptar y continuar"}
+            ✅ Aceptar y continuar
           </button>
         </div>
       </div>
