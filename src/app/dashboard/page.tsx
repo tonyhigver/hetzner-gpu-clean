@@ -1,5 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -7,16 +8,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const serverId = searchParams.get("serverId"); // ID del servidor recién creado
+  const serverId = searchParams.get("serverId");
 
   const [showServers, setShowServers] = useState(false);
 
-  // 🔹 Mostrar SERVIDORES después de 15 s
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowServers(true);
 
-      // 🔹 Redirigir automáticamente 3 s después (opcional)
       if (serverId) {
         setTimeout(() => {
           router.push(`/dashboard?serverId=${serverId}`);
