@@ -2,11 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  experimental: {
-    appDir: true, // ✅ Asegura que App Router se use correctamente
-  },
-
-  output: "standalone", // ✅ Evita problemas de prerender y facilita despliegue en Vercel
+  // ⚙️ No uses experimental.appDir (ya está activado por defecto desde Next 13+)
+  output: "standalone", // ✅ Facilita despliegues en Vercel o servidores
 
   images: {
     domains: [
@@ -14,15 +11,6 @@ const nextConfig = {
       "secure.gravatar.com",
       "avatars.githubusercontent.com",
     ],
-  },
-
-  async rewrites() {
-    return [
-      {
-        source: "/api/proxy/:path*",
-        destination: "http://157.180.118.67:4000/api/:path*",
-      },
-    ];
   },
 };
 

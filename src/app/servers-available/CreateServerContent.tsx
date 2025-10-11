@@ -26,6 +26,7 @@ export default function CreateServerContent() {
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
+  // 🔹 Cargar servidores al montar
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -49,39 +50,37 @@ export default function CreateServerContent() {
 
   const handleSelectServer = (id: string) =>
     setSelectedServer((prev) => (prev === id ? null : id));
+
   const handleSelectGPU = (id: string) =>
     setSelectedGPU((prev) => (prev === id ? null : id));
 
   const selectedServerObj = servers.find((s) => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
-  const totalCost =
-    (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
+  const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Envía al backend y redirige inmediatamente
-  const handleContinue = () => {
+  // ✅ Envía la info al backend (por el proxy Next.js) y redirige
+  const handleContinue = async () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    const BASE_URL =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:4000"
-        : "https://157.180.118.67:4000";
+    try {
+      await fetch("/api/create-user-server", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "usuario-actual-id",
+          serverType: selectedServerObj?.title,
+          gpuType: selectedGPUObj?.name || null,
+          osImage: "ubuntu-22.04",
+        }),
+      });
+    } catch (err) {
+      console.error("⚠️ Error enviando al backend:", err);
+    }
 
-    // Enviar en segundo plano (sin esperar)
-    fetch(`${BASE_URL}/api/create-user-server`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: "usuario-actual-id",
-        serverType: selectedServerObj?.title,
-        gpuType: selectedGPUObj?.name || null,
-        osImage: "ubuntu-22.04",
-      }),
-    }).catch((err) => console.error("⚠️ Error enviando al backend:", err));
-
-    // 🔸 Redirige inmediatamente sin esperar respuesta
+    // 🔸 Redirige sin esperar la respuesta del backend
     router.push("/processing");
   };
 
@@ -106,6 +105,7 @@ export default function CreateServerContent() {
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
+              {/* Columna de Servidores */}
               <div>
                 {server ? (
                   <button
@@ -126,6 +126,7 @@ export default function CreateServerContent() {
                 )}
               </div>
 
+              {/* Columna de GPUs */}
               <div>
                 {gpu ? (
                   <button

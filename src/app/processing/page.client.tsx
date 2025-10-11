@@ -13,37 +13,33 @@ export default function ProcessingPage() {
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
+  // 🔹 Datos pasados desde la página anterior
   const userId = searchParams.get("userId") || "usuario-actual-id";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
 
-  // 🔹 Usa tu servidor backend real (ajusta si lo tienes en otro puerto/IP)
-  const BASE_URL =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:4000"
-      : "https://157.180.118.67:4000";
-
   useEffect(() => {
     async function createServer() {
       try {
-        console.log("📡 Enviando solicitud de creación al backend...");
+        console.log("📡 Enviando solicitud al proxy interno de Next.js...");
 
-        const res = await fetch(`${BASE_URL}/api/create-user-server`, {
+        // 🔹 Llamada al endpoint interno de Next.js (NO directamente al backend)
+        const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
-        console.log("📤 Respuesta del backend:", data);
+        console.log("📤 Respuesta desde proxy Next.js:", data);
 
         if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-        // 🔹 Si el backend devuelve un ID, redirigimos directamente al dashboard del servidor
+        // ✅ Si hay ID, redirigimos al dashboard
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
-          console.log("✅ Redirigiendo a /server?serverId=", serverId);
+          console.log("✅ Servidor creado con éxito. Redirigiendo...");
           router.push(`/server?serverId=${serverId}`);
         } else {
           throw new Error("No se recibió un ID de servidor válido");
