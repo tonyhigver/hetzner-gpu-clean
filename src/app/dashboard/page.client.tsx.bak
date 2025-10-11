@@ -16,10 +16,12 @@ interface ServerData {
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const serverId = searchParams.get("serverId"); // ID del servidor recién creado
+  const serverName = searchParams.get("serverName"); // Nombre del servidor recién creado
   const [servers, setServers] = useState<ServerData[]>([]);
   const [countdown, setCountdown] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showServersSection, setShowServersSection] = useState(false);
 
   // 🔹 Fetch de todos los servidores del usuario
   useEffect(() => {
@@ -61,6 +63,15 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, [serverId]);
 
+  // 🔹 Mostrar la sección de servidores después de 15 segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowServersSection(true);
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white text-2xl">
@@ -79,29 +90,42 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-900 text-white">
-      <h1 className="text-2xl font-bold mb-6">Lista de servidores</h1>
-      <ul className="space-y-4">
-        {servers.map((server) => (
-          <li
-            key={server.hetzner_server_id}
-            className="p-4 border border-gray-700 rounded flex justify-between items-center"
-          >
-            <div>
-              <p className="font-semibold">{server.server_type}</p>
-              <p>GPU: {server.gpu_type}</p>
-              <p>IP: {server.ip || "Asignando..."}</p>
-              <p>Ubicación: {server.location || "Desconocida"}</p>
-            </div>
-            <div className="text-right">
-              {server.hetzner_server_id === serverId && server.status === "creating" && (
-                <p>Activando en: {countdown}s</p>
-              )}
-              {server.status === "running" && <p className="text-green-400 font-bold">Activo</p>}
-              {server.status === "error" && <p className="text-red-500 font-bold">Error</p>}
-            </div>
-          </li>
-        ))}
-      </ul>
+      {/* 🚀 Dashboard funcionando correctamente */}
+      <div className="flex justify-center items-center mb-10">
+        <h1 className="text-4xl font-bold text-center">
+          🚀 Dashboard funcionando correctamente
+          {serverName ? `: ${serverName}` : ""}
+        </h1>
+      </div>
+
+      {/* Mostrar la lista de servidores después de 15s */}
+      {showServersSection && (
+        <>
+          <h2 className="text-3xl font-bold mb-6 text-center text-blue-400">SERVIDORES</h2>
+          <ul className="space-y-4">
+            {servers.map((server) => (
+              <li
+                key={server.hetzner_server_id}
+                className="p-4 border border-gray-700 rounded flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-semibold">{server.server_type}</p>
+                  <p>GPU: {server.gpu_type}</p>
+                  <p>IP: {server.ip || "Asignando..."}</p>
+                  <p>Ubicación: {server.location || "Desconocida"}</p>
+                </div>
+                <div className="text-right">
+                  {server.hetzner_server_id === serverId && server.status === "creating" && (
+                    <p>Activando en: {countdown}s</p>
+                  )}
+                  {server.status === "running" && <p className="text-green-400 font-bold">Activo</p>}
+                  {server.status === "error" && <p className="text-red-500 font-bold">Error</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
