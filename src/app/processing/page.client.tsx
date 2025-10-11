@@ -36,11 +36,11 @@ export default function ProcessingPage() {
 
         if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-        // ✅ Si hay ID, redirigimos a /server
+        // ✅ Si hay ID, redirigimos a /dashboard
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
-          console.log("✅ Servidor creado con éxito. Redirigiendo a /server...");
-          router.push(`/server?serverId=${serverId}`);
+          console.log("✅ Servidor creado con éxito. Redirigiendo a /dashboard...");
+          router.push(`/dashboard?serverId=${serverId}`);
         } else {
           throw new Error("No se recibió un ID de servidor válido");
         }
