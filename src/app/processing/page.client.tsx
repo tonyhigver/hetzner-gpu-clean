@@ -24,7 +24,7 @@ export default function ProcessingPage() {
       try {
         console.log("📡 Enviando solicitud al proxy interno de Next.js...");
 
-        // 🔹 Llamada al endpoint interno de Next.js (NO directamente al backend)
+        // 🔹 Llamada al endpoint interno de Next.js
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -36,10 +36,10 @@ export default function ProcessingPage() {
 
         if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-        // ✅ Si hay ID, redirigimos al dashboard
+        // ✅ Si hay ID, redirigimos a la página del servidor
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
-          console.log("✅ Servidor creado con éxito. Redirigiendo...");
+          console.log("✅ Servidor creado con éxito. Redirigiendo a /server...");
           router.push(`/server?serverId=${serverId}`);
         } else {
           throw new Error("No se recibió un ID de servidor válido");

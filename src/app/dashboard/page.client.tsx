@@ -18,10 +18,12 @@ export default function DashboardPage() {
 
     async function fetchServer() {
       try {
-        const res = await fetch(
-          `https://157.180.118.67:4000/api/get-server-status?serverId=${serverId}`
-        );
+        // 🔹 Llamada al endpoint interno de Next.js
+        const res = await fetch(`/api/get-server-status?serverId=${serverId}`);
         const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Error desconocido");
+
         setServerData(data);
 
         if (data.status === "running") {
@@ -39,7 +41,6 @@ export default function DashboardPage() {
     }
 
     fetchServer();
-
     pollingInterval = window.setInterval(fetchServer, 5000);
 
     return () => {
