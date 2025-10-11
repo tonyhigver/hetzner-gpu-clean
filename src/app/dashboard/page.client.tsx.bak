@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface ServerData {
@@ -15,7 +15,10 @@ interface ServerData {
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const serverId = searchParams.get("serverId"); // ID del servidor recién creado
+  const serverName = searchParams.get("serverName"); // Nombre del servidor recién creado
+
   const [servers, setServers] = useState<ServerData[]>([]);
   const [countdown, setCountdown] = useState(30);
   const [loading, setLoading] = useState(true);
@@ -77,6 +80,16 @@ export default function DashboardPage() {
     );
   }
 
+  // 🔹 Si recibimos serverName, mostrar mensaje centrado
+  if (serverName) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-3xl bg-gray-950">
+        🚀 Dashboard funcionando correctamente: {serverName}
+      </div>
+    );
+  }
+
+  // 🔹 Render de lista completa de servidores
   return (
     <div className="min-h-screen p-6 bg-gray-900 text-white">
       <h1 className="text-2xl font-bold mb-6">Lista de servidores</h1>
