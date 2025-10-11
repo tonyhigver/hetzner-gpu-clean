@@ -1,65 +1,70 @@
 "use client";
-export const dynamic = "force-dynamic"; // 🔹 Evita prerender
+export const dynamic = "force-dynamic";
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface ServerData {
+  hetzner_server_id: string;
+  server_type: string;
+  gpu_type: string;
+  ip?: string;
+  location?: string;
+  status: "creating" | "running" | "error";
+}
+
 export default function DashboardPage() {
   const searchParams = useSearchParams();
-  const serverId = searchParams.get("serverId");
-  const [serverData, setServerData] = useState<any>(null);
+  const serverId = searchParams.get("serverId"); // ID del servidor recién creado
+  const [servers, setServers] = useState<ServerData[]>([]);
+  const [countdown, setCountdown] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 🔹 Fetch de todos los servidores del usuario
   useEffect(() => {
-    if (!serverId) return;
-
-    let pollingInterval: number | undefined;
-
-    async function fetchServer() {
+    async function fetchServers() {
       try {
-        // 🔹 Llamada al endpoint interno de Next.js
-        const res = await fetch(`/api/get-server-status?serverId=${serverId}`);
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || "Error desconocido");
-
-        setServerData(data);
-
-        if (data.status === "running") {
-          setLoading(false);
-          if (pollingInterval) window.clearInterval(pollingInterval);
-        } else {
-          setLoading(true);
-        }
+        const res = await fetch(`/api/get-servers?userId=usuario-actual-id`);
+        const data: ServerData[] = await res.json();
+        setServers(data);
+        setLoading(false);
       } catch (err: any) {
-        console.error("❌ Error cargando servidor:", err);
+        console.error("Error cargando servidores:", err);
         setError(err.message || "Error desconocido");
         setLoading(false);
-        if (pollingInterval) window.clearInterval(pollingInterval);
       }
     }
 
-    fetchServer();
-    pollingInterval = window.setInterval(fetchServer, 5000);
+    fetchServers();
+  }, []);
 
-    return () => {
-      if (pollingInterval) window.clearInterval(pollingInterval);
-    };
+  // 🔹 Contador de 30s para el servidor recién creado
+  useEffect(() => {
+    if (!serverId) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setServers((prevServers) =>
+            prevServers.map((s) =>
+              s.hetzner_server_id === serverId ? { ...s, status: "running" } : s
+            )
+          );
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, [serverId]);
-
-  if (!serverId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white text-2xl">
-        ⚠️ No se ha seleccionado ningún servidor
-      </div>
-    );
-  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white text-2xl">
-        🔄 Cargando estado del servidor...
+        🔄 Cargando servidores...
       </div>
     );
   }
@@ -73,26 +78,30 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-10">
-      <h1 className="text-3xl font-bold mb-6">Panel del Servidor</h1>
-
-      <div className="bg-gray-800 p-6 rounded-lg space-y-4">
-        <p>
-          <strong>🆔 ID Hetzner:</strong> {serverData.hetzner_server_id}
-        </p>
-        <p>
-          <strong>💻 Tipo:</strong> {serverData.server_type}
-        </p>
-        <p>
-          <strong>🎮 GPU:</strong> {serverData.gpu_type}
-        </p>
-        <p>
-          <strong>🌐 IP Pública:</strong> {serverData.ip}
-        </p>
-        <p>
-          <strong>📡 Estado:</strong> {serverData.status}
-        </p>
-      </div>
+    <div className="min-h-screen p-6 bg-gray-900 text-white">
+      <h1 className="text-2xl font-bold mb-6">Lista de servidores</h1>
+      <ul className="space-y-4">
+        {servers.map((server) => (
+          <li
+            key={server.hetzner_server_id}
+            className="p-4 border border-gray-700 rounded flex justify-between items-center"
+          >
+            <div>
+              <p className="font-semibold">{server.server_type}</p>
+              <p>GPU: {server.gpu_type}</p>
+              <p>IP: {server.ip || "Asignando..."}</p>
+              <p>Ubicación: {server.location || "Desconocida"}</p>
+            </div>
+            <div className="text-right">
+              {server.hetzner_server_id === serverId && server.status === "creating" && (
+                <p>Activando en: {countdown}s</p>
+              )}
+              {server.status === "running" && <p className="text-green-400 font-bold">Activo</p>}
+              {server.status === "error" && <p className="text-red-500 font-bold">Error</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
