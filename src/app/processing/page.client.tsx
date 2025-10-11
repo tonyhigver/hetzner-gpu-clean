@@ -36,7 +36,7 @@ export default function ProcessingPage() {
 
         if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-        // ✅ Si hay ID, redirigimos a la página del servidor
+        // ✅ Si hay ID, redirigimos a /server
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
           console.log("✅ Servidor creado con éxito. Redirigiendo a /server...");
