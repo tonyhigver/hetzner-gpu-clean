@@ -48,9 +48,13 @@ export const authOptions = {
       return true;
     },
 
-    // ✅ Después del login, siempre ir a /planes
-    async redirect() {
-      return "/planes";
+    // 🔹 Permitimos que la app decida a dónde ir después del login
+    async redirect({ url, baseUrl }) {
+      // Si la URL es externa, la devolvemos tal cual
+      if (url && url.startsWith(baseUrl)) return url;
+
+      // Si no, devolvemos undefined para que router.push de la app funcione
+      return undefined;
     },
   },
 };
