@@ -1,14 +1,12 @@
 "use client";
 export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store"; // 🔥 evita prerender y cacheo
+export const fetchCache = "force-no-store"; // evita prerender y cacheo
 
-import { Suspense } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// 🔹 Componente principal con lógica
 function ProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +14,6 @@ function ProcessingContent() {
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
-  // 🔸 Datos recibidos desde la pantalla anterior
   const userId = searchParams.get("userId") || "usuario-actual-id";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
@@ -42,11 +39,17 @@ function ProcessingContent() {
 
         if (serverId) {
           console.log(`✅ Servidor creado con éxito (ID: ${serverId})`);
-          setMessage("Servidor creado correctamente. Redirigiendo...");
+          setMessage("🚀 Dashboard funcionando correctamente.");
 
+          // 🔹 Mostrar "SERVIDORES" después de 15 s
           setTimeout(() => {
-            router.push(`/dashboard?serverId=${serverId}`);
-          }, 1200);
+            setMessage("🚀 Dashboard funcionando correctamente.\nSERVIDORES");
+
+            // 🔹 Redirigir al dashboard 3 s después
+            setTimeout(() => {
+              router.push(`/dashboard?serverId=${serverId}`);
+            }, 3000);
+          }, 15000);
         } else {
           throw new Error("No se recibió un ID de servidor válido");
         }
@@ -58,7 +61,7 @@ function ProcessingContent() {
     }
 
     createServer();
-  }, []);
+  }, [userId, serverType, gpuType, osImage, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
@@ -66,7 +69,7 @@ function ProcessingContent() {
         <>
           <Loader2 className="w-12 h-12 animate-spin text-blue-400 mb-4" />
           <h1 className="text-3xl font-bold mb-2">Procesando tu servidor...</h1>
-          <p className="text-gray-400">{message}</p>
+          <p className="text-gray-400 whitespace-pre-line">{message}</p>
         </>
       ) : (
         <div className="flex flex-col items-center space-y-3">
@@ -86,7 +89,6 @@ function ProcessingContent() {
   );
 }
 
-// 🔹 Página exportada envuelta en Suspense
 export default function ProcessingPage() {
   return (
     <Suspense
