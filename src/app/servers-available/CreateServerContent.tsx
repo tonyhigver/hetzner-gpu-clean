@@ -30,7 +30,7 @@ export default function CreateServerContent() {
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
-  // 🔹 Verificar autenticación
+  // 🔹 Redirigir si no está autenticado
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -69,7 +69,7 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Pasar datos al paso de procesamiento
+  // 🔹 Continuar solo si la sesión está lista y hay correo
   const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
