@@ -24,7 +24,7 @@ interface GPU {
 export default function CreateServerContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const userEmail = session?.user?.email || null; // correo real del usuario
+  const userEmail = session?.user?.email || null;
 
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
@@ -62,7 +62,6 @@ export default function CreateServerContent() {
 
   const handleSelectServer = (id: string) =>
     setSelectedServer((prev) => (prev === id ? null : id));
-
   const handleSelectGPU = (id: string) =>
     setSelectedGPU((prev) => (prev === id ? null : id));
 
@@ -77,13 +76,13 @@ export default function CreateServerContent() {
       return;
     }
 
-    if (!userEmail) {
-      alert("⚠️ No se detectó un usuario autenticado. Inicia sesión antes de continuar.");
+    if (status !== "authenticated" || !userEmail) {
+      alert("⚠️ Espera a que la sesión se cargue o inicia sesión antes de continuar.");
       return;
     }
 
     const params = new URLSearchParams({
-      userEmail, // ✅ correo real del usuario
+      userEmail,
       serverType: selectedServerObj?.title || "",
       gpuType: selectedGPUObj?.name || "",
       osImage: "ubuntu-22.04",
@@ -169,9 +168,9 @@ export default function CreateServerContent() {
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
-            disabled={!selectedServer}
+            disabled={!selectedServer || status !== "authenticated"}
             className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
-              selectedServer
+              selectedServer && status === "authenticated"
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}
