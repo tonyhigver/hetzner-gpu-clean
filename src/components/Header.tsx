@@ -1,15 +1,16 @@
 "use client";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   const isDashboard = pathname?.startsWith("/dashboard");
 
-  // 🧭 Menú del dashboard (con Command Center como primera opción)
+  // 🧭 Menú del dashboard (Command Center primera opción)
   const menuItems = [
     "Command Center",
     "SERVERS",
@@ -51,7 +52,7 @@ export default function Header() {
         <nav className="fixed top-0 left-0 w-full bg-[#0B0C10] border-b border-[#1E1F26] text-[#E6E6E6] flex overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-[#00C896]/60 scrollbar-track-transparent z-40">
           <div className="flex items-center space-x-6 px-6 py-3 min-w-max">
             {menuItems.map((item, index) => {
-              const isActive = item === "Command Center"; // 🔸 Activo por defecto
+              const isActive = item === "Command Center"; // activo por defecto
               return (
                 <button
                   key={item}
@@ -60,7 +61,11 @@ export default function Header() {
                       ? "text-[#00C896] underline underline-offset-4"
                       : "hover:text-[#00C896]"
                   }`}
-                  onClick={() => console.log(`Redirigir a ${item}`)}
+                  onClick={() => {
+                    // Redirigir según opción seleccionada
+                    if (item === "Command Center") router.push("/dashboard/command-center");
+                    else router.push(`/dashboard/${item.toLowerCase().replace(/\s/g, "-")}`);
+                  }}
                 >
                   {item}
                 </button>
