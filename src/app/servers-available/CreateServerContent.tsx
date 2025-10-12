@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // ✅ para obtener el correo del usuario logeado
+import { useSession } from "next-auth/react";
 
 interface Server {
   id: string;
@@ -23,31 +23,22 @@ interface GPU {
 
 export default function CreateServerContent() {
   const router = useRouter();
-  const supabase = createClientComponentClient(); // ✅ inicializa Supabase cliente
+  const { data: session, status } = useSession(); // 🔹 obtenemos sesión activa
+  const userEmail = session?.user?.email || null; // 🔸 correo real del usuario (Google)
 
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  // 🔹 Cargar usuario logeado desde Supabase
+  // 🧠 Si el usuario no está logueado, mostrar aviso
   useEffect(() => {
-    async function fetchUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) console.error("❌ Error al obtener usuario:", error);
-      else if (data?.user) {
-        setUserEmail(data.user.email ?? null);
-        setUserId(data.user.id ?? null);
-        console.log("✅ Usuario logeado:", data.user.email);
-      } else {
-        console.warn("⚠️ No hay usuario logeado en Supabase");
-      }
+    if (status === "unauthenticated") {
+      alert("⚠️ Debes iniciar sesión antes de continuar.");
+      router.push("/");
     }
-    fetchUser();
-  }, [supabase]);
+  }, [status, router]);
 
-  // 🔹 Cargar servidores al montar
+  // 🔹 Cargar servidores disponibles
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -57,16 +48,21 @@ export default function CreateServerContent() {
     ]);
   }, []);
 
+  // 🔹 GPUs disponibles (Salad)
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
     { id: "3", name: "NVIDIA RTX 3080", vram: "10 GB", architecture: "Ampere", price: 70 },
     { id: "4", name: "NVIDIA RTX 3090", vram: "24 GB", architecture: "Ampere", price: 90 },
+    { id: "5", name: "NVIDIA RTX 4070", vram: "12 GB", architecture: "Ada Lovelace", price: 80 },
+    { id: "6", name: "NVIDIA RTX 4080", vram: "16 GB", architecture: "Ada Lovelace", price: 100 },
+    { id: "7", name: "NVIDIA RTX 4090", vram: "24 GB", architecture: "Ada Lovelace", price: 130 },
+    { id: "8", name: "NVIDIA A100", vram: "80 GB", architecture: "Ampere", price: 200 },
+    { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
   const handleSelectServer = (id: string) =>
     setSelectedServer((prev) => (prev === id ? null : id));
-
   const handleSelectGPU = (id: string) =>
     setSelectedGPU((prev) => (prev === id ? null : id));
 
@@ -74,22 +70,21 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Redirige a /processing con todos los parámetros
+  // 🔹 Pasar datos al paso de procesamiento
   const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
       return;
     }
 
-    // Si no hay correo o userId, prevenir el envío
-    if (!userEmail || !userId) {
+    if (!userEmail) {
       alert("⚠️ No se detectó un usuario autenticado. Inicia sesión antes de continuar.");
       return;
     }
 
+    // Crear parámetros para pasar al siguiente paso
     const params = new URLSearchParams({
-      userId,
-      userEmail,
+      userEmail, // ✅ correo real del usuario
       serverType: selectedServerObj?.title || "",
       gpuType: selectedGPUObj?.name || "",
       osImage: "ubuntu-22.04",
@@ -173,6 +168,7 @@ export default function CreateServerContent() {
         })}
       </div>
 
+      {/* 🔹 Footer con total y botón continuar */}
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
         <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
