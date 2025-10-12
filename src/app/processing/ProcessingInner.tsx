@@ -12,7 +12,8 @@ export default function ProcessingInner() {
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
-  const userId = searchParams.get("userId") || "usuario-actual-id";
+  const userId = searchParams.get("userId") || "usuario-actual-id"; 
+  const userEmail = searchParams.get("userEmail") || "usuario@ejemplo.com";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
@@ -23,7 +24,7 @@ export default function ProcessingInner() {
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, serverType, gpuType, osImage }),
+          body: JSON.stringify({ userId, userEmail, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
@@ -41,7 +42,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, []);
+  }, [router, userId, userEmail, serverType, gpuType, osImage]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
