@@ -8,8 +8,8 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
       {/* 🔝 Header fijo arriba */}
       <Header />
 
-      {/* 🧩 Contenido principal centrado (sin el texto GPU SaaS) */}
-      <main className="flex flex-col items-center justify-center bg-gray-950 min-h-screen pt-20">
+      {/* 🧩 Contenido principal sin duplicar fondo ni header */}
+      <main className="flex flex-col items-center justify-center min-h-screen bg-gray-950">
         {children}
       </main>
     </SessionProvider>
