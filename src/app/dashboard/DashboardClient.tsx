@@ -11,7 +11,7 @@ export default function DashboardClient() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/dashboard/command-center"); // Redirige al Command Center
-    }, 1000); // 1 segundo
+    }, 800); // 0.8 segundos
 
     return () => clearTimeout(timer);
   }, [router]);
@@ -21,7 +21,7 @@ export default function DashboardClient() {
       {/* Contenido central */}
       <div className="flex flex-col items-center justify-center text-3xl bg-gray-900 p-12 rounded-xl shadow-lg">
         <div className="text-xl font-bold text-blue-400 mb-4">AllyRogue</div>
-        <div>🚀 Dashboard funcionando correctamente.</div>
+        <div>Dashboard funcionando correctamente.</div>
       </div>
     </div>
   );
