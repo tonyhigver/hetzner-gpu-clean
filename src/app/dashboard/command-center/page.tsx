@@ -21,7 +21,7 @@ export default function CommandCenter() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] p-6 flex flex-col gap-8">
+    <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] p-6 pt-24 flex flex-col gap-8">
       {/* Resumen del sistema */}
       <section className="bg-[#1E1F26] p-6 rounded-2xl border border-[#00C896] shadow-lg">
         <h2 className="text-2xl font-bold text-[#00C896] mb-4">Resumen del sistema</h2>
