@@ -7,13 +7,13 @@ export default function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  // 🔹 Detectamos si estamos en el Dashboard
+  // 🔹 Detectar si estamos en /dashboard
   const isDashboard = pathname?.startsWith("/dashboard");
 
-  // 🔸 Si estamos en el Dashboard, mostrar recuadro flotante
+  // ✅ Si estamos en el Dashboard → mostrar solo el recuadro flotante arriba a la derecha
   if (isDashboard) {
     return (
-      <div className="fixed top-6 right-6 z-50 bg-gray-900/95 border border-gray-700 rounded-2xl p-3 shadow-lg flex items-center gap-3">
+      <div className="fixed top-6 right-6 z-50 bg-gray-900/90 backdrop-blur-md border border-gray-700 rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3">
         {session?.user?.image && (
           <Image
             src={session.user.image}
@@ -33,7 +33,7 @@ export default function Header() {
     );
   }
 
-  // 🔸 Para el resto de páginas, mantener el header tradicional
+  // 🔸 En el resto de páginas → header tradicional
   return (
     <header className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50 h-24">
       <div className="max-w-6xl mx-auto px-12 h-full flex items-center justify-end pt-2">
