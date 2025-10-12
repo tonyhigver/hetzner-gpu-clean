@@ -51,7 +51,7 @@ export default function Header() {
         {/* 🔹 Barra superior de navegación */}
         <nav className="fixed top-0 left-0 w-full bg-[#0B0C10] border-b border-[#1E1F26] text-[#E6E6E6] flex overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-[#00C896]/60 scrollbar-track-transparent z-40">
           <div className="flex items-center space-x-6 px-6 py-3 min-w-max">
-            {menuItems.map((item, index) => {
+            {menuItems.map((item) => {
               const isActive = item === "Command Center"; // activo por defecto
               return (
                 <button
@@ -64,6 +64,7 @@ export default function Header() {
                   onClick={() => {
                     // Redirigir según opción seleccionada
                     if (item === "Command Center") router.push("/dashboard/command-center");
+                    else if (item === "SERVERS") router.push("/dashboard/servers");
                     else router.push(`/dashboard/${item.toLowerCase().replace(/\s/g, "-")}`);
                   }}
                 >
