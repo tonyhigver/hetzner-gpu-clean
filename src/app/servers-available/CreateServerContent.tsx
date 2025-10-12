@@ -23,14 +23,14 @@ interface GPU {
 
 export default function CreateServerContent() {
   const router = useRouter();
-  const { data: session, status } = useSession(); // 🔹 obtenemos sesión activa
-  const userEmail = session?.user?.email || null; // 🔸 correo real del usuario (Google)
+  const { data: session, status } = useSession();
+  const userEmail = session?.user?.email || null; // correo real del usuario
 
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
-  // 🧠 Si el usuario no está logueado, mostrar aviso
+  // 🔹 Verificar autenticación
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -38,7 +38,7 @@ export default function CreateServerContent() {
     }
   }, [status, router]);
 
-  // 🔹 Cargar servidores disponibles
+  // 🔹 Cargar servidores
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -48,7 +48,6 @@ export default function CreateServerContent() {
     ]);
   }, []);
 
-  // 🔹 GPUs disponibles (Salad)
   const saladGPUs: GPU[] = [
     { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
     { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
@@ -63,6 +62,7 @@ export default function CreateServerContent() {
 
   const handleSelectServer = (id: string) =>
     setSelectedServer((prev) => (prev === id ? null : id));
+
   const handleSelectGPU = (id: string) =>
     setSelectedGPU((prev) => (prev === id ? null : id));
 
@@ -82,7 +82,6 @@ export default function CreateServerContent() {
       return;
     }
 
-    // Crear parámetros para pasar al siguiente paso
     const params = new URLSearchParams({
       userEmail, // ✅ correo real del usuario
       serverType: selectedServerObj?.title || "",
@@ -147,16 +146,10 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3
-                      className={`text-xl font-semibold ${
-                        selectedGPU === gpu.id ? "text-blue-300" : ""
-                      }`}
-                    >
+                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
+                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 ) : (
@@ -168,13 +161,10 @@ export default function CreateServerContent() {
         })}
       </div>
 
-      {/* 🔹 Footer con total y botón continuar */}
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
         <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
-          {totalCost > 0
-            ? `💰 Total: ${totalCost} €/mes`
-            : "Selecciona un servidor y una GPU para ver el total"}
+          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
         </div>
         <div className="flex justify-end">
           <button
