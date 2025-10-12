@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface Server {
   id: string;
@@ -22,12 +23,14 @@ interface GPU {
 
 export default function CreateServerContent() {
   const router = useRouter();
+  const { data: session } = useSession(); // 🔹 obtiene el usuario logeado (Google)
+  const userEmail = session?.user?.email || "usuario@desconocido.com";
 
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
-  // 🔹 Cargar servidores al montar
+  // 🔹 Cargar opciones de servidores
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -49,17 +52,14 @@ export default function CreateServerContent() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) =>
-    setSelectedServer((prev) => (prev === id ? null : id));
-
-  const handleSelectGPU = (id: string) =>
-    setSelectedGPU((prev) => (prev === id ? null : id));
+  const handleSelectServer = (id: string) => setSelectedServer((prev) => (prev === id ? null : id));
+  const handleSelectGPU = (id: string) => setSelectedGPU((prev) => (prev === id ? null : id));
 
   const selectedServerObj = servers.find((s) => s.id === selectedServer);
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Redirige a /processing con todos los parámetros
+  // 🔹 Enviar selección al paso de procesamiento
   const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -67,7 +67,7 @@ export default function CreateServerContent() {
     }
 
     const params = new URLSearchParams({
-      userId: "usuario-actual-id",
+      userEmail,
       serverType: selectedServerObj?.title || "",
       gpuType: selectedGPUObj?.name || "",
       osImage: "ubuntu-22.04",

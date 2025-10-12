@@ -2,29 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ProcessingInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
 
-  const [status, setStatus] = useState<"loading" | "error">("loading");
-  const [message, setMessage] = useState("Creando tu servidor...");
-
-  const userId = searchParams.get("userId") || "usuario-actual-id"; 
-  const userEmail = searchParams.get("userEmail") || "usuario@ejemplo.com";
+  const userEmail = session?.user?.email || searchParams.get("userEmail") || "usuario@desconocido.com";
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
 
+  const [status, setStatus] = useState<"loading" | "error">("loading");
+  const [message, setMessage] = useState("Creando tu servidor...");
+
   useEffect(() => {
     async function createServer() {
       try {
+        console.log("📡 Enviando solicitud al backend con:", { userEmail, serverType, gpuType, osImage });
+
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, userEmail, serverType, gpuType, osImage }),
+          body: JSON.stringify({ userEmail, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
@@ -33,16 +36,17 @@ export default function ProcessingInner() {
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
           setMessage("Servidor creado correctamente. Redirigiendo...");
-          setTimeout(() => router.push(`/dashboard?serverId=${serverId}`), 1200);
+          setTimeout(() => router.push(`/dashboard?serverId=${serverId}`), 1500);
         } else throw new Error("No se recibió un ID de servidor válido");
       } catch (err: any) {
+        console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
         setMessage(err.message || "Error desconocido al crear el servidor");
       }
     }
 
     createServer();
-  }, [router, userId, userEmail, serverType, gpuType, osImage]);
+  }, [router, userEmail, serverType, gpuType, osImage]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
