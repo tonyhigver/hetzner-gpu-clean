@@ -10,19 +10,33 @@ export default function Header() {
   // 🔹 Detectamos si estamos en el Dashboard
   const isDashboard = pathname?.startsWith("/dashboard");
 
+  // 🔸 Si estamos en el Dashboard, mostrar recuadro flotante
+  if (isDashboard) {
+    return (
+      <div className="fixed top-6 right-6 z-50 bg-gray-900/95 border border-gray-700 rounded-2xl p-3 shadow-lg flex items-center gap-3">
+        {session?.user?.image && (
+          <Image
+            src={session.user.image}
+            alt="Perfil"
+            width={40}
+            height={40}
+            className="rounded-full border border-gray-600"
+          />
+        )}
+        <button
+          onClick={() => signOut()}
+          className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition text-sm"
+        >
+          Salir
+        </button>
+      </div>
+    );
+  }
+
+  // 🔸 Para el resto de páginas, mantener el header tradicional
   return (
-    <header
-      className={`fixed top-0 left-0 w-full bg-black text-white shadow-md z-50 ${
-        isDashboard ? "h-14" : "h-24"
-      }`}
-    >
-      <div
-        className={`max-w-6xl mx-auto ${
-          isDashboard ? "px-6" : "px-12"
-        } h-full flex items-center justify-end ${
-          isDashboard ? "" : "pt-2"
-        }`}
-      >
+    <header className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50 h-24">
+      <div className="max-w-6xl mx-auto px-12 h-full flex items-center justify-end pt-2">
         <div className="flex items-center gap-4">
           {!session ? (
             <button
@@ -37,24 +51,15 @@ export default function Header() {
                 <Image
                   src={session.user.image}
                   alt="Perfil"
-                  width={isDashboard ? 36 : 40}
-                  height={isDashboard ? 36 : 40}
+                  width={40}
+                  height={40}
                   className="rounded-full border border-gray-500"
                 />
               )}
-
-              {/* 🔹 Si NO estamos en el Dashboard, mostrar Gmail */}
-              {!isDashboard && (
-                <span className="text-sm text-gray-200">{session.user?.email}</span>
-              )}
-
+              <span className="text-sm text-gray-200">{session.user?.email}</span>
               <button
                 onClick={() => signOut()}
-                className={`${
-                  isDashboard
-                    ? "bg-red-600 text-white px-3 py-1 text-sm"
-                    : "bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition text-sm"
-                } rounded-md hover:bg-red-700 transition`}
+                className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition text-sm"
               >
                 Salir
               </button>
