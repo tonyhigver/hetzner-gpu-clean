@@ -16,31 +16,10 @@ export default function DashboardClient() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    // Aquí puedes agregar lógica de logout si es necesario
-    console.log("Salir");
-  };
-
   return (
-    <div className="h-screen w-screen bg-gray-950 text-white flex flex-col">
-      {/* Header superior */}
-      <div className="w-full flex justify-end items-center p-4 gap-4 border-b border-gray-800">
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white font-semibold"
-        >
-          Salir
-        </button>
-        <img
-          src="/profile.jpg" // Reemplaza con la ruta de la imagen de perfil
-          alt="Foto de perfil"
-          className="w-10 h-10 rounded-full"
-        />
-      </div>
-
+    <div className="h-screen w-screen bg-gray-950 text-white flex flex-col items-center justify-center">
       {/* Contenido central */}
-      <div className="flex flex-col items-center justify-center flex-1 text-3xl">
+      <div className="flex flex-col items-center justify-center text-3xl bg-gray-900 p-12 rounded-xl shadow-lg">
         <div className="text-xl font-bold text-blue-400 mb-4">AllyRogue</div>
         <div>🚀 Dashboard funcionando correctamente.</div>
         {showServers && (
