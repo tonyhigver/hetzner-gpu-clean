@@ -11,7 +11,13 @@ export default function ProcessingInner() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
 
-  const userEmail = session?.user?.email || searchParams.get("userEmail") || "usuario@desconocido.com";
+  // 🔹 Intentar obtener el correo del usuario logeado (NextAuth)
+  const userEmail =
+    session?.user?.email ||
+    searchParams.get("userEmail") ||
+    "usuario@desconocido.com";
+
+  // 🔹 Parámetros pasados desde CreateServerContent
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
@@ -22,22 +28,40 @@ export default function ProcessingInner() {
   useEffect(() => {
     async function createServer() {
       try {
-        console.log("📡 Enviando solicitud al backend con:", { userEmail, serverType, gpuType, osImage });
+        // 🔍 Log de depuración en el navegador
+        console.log("📡 Enviando solicitud al backend con:", {
+          userEmail,
+          serverType,
+          gpuType,
+          osImage,
+        });
 
-        const res = await fetch("/api/create-user-server", {
+        // ⚙️ Importante: apunta directamente al backend Node.js
+        const res = await fetch("http://localhost:4000/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userEmail, serverType, gpuType, osImage }),
+          body: JSON.stringify({
+            userEmail, // ✅ el correo del usuario
+            serverType,
+            gpuType,
+            osImage,
+          }),
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Error al crear el servidor");
+
+        if (!res.ok) {
+          throw new Error(data.error || "Error al crear el servidor");
+        }
 
         const serverId = data.hetznerId || data.serverId || data.id;
         if (serverId) {
+          console.log(`✅ Servidor creado correctamente: ${serverId}`);
           setMessage("Servidor creado correctamente. Redirigiendo...");
           setTimeout(() => router.push(`/dashboard?serverId=${serverId}`), 1500);
-        } else throw new Error("No se recibió un ID de servidor válido");
+        } else {
+          throw new Error("No se recibió un ID de servidor válido");
+        }
       } catch (err: any) {
         console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
@@ -61,7 +85,11 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
           <p className="text-red-400">{message}</p>
-          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="mt-4"
+          >
             Reintentar
           </Button>
         </div>
