@@ -2,8 +2,9 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/lib/prisma";
+import type { AuthOptions } from "next-auth";
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
@@ -18,12 +19,13 @@ export const authOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
+  // ✅ Usamos base de datos para almacenar las sesiones
   session: {
-    strategy: "database", // ✅ asegura que use PrismaAdapter correctamente
+    strategy: "database",
   },
 
   callbacks: {
-    // ✅ Incluye siempre todos los campos necesarios en la sesión
+    // ✅ Incluye los campos importantes del usuario en la sesión
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
@@ -34,7 +36,7 @@ export const authOptions = {
       return session;
     },
 
-    // ✅ Marca al admin automáticamente
+    // ✅ Marca automáticamente al administrador si el correo coincide
     async signIn({ user }) {
       if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
         try {
@@ -43,14 +45,14 @@ export const authOptions = {
             data: { isAdmin: true, hasPaid: true },
           });
         } catch (err) {
-          console.error("Error al actualizar admin:", err);
+          console.error("❌ Error al actualizar admin:", err);
         }
       }
       return true;
     },
 
+    // ✅ Control de redirecciones seguras
     async redirect({ url, baseUrl }) {
-      // ✅ Evita redirecciones externas inseguras
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       else if (url.startsWith(baseUrl)) return url;
       return baseUrl;
