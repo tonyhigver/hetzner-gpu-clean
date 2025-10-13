@@ -10,10 +10,9 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Solo usamos el email de la sesión
-  const userEmail = session?.user?.email || null;
+  // 🔹 Usamos solo userId de la sesión
+  const userId = session?.user?.id || null;
 
-  // 🔹 Otros parámetros pasados por query params (serverType, gpuType, osImage)
   const searchParams = new URLSearchParams(window.location.search);
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
@@ -23,10 +22,13 @@ export default function ProcessingInner() {
   const [message, setMessage] = useState("Creando tu servidor...");
 
   useEffect(() => {
-    // 🔹 Esperamos a que la sesión esté cargada
+    console.log("🔍 sessionStatus:", sessionStatus);
+    console.log("🔍 session object:", session);
+    console.log("🔍 userId:", userId);
+
     if (sessionStatus === "loading") return;
 
-    if (!userEmail) {
+    if (!userId) {
       setStatus("unauthenticated");
       setMessage("Debes iniciar sesión con Google para continuar.");
       return;
@@ -35,17 +37,16 @@ export default function ProcessingInner() {
     async function createServer() {
       try {
         console.log("📡 Enviando solicitud al backend con:", {
-          userEmail,
+          userId,
           serverType,
           gpuType,
           osImage,
         });
 
-        // ⚠️ Cambia la URL a tu endpoint real si no estás en localhost
-        const res = await fetch("http://localhost:4000/api/create-user-server", {
+        const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userEmail, serverType, gpuType, osImage }),
+          body: JSON.stringify({ userId, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
@@ -68,7 +69,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, [userEmail, serverType, gpuType, osImage, router, sessionStatus]);
+  }, [userId, serverType, gpuType, osImage, router, sessionStatus]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
