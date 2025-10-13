@@ -67,17 +67,34 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  const handleContinue = () => {
+  // 🔹 NUEVO: enviar POST directo al backend con userEmail
+  const handleContinue = async () => {
     if (!selectedServer) return alert("Por favor selecciona un servidor.");
     if (!userEmail) return alert("⚠️ Espera a que la sesión cargue correctamente o inicia sesión.");
 
-    const params = new URLSearchParams();
-    params.set("userEmail", userEmail);
-    params.set("serverType", selectedServerObj?.title || "");
-    params.set("gpuType", selectedGPUObj?.name || "");
-    params.set("osImage", "ubuntu-22.04");
+    const payload = {
+      userEmail,
+      serverType: selectedServerObj?.title || "",
+      gpuType: selectedGPUObj?.name || "",
+      osImage: "ubuntu-22.04",
+    };
 
-    router.push(`/processing?${params.toString()}`);
+    try {
+      const res = await fetch("/api/create-user-server", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al crear el servidor");
+
+      const serverId = data.hetznerId || data.serverId || data.id;
+      if (serverId) router.push(`/dashboard?serverId=${serverId}`);
+    } catch (err: any) {
+      console.error("❌ Error al crear el servidor:", err);
+      alert(err.message || "Error desconocido al crear el servidor");
+    }
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
