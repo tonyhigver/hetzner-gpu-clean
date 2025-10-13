@@ -68,25 +68,16 @@ export default function CreateServerContent() {
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
   const handleContinue = () => {
-    if (!selectedServer) {
-      alert("Por favor selecciona un servidor antes de continuar.");
-      return;
-    }
+    if (!selectedServer) return alert("Por favor selecciona un servidor.");
+    if (!userEmail) return alert("⚠️ Espera a que la sesión cargue correctamente o inicia sesión.");
 
-    if (status !== "authenticated" || !userEmail) {
-      alert("⚠️ Espera a que la sesión se cargue o inicia sesión antes de continuar.");
-      return;
-    }
+    const params = new URLSearchParams();
+    params.set("userEmail", userEmail);
+    params.set("serverType", selectedServerObj?.title || "");
+    params.set("gpuType", selectedGPUObj?.name || "");
+    params.set("osImage", "ubuntu-22.04");
 
-    // 🔹 Pasamos el email por query params
-    const params = new URLSearchParams({
-      userEmail,
-      serverType: selectedServerObj?.title || "",
-      gpuType: selectedGPUObj?.name || "",
-      osImage: "ubuntu-22.04",
-    }).toString();
-
-    router.push(`/processing?${params}`);
+    router.push(`/processing?${params.toString()}`);
   };
 
   const maxRows = Math.max(servers.length, saladGPUs.length);
@@ -162,9 +153,9 @@ export default function CreateServerContent() {
         <div className="flex justify-end">
           <button
             onClick={handleContinue}
-            disabled={!selectedServer || status !== "authenticated"}
+            disabled={!selectedServer || !userEmail}
             className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
-              selectedServer && status === "authenticated"
+              selectedServer && userEmail
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}

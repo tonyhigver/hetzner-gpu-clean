@@ -11,8 +11,9 @@ export default function ProcessingInner() {
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Intentamos obtener el email primero de query params, luego de la sesión
-  const userEmail = searchParams.get("userEmail") || session?.user?.email || null;
+  // 🔹 Email válido: primero query param, ignorando "null", luego sesión
+  const paramEmail = searchParams.get("userEmail");
+  const userEmail = paramEmail && paramEmail !== "null" ? paramEmail : session?.user?.email || null;
 
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
