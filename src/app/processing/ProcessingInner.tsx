@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ProcessingInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Email válido: primero query param, ignorando "null", luego sesión
-  const paramEmail = searchParams.get("userEmail");
-  const userEmail = paramEmail && paramEmail !== "null" ? paramEmail : session?.user?.email || null;
+  // 🔹 Usar siempre el email de la sesión
+  const userEmail = session?.user?.email || null;
 
+  // 🔹 Otros parámetros pasados por query params (serverType, gpuType, osImage)
+  const searchParams = new URLSearchParams(window.location.search);
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
@@ -23,7 +23,7 @@ export default function ProcessingInner() {
   const [message, setMessage] = useState("Creando tu servidor...");
 
   useEffect(() => {
-    if (sessionStatus === "loading") return;
+    if (sessionStatus === "loading") return; // esperar a que la sesión cargue
 
     if (!userEmail) {
       setStatus("unauthenticated");
@@ -33,7 +33,12 @@ export default function ProcessingInner() {
 
     async function createServer() {
       try {
-        console.log("📡 Enviando solicitud al backend con:", { userEmail, serverType, gpuType, osImage });
+        console.log("📡 Enviando solicitud al backend con:", {
+          userEmail,
+          serverType,
+          gpuType,
+          osImage,
+        });
 
         const res = await fetch("http://localhost:4000/api/create-user-server", {
           method: "POST",
@@ -76,7 +81,11 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">No estás autenticado</h1>
           <p className="text-red-400">{message}</p>
-          <Button onClick={() => router.push("/")} variant="outline" className="mt-4">
+          <Button
+            onClick={() => router.push("/")}
+            variant="outline"
+            className="mt-4"
+          >
             Iniciar sesión
           </Button>
         </div>
@@ -85,7 +94,11 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
           <p className="text-red-400">{message}</p>
-          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="mt-4"
+          >
             Reintentar
           </Button>
         </div>
