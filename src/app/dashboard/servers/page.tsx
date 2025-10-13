@@ -19,9 +19,12 @@ export default function ServersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("[ServersPage] useEffect ejecutado, status:", status, "session:", session);
+
     if (status === "loading") return;
 
     if (!session?.user?.email) {
+      console.log("[ServersPage] No hay email de usuario, no se pueden cargar servidores");
       setServers([]);
       setLoading(false);
       return;
@@ -29,14 +32,25 @@ export default function ServersPage() {
 
     const fetchServers = async () => {
       try {
+        console.log("[ServersPage] Fetching servidores para:", session.user.email);
+
         const res = await fetch(
           `/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`
         );
-        if (!res.ok) throw new Error("Error al obtener servidores");
+
+        console.log("[ServersPage] Response status:", res.status);
+
+        if (!res.ok) {
+          console.error("[ServersPage] Error en fetch:", res.status, await res.text());
+          throw new Error("Error al obtener servidores");
+        }
+
         const data = await res.json();
+        console.log("[ServersPage] Datos recibidos:", data);
+
         setServers(data.servers || []);
       } catch (err) {
-        console.error("Error al cargar servidores:", err);
+        console.error("[ServersPage] Error al cargar servidores:", err);
       } finally {
         setLoading(false);
       }
