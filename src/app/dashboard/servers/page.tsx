@@ -29,7 +29,9 @@ export default function ServersPage() {
 
     const fetchServers = async () => {
       try {
-        const res = await fetch(`/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`);
+        const res = await fetch(
+          `/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`
+        );
         if (!res.ok) throw new Error("Error al obtener servidores");
         const data = await res.json();
         setServers(data.servers || []);

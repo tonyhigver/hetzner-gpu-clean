@@ -1,11 +1,12 @@
-export const dynamic = "force-dynamic"; // ⚡ Indica que la ruta siempre es dinámica
+export const dynamic = "force-dynamic"; // ⚡ Siempre dinámico
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+// Cliente Supabase con Service Role Key
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // Service Role Key para poder leer cualquier user_servers
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function GET(req: Request) {
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
-    // 🔹 Obtener servidores asociados a este email
+    // 🔹 Obtener servidores asociados al email
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
@@ -46,7 +47,7 @@ export async function GET(req: Request) {
             name: server.name,
             type: srv.server_type || "Desconocido",
             gpu: srv.gpu_type || "N/A",
-            ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
+            ip: server.ip || server.public_net?.ipv4?.ip || "No asignada",
             status: server.status,
           };
         } catch {
