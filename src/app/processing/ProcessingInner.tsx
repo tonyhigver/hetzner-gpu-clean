@@ -15,17 +15,16 @@ export default function ProcessingInner() {
 
   // 🔹 Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const queryEmail = searchParams?.get("userEmail") || null;
   const serverType = searchParams?.get("serverType") || "CX32";
   const gpuType = searchParams?.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams?.get("osImage") || "ubuntu-22.04";
 
   useEffect(() => {
-    // 🔹 Esperamos a que la sesión esté lista
     if (sessionStatus === "loading") return;
 
-    const userEmail = session?.user?.email;
-    console.log("🔍 sessionStatus:", sessionStatus);
-    console.log("🔍 session object:", session);
+    // 🔹 Usa primero el email de la sesión, si no existe usa query string
+    const userEmail = session?.user?.email || queryEmail;
     console.log("🔍 userEmail:", userEmail);
 
     if (!userEmail) {
@@ -69,7 +68,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, [session, sessionStatus, serverType, gpuType, osImage, router]);
+  }, [session, sessionStatus, queryEmail, serverType, gpuType, osImage, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
