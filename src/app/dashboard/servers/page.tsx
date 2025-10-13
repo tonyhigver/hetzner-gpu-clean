@@ -21,23 +21,68 @@ export default function ServersPage() {
   useEffect(() => {
     const fetchServers = async () => {
       try {
-        // 🔹 Obtener user_id del usuario autenticado
+        // 🔹 Obtener el usuario autenticado
         const {
           data: { user },
         } = await supabase.auth.getUser();
 
-        if (!user) {
+        if (!user || !user.email) {
           setServers([]);
           setLoading(false);
           return;
         }
 
-        // 🔹 Llamar a nuestra API pasando el user_id
-        const res = await fetch(`/api/get-user-servers?user_id=${user.id}`);
-        if (!res.ok) throw new Error("Error al obtener servidores");
+        // 🔹 Obtener los servidores del usuario desde Supabase usando email
+        const { data: userServers, error } = await supabase
+          .from("user_servers")
+          .select("*")
+          .eq("user_id", user.email);
 
-        const data = await res.json();
-        setServers(data.servers || []);
+        if (error) throw error;
+        if (!userServers || userServers.length === 0) {
+          setServers([]);
+          setLoading(false);
+          return;
+        }
+
+        // 🔹 Consultar Hetzner por cada hetzner_server_id para obtener nombre, IP y estado
+        const hetznerServers = await Promise.all(
+          userServers.map(async (srv) => {
+            try {
+              const res = await fetch(
+                `https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
+                  },
+                }
+              );
+
+              if (!res.ok) throw new Error("No encontrado en Hetzner");
+              const { server } = await res.json();
+
+              return {
+                id: srv.hetzner_server_id,
+                name: server.name,
+                type: srv.server_type || server.server_type?.name || "Desconocido",
+                gpu: srv.gpu_type || "N/A",
+                ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
+                status: server.status,
+              };
+            } catch {
+              return {
+                id: srv.hetzner_server_id,
+                name: "Desconocido",
+                type: srv.server_type || "Desconocido",
+                gpu: srv.gpu_type || "N/A",
+                ip: srv.ip || "No asignada",
+                status: "desconectado",
+              };
+            }
+          })
+        );
+
+        setServers(hetznerServers);
       } catch (err) {
         console.error("Error al cargar servidores:", err);
       } finally {
@@ -48,12 +93,13 @@ export default function ServersPage() {
     fetchServers();
   }, [supabase]);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="text-center text-gray-400 mt-32">
         Cargando servidores...
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] pt-28 p-6 flex flex-col gap-6">
