@@ -10,14 +10,13 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated" | "ready">("loading");
+  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated" | "ready" | "countdown">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
   const [serverId, setServerId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(10);
-
   const countdownRef = useRef<number | null>(null);
 
-  // 🔹 Parámetros de la URL
+  // Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const serverType = searchParams?.get("serverType") || "CX32";
   const gpuType = searchParams?.get("gpuType") || "NVIDIA RTX 3060";
@@ -50,20 +49,7 @@ export default function ProcessingInner() {
 
         setServerId(newServerId);
         setStatus("ready");
-        setMessage("Servidor creado correctamente. Redirigiendo en:");
-        setCountdown(10);
-
-        // 🔹 Inicia contador de 10 segundos
-        countdownRef.current = window.setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              if (countdownRef.current) window.clearInterval(countdownRef.current);
-              router.push(`/dashboard?serverId=${newServerId}`);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
+        setMessage("Servidor listo! Haz clic en 'Aceptar y continuar' para iniciar el contador.");
 
       } catch (err: any) {
         console.error("❌ Error al crear el servidor:", err);
@@ -79,21 +65,48 @@ export default function ProcessingInner() {
     };
   }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
+  const startCountdown = () => {
+    if (!serverId) return;
+    setStatus("countdown");
+    setCountdown(10);
+    countdownRef.current = window.setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          if (countdownRef.current) window.clearInterval(countdownRef.current);
+          router.push(`/dashboard?serverId=${serverId}`);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
-      {status === "loading" ? (
+      {status === "loading" && (
         <>
           <Loader2 className="w-12 h-12 animate-spin text-blue-400 mb-4" />
           <h1 className="text-3xl font-bold mb-2">Procesando tu servidor...</h1>
           <p className="text-gray-400">{message}</p>
         </>
-      ) : status === "ready" ? (
+      )}
+
+      {status === "ready" && (
         <>
           <h1 className="text-3xl font-bold mb-2">Servidor listo!</h1>
-          <p className="text-gray-400">{message}</p>
-          <p className="text-gray-400 text-xl font-mono mt-2">{countdown}s</p>
+          <p className="text-gray-400 mb-4">{message}</p>
+          <Button onClick={startCountdown}>Aceptar y continuar</Button>
         </>
-      ) : status === "unauthenticated" ? (
+      )}
+
+      {status === "countdown" && (
+        <>
+          <h1 className="text-3xl font-bold mb-2">Redirigiendo al dashboard...</h1>
+          <p className="text-gray-400 text-xl font-mono">{countdown}s</p>
+        </>
+      )}
+
+      {status === "unauthenticated" && (
         <div className="flex flex-col items-center space-y-3">
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">No estás autenticado</h1>
@@ -102,7 +115,9 @@ export default function ProcessingInner() {
             Iniciar sesión
           </Button>
         </div>
-      ) : (
+      )}
+
+      {status === "error" && (
         <div className="flex flex-col items-center space-y-3">
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
