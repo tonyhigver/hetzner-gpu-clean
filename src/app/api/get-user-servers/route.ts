@@ -4,6 +4,11 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+// Debug: verificar que las variables de entorno están disponibles
+console.log("🔑 NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1:", process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1 ? "✅ OK" : "❌ NO EXISTE");
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -21,6 +26,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
+    // Debug: probar conexión a Supabase antes de fetch a Hetzner
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
@@ -28,7 +34,11 @@ export async function GET(req: Request) {
 
     console.log("📊 Datos de Supabase:", userServers, "Error:", error);
 
-    if (error) throw error;
+    if (error) {
+      console.error("💥 Error al consultar Supabase:", error);
+      throw error;
+    }
+
     if (!userServers || userServers.length === 0) {
       console.warn("⚠️ No se encontraron servidores para este usuario");
       return NextResponse.json({ servers: [] });
