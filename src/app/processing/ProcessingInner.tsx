@@ -10,8 +10,8 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Email de la sesión
-  const userEmail = session?.user?.email || null;
+  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
+  const [message, setMessage] = useState("Creando tu servidor...");
 
   // 🔹 Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -19,10 +19,15 @@ export default function ProcessingInner() {
   const gpuType = searchParams?.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams?.get("osImage") || "ubuntu-22.04";
 
-  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
-  const [message, setMessage] = useState("Creando tu servidor...");
-
   useEffect(() => {
+    // 🔹 Mostramos el estado de la sesión y el objeto completo
+    console.log("🔍 sessionStatus:", sessionStatus);
+    console.log("🔍 session object:", session);
+
+    // 🔹 Email del usuario desde la sesión
+    const userEmail = session?.user?.email || null;
+    console.log("🔍 userEmail:", userEmail); // ← Aquí verás el correo del usuario
+
     if (sessionStatus === "loading") return;
 
     if (!userEmail) {
@@ -66,7 +71,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, [userEmail, serverType, gpuType, osImage, router, sessionStatus]);
+  }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
