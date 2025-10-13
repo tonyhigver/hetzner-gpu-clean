@@ -10,6 +10,12 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          // ✅ Pedimos explícitamente el correo y el perfil
+          scope: "openid email profile",
+        },
+      },
     }),
   ],
 
@@ -29,15 +35,16 @@ export const authOptions = {
   },
 
   callbacks: {
-    // ✅ Almacenar datos del usuario en la sesión
+    // ✅ Incluir todos los campos relevantes en la sesión
     async session({ session, user }: any) {
       session.user.id = user.id;
-      session.user.isAdmin = user.isAdmin;
-      session.user.hasPaid = user.hasPaid;
+      session.user.email = user.email; // 👈 ahora el correo estará siempre disponible
+      session.user.isAdmin = user.isAdmin ?? false;
+      session.user.hasPaid = user.hasPaid ?? false;
       return session;
     },
 
-    // ✅ Si es el admin, se le asignan permisos
+    // ✅ Si el email coincide con el admin, se actualizan permisos
     async signIn({ user }: any) {
       if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
         await prisma.user.update({
@@ -50,10 +57,10 @@ export const authOptions = {
 
     // 🔹 Permitimos que la app decida a dónde ir después del login
     async redirect({ url, baseUrl }) {
-      // Si la URL es externa, la devolvemos tal cual
+      // Si la URL es interna
       if (url && url.startsWith(baseUrl)) return url;
 
-      // Si no, devolvemos undefined para que router.push de la app funcione
+      // Si no, devolvemos undefined para permitir redirecciones del router
       return undefined;
     },
   },

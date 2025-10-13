@@ -30,6 +30,12 @@ export default function CreateServerContent() {
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
+  // 🧩 Depuración rápida: ver qué trae NextAuth
+  useEffect(() => {
+    console.log("🟢 Session actual:", session);
+    console.log("🟡 Status:", status);
+  }, [session, status]);
+
   // 🔹 Redirigir si no está autenticado
   useEffect(() => {
     if (status === "unauthenticated") {
