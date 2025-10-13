@@ -2,60 +2,59 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/lib/prisma";
-import type { AuthOptions } from "next-auth";
 
-export const authOptions: AuthOptions = {
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: { scope: "openid email profile" },
-      },
     }),
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  // ✅ Usamos base de datos para almacenar las sesiones
-  session: {
-    strategy: "database",
+  // ✅ Evita errores "OAuth state mismatch"
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+      },
+    },
   },
 
   callbacks: {
-    // ✅ Incluye los campos importantes del usuario en la sesión
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-        session.user.email = user.email;
-        session.user.isAdmin = user.isAdmin ?? false;
-        session.user.hasPaid = user.hasPaid ?? false;
-      }
+    // ✅ Almacenar datos del usuario en la sesión
+    async session({ session, user }: any) {
+      session.user.id = user.id;
+      session.user.isAdmin = user.isAdmin;
+      session.user.hasPaid = user.hasPaid;
       return session;
     },
 
-    // ✅ Marca automáticamente al administrador si el correo coincide
-    async signIn({ user }) {
+    // ✅ Si es el admin, se le asignan permisos
+    async signIn({ user }: any) {
       if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
-        try {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { isAdmin: true, hasPaid: true },
-          });
-        } catch (err) {
-          console.error("❌ Error al actualizar admin:", err);
-        }
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isAdmin: true, hasPaid: true },
+        });
       }
       return true;
     },
 
-    // ✅ Control de redirecciones seguras
+    // 🔹 Permitimos que la app decida a dónde ir después del login
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      else if (url.startsWith(baseUrl)) return url;
-      return baseUrl;
+      // Si la URL es externa, la devolvemos tal cual
+      if (url && url.startsWith(baseUrl)) return url;
+
+      // Si no, devolvemos undefined para que router.push de la app funcione
+      return undefined;
     },
   },
 };
