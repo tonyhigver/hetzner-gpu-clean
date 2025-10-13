@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; // ⚡ Indica que la ruta siempre es dinámica
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -16,7 +18,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Falta el parámetro user_id" }, { status: 400 });
     }
 
-    // 🔹 Obtener servidores asociados a este user_id
+    // 🔹 Obtener servidores asociados a este user_id desde Supabase
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
