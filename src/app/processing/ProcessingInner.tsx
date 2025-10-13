@@ -13,9 +13,8 @@ export default function ProcessingInner() {
   const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
-  // 🔹 Parámetros de la URL
+  // 🔹 Parámetros de la URL (solo serverType, gpuType, osImage)
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-  const queryEmail = searchParams?.get("userEmail") || null;
   const serverType = searchParams?.get("serverType") || "CX32";
   const gpuType = searchParams?.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams?.get("osImage") || "ubuntu-22.04";
@@ -23,8 +22,8 @@ export default function ProcessingInner() {
   useEffect(() => {
     if (sessionStatus === "loading") return;
 
-    // 🔹 Usa primero el email de la sesión, si no existe usa query string
-    const userEmail = session?.user?.email || queryEmail;
+    // 🔹 Usamos **siempre** email desde la sesión
+    const userEmail = session?.user?.email;
     console.log("🔍 userEmail:", userEmail);
 
     if (!userEmail) {
@@ -42,6 +41,7 @@ export default function ProcessingInner() {
           osImage,
         });
 
+        // 💡 Enviamos siempre JSON con userEmail
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -68,7 +68,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, [session, sessionStatus, queryEmail, serverType, gpuType, osImage, router]);
+  }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
