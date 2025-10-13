@@ -15,6 +15,7 @@ export default function ProcessingInner() {
   const [serverId, setServerId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(10);
 
+  // 🔹 intervalRef debe ser number (navegador)
   const intervalRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -48,6 +49,7 @@ export default function ProcessingInner() {
 
         const newServerId = data.hetznerId;
         if (!newServerId) throw new Error("No se recibió un ID de servidor válido");
+
         setServerId(newServerId);
         setMessage("Servidor creado correctamente. Esperando que esté listo...");
 
@@ -58,17 +60,17 @@ export default function ProcessingInner() {
             const statusData = await statusRes.json();
 
             if (statusData.status === "running") {
-              if (intervalRef.current) clearInterval(intervalRef.current);
+              if (intervalRef.current) window.clearInterval(intervalRef.current);
 
               // 🔹 Servidor listo, iniciamos contador de 10 segundos
               setStatus("ready");
-              setMessage("Servidor listo! Redirigiendo en 10 segundos...");
+              setMessage("Servidor listo! Redirigiendo en:");
               setCountdown(10);
 
               countdownRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                   if (prev <= 1) {
-                    if (countdownRef.current) clearInterval(countdownRef.current);
+                    if (countdownRef.current) window.clearInterval(countdownRef.current);
                     router.push(`/dashboard?serverId=${newServerId}`);
                     return 0;
                   }
@@ -77,7 +79,7 @@ export default function ProcessingInner() {
               }, 1000);
 
             } else if (statusData.status === "error") {
-              if (intervalRef.current) clearInterval(intervalRef.current);
+              if (intervalRef.current) window.clearInterval(intervalRef.current);
               setStatus("error");
               setMessage("Hubo un error creando tu servidor en Hetzner.");
             } else {
@@ -97,8 +99,8 @@ export default function ProcessingInner() {
     createServer();
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      if (countdownRef.current) window.clearInterval(countdownRef.current);
     };
   }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
