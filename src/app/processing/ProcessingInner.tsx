@@ -14,7 +14,7 @@ export default function ProcessingInner() {
   const [message, setMessage] = useState("Creando tu servidor...");
   const [serverId, setServerId] = useState<string | null>(null);
 
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<number | null>(null); // 🔹 Tipo número para el navegador
 
   // 🔹 Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -49,17 +49,17 @@ export default function ProcessingInner() {
         setServerId(newServerId);
         setMessage("Servidor creado correctamente. Esperando que esté listo...");
 
-        // 🔹 Polling cada segundo
-        intervalRef.current = setInterval(async () => {
+        // 🔹 Polling cada segundo hasta que el servidor esté listo
+        intervalRef.current = window.setInterval(async () => {
           try {
             const statusRes = await fetch(`/api/get-server-status?serverId=${newServerId}`);
             const statusData = await statusRes.json();
 
             if (statusData.status === "running") {
-              clearInterval(intervalRef.current!);
+              if (intervalRef.current) clearInterval(intervalRef.current);
               router.push(`/dashboard?serverId=${newServerId}`);
             } else if (statusData.status === "error") {
-              clearInterval(intervalRef.current!);
+              if (intervalRef.current) clearInterval(intervalRef.current);
               setStatus("error");
               setMessage("Hubo un error creando tu servidor en Hetzner.");
             } else {
