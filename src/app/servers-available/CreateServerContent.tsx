@@ -30,7 +30,6 @@ export default function CreateServerContent() {
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
 
-  // 🔹 Redirigir si no está autenticado
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -38,7 +37,6 @@ export default function CreateServerContent() {
     }
   }, [status, router]);
 
-  // 🔹 Cargar servidores
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -69,7 +67,6 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Continuar solo si la sesión está lista y hay correo
   const handleContinue = () => {
     if (!selectedServer) {
       alert("Por favor selecciona un servidor antes de continuar.");
@@ -81,6 +78,7 @@ export default function CreateServerContent() {
       return;
     }
 
+    // 🔹 Pasamos el email por query params
     const params = new URLSearchParams({
       userEmail,
       serverType: selectedServerObj?.title || "",
@@ -113,7 +111,7 @@ export default function CreateServerContent() {
           return (
             <React.Fragment key={index}>
               <div>
-                {server ? (
+                {server && (
                   <button
                     onClick={() => handleSelectServer(server.id)}
                     disabled={selectedServer && selectedServer !== server.id}
@@ -127,13 +125,11 @@ export default function CreateServerContent() {
                   >
                     {server.title}
                   </button>
-                ) : (
-                  <div className="h-20" />
                 )}
               </div>
 
               <div>
-                {gpu ? (
+                {gpu && (
                   <button
                     onClick={() => handleSelectGPU(gpu.id)}
                     disabled={selectedGPU && selectedGPU !== gpu.id}
@@ -151,8 +147,6 @@ export default function CreateServerContent() {
                     <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
-                ) : (
-                  <div className="h-20" />
                 )}
               </div>
             </React.Fragment>

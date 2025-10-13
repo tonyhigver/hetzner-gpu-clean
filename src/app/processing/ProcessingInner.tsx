@@ -11,21 +11,19 @@ export default function ProcessingInner() {
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Solo usamos el email de la sesión
-  const userEmail = session?.user?.email;
+  // 🔹 Intentamos obtener el email primero de query params, luego de la sesión
+  const userEmail = searchParams.get("userEmail") || session?.user?.email || null;
 
-  // 🔹 Parámetros pasados desde CreateServerContent
   const serverType = searchParams.get("serverType") || "CX32";
   const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
   const osImage = searchParams.get("osImage") || "ubuntu-22.04";
 
-  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">(
-    "loading"
-  );
+  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
   useEffect(() => {
-    if (sessionStatus === "loading") return; // Esperar a que la sesión cargue
+    if (sessionStatus === "loading") return;
+
     if (!userEmail) {
       setStatus("unauthenticated");
       setMessage("Debes iniciar sesión con Google para continuar.");
@@ -34,22 +32,12 @@ export default function ProcessingInner() {
 
     async function createServer() {
       try {
-        console.log("📡 Enviando solicitud al backend con:", {
-          userEmail,
-          serverType,
-          gpuType,
-          osImage,
-        });
+        console.log("📡 Enviando solicitud al backend con:", { userEmail, serverType, gpuType, osImage });
 
         const res = await fetch("http://localhost:4000/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userEmail,
-            serverType,
-            gpuType,
-            osImage,
-          }),
+          body: JSON.stringify({ userEmail, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
@@ -87,11 +75,7 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">No estás autenticado</h1>
           <p className="text-red-400">{message}</p>
-          <Button
-            onClick={() => router.push("/")}
-            variant="outline"
-            className="mt-4"
-          >
+          <Button onClick={() => router.push("/")} variant="outline" className="mt-4">
             Iniciar sesión
           </Button>
         </div>
@@ -100,11 +84,7 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
           <p className="text-red-400">{message}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="outline"
-            className="mt-4"
-          >
+          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
             Reintentar
           </Button>
         </div>
