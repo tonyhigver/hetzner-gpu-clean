@@ -29,7 +29,11 @@ export default function CreateServerContent() {
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [serverId, setServerId] = useState<string | null>(null);
 
+  // Si no hay sesión, redirige al login
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -37,6 +41,7 @@ export default function CreateServerContent() {
     }
   }, [status, router]);
 
+  // Cargar lista de servidores
   useEffect(() => {
     setServers([
       { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
@@ -67,11 +72,12 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 NUEVO: enviar POST directo al backend con userEmail
+  // 🔹 Crear servidor y mostrar pantalla de cuenta atrás
   const handleContinue = async () => {
     if (!selectedServer) return alert("Por favor selecciona un servidor.");
     if (!userEmail) return alert("⚠️ Espera a que la sesión cargue correctamente o inicia sesión.");
 
+    setLoading(true);
     const payload = {
       userEmail,
       serverType: selectedServerObj?.title || "",
@@ -89,14 +95,50 @@ export default function CreateServerContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear el servidor");
 
-      const serverId = data.hetznerId || data.serverId || data.id;
-      if (serverId) router.push(`/dashboard?serverId=${serverId}`);
+      const newServerId = data.hetznerId || data.serverId || data.id;
+      setServerId(newServerId);
     } catch (err: any) {
       console.error("❌ Error al crear el servidor:", err);
       alert(err.message || "Error desconocido al crear el servidor");
+      setLoading(false);
     }
   };
 
+  // ⏱️ Cuenta regresiva y redirección al dashboard
+  useEffect(() => {
+    if (loading && serverId) {
+      const interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            router.push(`/dashboard?serverId=${serverId}`);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [loading, serverId, router]);
+
+  // Pantalla de carga con contador
+  if (loading && serverId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center">
+        <h1 className="text-4xl font-bold text-blue-400 mb-4">Creando tu servidor...</h1>
+        <p className="text-2xl mb-6">Tu servidor estará listo en {countdown} segundos ⏳</p>
+        <div className="w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-1000"
+            style={{ width: `${((10 - countdown) / 10) * 100}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla principal
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
@@ -152,7 +194,9 @@ export default function CreateServerContent() {
                     <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                    <p className="text-md text-gray-300">
+                      {gpu.vram} • {gpu.architecture}
+                    </p>
                     <p className="text-md text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 )}
@@ -165,7 +209,9 @@ export default function CreateServerContent() {
       <div className="mt-24 mb-24 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
         <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
-          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
+          {totalCost > 0
+            ? `💰 Total: ${totalCost} €/mes`
+            : "Selecciona un servidor y una GPU para ver el total"}
         </div>
         <div className="flex justify-end">
           <button
