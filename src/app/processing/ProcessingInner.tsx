@@ -10,7 +10,7 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Usar siempre el email de la sesión
+  // 🔹 Solo usamos el email de la sesión
   const userEmail = session?.user?.email || null;
 
   // 🔹 Otros parámetros pasados por query params (serverType, gpuType, osImage)
@@ -23,7 +23,8 @@ export default function ProcessingInner() {
   const [message, setMessage] = useState("Creando tu servidor...");
 
   useEffect(() => {
-    if (sessionStatus === "loading") return; // esperar a que la sesión cargue
+    // 🔹 Esperamos a que la sesión esté cargada
+    if (sessionStatus === "loading") return;
 
     if (!userEmail) {
       setStatus("unauthenticated");
@@ -40,6 +41,7 @@ export default function ProcessingInner() {
           osImage,
         });
 
+        // ⚠️ Cambia la URL a tu endpoint real si no estás en localhost
         const res = await fetch("http://localhost:4000/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -81,11 +83,7 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">No estás autenticado</h1>
           <p className="text-red-400">{message}</p>
-          <Button
-            onClick={() => router.push("/")}
-            variant="outline"
-            className="mt-4"
-          >
+          <Button onClick={() => router.push("/")} variant="outline" className="mt-4">
             Iniciar sesión
           </Button>
         </div>
@@ -94,11 +92,7 @@ export default function ProcessingInner() {
           <XCircle className="w-12 h-12 text-red-500" />
           <h1 className="text-3xl font-bold">Error al crear el servidor</h1>
           <p className="text-red-400">{message}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="outline"
-            className="mt-4"
-          >
+          <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
             Reintentar
           </Button>
         </div>
