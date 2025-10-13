@@ -20,15 +20,13 @@ export default function ProcessingInner() {
   const osImage = searchParams?.get("osImage") || "ubuntu-22.04";
 
   useEffect(() => {
-    // 🔹 Mostramos el estado de la sesión y el objeto completo
+    // 🔹 Esperamos a que la sesión esté lista
+    if (sessionStatus === "loading") return;
+
+    const userEmail = session?.user?.email;
     console.log("🔍 sessionStatus:", sessionStatus);
     console.log("🔍 session object:", session);
-
-    // 🔹 Email del usuario desde la sesión
-    const userEmail = session?.user?.email || null;
-    console.log("🔍 userEmail:", userEmail); // ← Aquí verás el correo del usuario
-
-    if (sessionStatus === "loading") return;
+    console.log("🔍 userEmail:", userEmail);
 
     if (!userEmail) {
       setStatus("unauthenticated");
