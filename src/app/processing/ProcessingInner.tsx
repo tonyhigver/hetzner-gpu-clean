@@ -15,8 +15,6 @@ export default function ProcessingInner() {
   const [serverId, setServerId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(10);
 
-  // 🔹 intervalRef debe ser number (navegador)
-  const intervalRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
   // 🔹 Parámetros de la URL
@@ -51,44 +49,22 @@ export default function ProcessingInner() {
         if (!newServerId) throw new Error("No se recibió un ID de servidor válido");
 
         setServerId(newServerId);
-        setMessage("Servidor creado correctamente. Esperando que esté listo...");
+        setStatus("ready");
+        setMessage("Servidor creado correctamente. Redirigiendo en:");
+        setCountdown(10);
 
-        // 🔹 Polling hasta que el servidor esté listo
-        intervalRef.current = window.setInterval(async () => {
-          try {
-            const statusRes = await fetch(`/api/get-server-status?serverId=${newServerId}`);
-            const statusData = await statusRes.json();
-
-            if (statusData.status === "running") {
-              if (intervalRef.current) window.clearInterval(intervalRef.current);
-
-              // 🔹 Servidor listo, iniciamos contador de 10 segundos
-              setStatus("ready");
-              setMessage("Servidor listo! Redirigiendo en:");
-              setCountdown(10);
-
-              countdownRef.current = window.setInterval(() => {
-                setCountdown(prev => {
-                  if (prev <= 1) {
-                    if (countdownRef.current) window.clearInterval(countdownRef.current);
-                    router.push(`/dashboard?serverId=${newServerId}`);
-                    return 0;
-                  }
-                  return prev - 1;
-                });
-              }, 1000);
-
-            } else if (statusData.status === "error") {
-              if (intervalRef.current) window.clearInterval(intervalRef.current);
-              setStatus("error");
-              setMessage("Hubo un error creando tu servidor en Hetzner.");
-            } else {
-              setMessage(`Servidor aún no está listo (estado: ${statusData.status})...`);
+        // 🔹 Inicia contador de 10 segundos
+        countdownRef.current = window.setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              if (countdownRef.current) window.clearInterval(countdownRef.current);
+              router.push(`/dashboard?serverId=${newServerId}`);
+              return 0;
             }
-          } catch (err) {
-            console.error("❌ Error obteniendo el estado del servidor:", err);
-          }
-        }, 1000); // polling cada 1 segundo
+            return prev - 1;
+          });
+        }, 1000);
+
       } catch (err: any) {
         console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
@@ -99,7 +75,6 @@ export default function ProcessingInner() {
     createServer();
 
     return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
       if (countdownRef.current) window.clearInterval(countdownRef.current);
     };
   }, [session, sessionStatus, serverType, gpuType, osImage, router]);
