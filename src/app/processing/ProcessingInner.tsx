@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2, XCircle } from "lucide-react";
@@ -13,6 +13,8 @@ export default function ProcessingInner() {
   const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
   const [serverId, setServerId] = useState<string | null>(null);
+
+  const intervalRef = useRef<NodeJS.Timer | null>(null);
 
   // 🔹 Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -47,17 +49,17 @@ export default function ProcessingInner() {
         setServerId(newServerId);
         setMessage("Servidor creado correctamente. Esperando que esté listo...");
 
-        // 🔹 Polling para esperar que Hetzner confirme el estado
-        const interval = setInterval(async () => {
+        // 🔹 Polling cada segundo
+        intervalRef.current = setInterval(async () => {
           try {
             const statusRes = await fetch(`/api/get-server-status?serverId=${newServerId}`);
             const statusData = await statusRes.json();
 
             if (statusData.status === "running") {
-              clearInterval(interval);
+              clearInterval(intervalRef.current!);
               router.push(`/dashboard?serverId=${newServerId}`);
             } else if (statusData.status === "error") {
-              clearInterval(interval);
+              clearInterval(intervalRef.current!);
               setStatus("error");
               setMessage("Hubo un error creando tu servidor en Hetzner.");
             } else {
@@ -66,7 +68,7 @@ export default function ProcessingInner() {
           } catch (err) {
             console.error("❌ Error obteniendo el estado del servidor:", err);
           }
-        }, 5000); // cada 5 segundos
+        }, 1000); // cada 1 segundo
       } catch (err: any) {
         console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
@@ -75,6 +77,11 @@ export default function ProcessingInner() {
     }
 
     createServer();
+
+    // 🔹 Limpiar interval al desmontar
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
   return (
