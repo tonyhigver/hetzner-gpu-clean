@@ -10,11 +10,13 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
+  const [status, setStatus] = useState<"loading" | "error" | "unauthenticated" | "ready">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
   const [serverId, setServerId] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number>(10);
 
-  const intervalRef = useRef<number | null>(null); // 🔹 Tipo número para el navegador
+  const intervalRef = useRef<number | null>(null);
+  const countdownRef = useRef<number | null>(null);
 
   // 🔹 Parámetros de la URL
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -49,7 +51,7 @@ export default function ProcessingInner() {
         setServerId(newServerId);
         setMessage("Servidor creado correctamente. Esperando que esté listo...");
 
-        // 🔹 Polling cada segundo hasta que el servidor esté listo
+        // 🔹 Polling hasta que el servidor esté listo
         intervalRef.current = window.setInterval(async () => {
           try {
             const statusRes = await fetch(`/api/get-server-status?serverId=${newServerId}`);
@@ -57,7 +59,23 @@ export default function ProcessingInner() {
 
             if (statusData.status === "running") {
               if (intervalRef.current) clearInterval(intervalRef.current);
-              router.push(`/dashboard?serverId=${newServerId}`);
+
+              // 🔹 Servidor listo, iniciamos contador de 10 segundos
+              setStatus("ready");
+              setMessage("Servidor listo! Redirigiendo en 10 segundos...");
+              setCountdown(10);
+
+              countdownRef.current = window.setInterval(() => {
+                setCountdown(prev => {
+                  if (prev <= 1) {
+                    if (countdownRef.current) clearInterval(countdownRef.current);
+                    router.push(`/dashboard?serverId=${newServerId}`);
+                    return 0;
+                  }
+                  return prev - 1;
+                });
+              }, 1000);
+
             } else if (statusData.status === "error") {
               if (intervalRef.current) clearInterval(intervalRef.current);
               setStatus("error");
@@ -68,7 +86,7 @@ export default function ProcessingInner() {
           } catch (err) {
             console.error("❌ Error obteniendo el estado del servidor:", err);
           }
-        }, 1000); // cada 1 segundo
+        }, 1000); // polling cada 1 segundo
       } catch (err: any) {
         console.error("❌ Error al crear el servidor:", err);
         setStatus("error");
@@ -78,9 +96,9 @@ export default function ProcessingInner() {
 
     createServer();
 
-    // 🔹 Limpiar interval al desmontar
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [session, sessionStatus, serverType, gpuType, osImage, router]);
 
@@ -91,6 +109,12 @@ export default function ProcessingInner() {
           <Loader2 className="w-12 h-12 animate-spin text-blue-400 mb-4" />
           <h1 className="text-3xl font-bold mb-2">Procesando tu servidor...</h1>
           <p className="text-gray-400">{message}</p>
+        </>
+      ) : status === "ready" ? (
+        <>
+          <h1 className="text-3xl font-bold mb-2">Servidor listo!</h1>
+          <p className="text-gray-400">{message}</p>
+          <p className="text-gray-400 text-xl font-mono mt-2">{countdown}s</p>
         </>
       ) : status === "unauthenticated" ? (
         <div className="flex flex-col items-center space-y-3">
