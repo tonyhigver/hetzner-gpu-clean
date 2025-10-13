@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useSession } from "next-auth/react";
 
 interface Server {
   id: string;
@@ -14,75 +14,25 @@ interface Server {
 }
 
 export default function ServersPage() {
+  const { data: session, status } = useSession();
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session?.user?.email) {
+      setServers([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchServers = async () => {
       try {
-        // 🔹 Obtener el usuario autenticado
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user || !user.email) {
-          setServers([]);
-          setLoading(false);
-          return;
-        }
-
-        // 🔹 Obtener los servidores del usuario desde Supabase usando email
-        const { data: userServers, error } = await supabase
-          .from("user_servers")
-          .select("*")
-          .eq("user_id", user.email);
-
-        if (error) throw error;
-        if (!userServers || userServers.length === 0) {
-          setServers([]);
-          setLoading(false);
-          return;
-        }
-
-        // 🔹 Consultar Hetzner por cada hetzner_server_id para obtener nombre, IP y estado
-        const hetznerServers = await Promise.all(
-          userServers.map(async (srv) => {
-            try {
-              const res = await fetch(
-                `https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
-                  },
-                }
-              );
-
-              if (!res.ok) throw new Error("No encontrado en Hetzner");
-              const { server } = await res.json();
-
-              return {
-                id: srv.hetzner_server_id,
-                name: server.name,
-                type: srv.server_type || server.server_type?.name || "Desconocido",
-                gpu: srv.gpu_type || "N/A",
-                ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
-                status: server.status,
-              };
-            } catch {
-              return {
-                id: srv.hetzner_server_id,
-                name: "Desconocido",
-                type: srv.server_type || "Desconocido",
-                gpu: srv.gpu_type || "N/A",
-                ip: srv.ip || "No asignada",
-                status: "desconectado",
-              };
-            }
-          })
-        );
-
-        setServers(hetznerServers);
+        const res = await fetch(`/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`);
+        if (!res.ok) throw new Error("Error al obtener servidores");
+        const data = await res.json();
+        setServers(data.servers || []);
       } catch (err) {
         console.error("Error al cargar servidores:", err);
       } finally {
@@ -91,12 +41,23 @@ export default function ServersPage() {
     };
 
     fetchServers();
-  }, [supabase]);
+  }, [session, status]);
 
   if (loading) {
     return (
       <div className="text-center text-gray-400 mt-32">
         Cargando servidores...
+      </div>
+    );
+  }
+
+  if (!session?.user?.email) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white">
+        <h2 className="text-2xl font-bold mb-4">No has iniciado sesión</h2>
+        <p className="text-gray-400">
+          Por favor, inicia sesión para ver tus servidores.
+        </p>
       </div>
     );
   }

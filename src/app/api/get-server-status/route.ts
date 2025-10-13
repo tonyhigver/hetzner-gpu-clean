@@ -10,19 +10,18 @@ const supabase = createClient(
 
 export async function GET(req: Request) {
   try {
-    // 🔹 Obtener user_id desde query
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("user_id");
+    const email = searchParams.get("email");
 
-    if (!userId) {
-      return NextResponse.json({ error: "Falta el parámetro user_id" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
-    // 🔹 Obtener servidores asociados a este user_id desde Supabase
+    // 🔹 Obtener servidores asociados a este email
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
-      .eq("user_id", userId);
+      .eq("user_id", email);
 
     if (error) throw error;
 
@@ -30,30 +29,33 @@ export async function GET(req: Request) {
     const hetznerServers = await Promise.all(
       (userServers || []).map(async (srv) => {
         try {
-          const res = await fetch(`https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`, {
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
-            },
-          });
+          const res = await fetch(
+            `https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
+              },
+            }
+          );
 
           if (!res.ok) throw new Error("No encontrado en Hetzner");
-
           const { server } = await res.json();
+
           return {
             id: srv.hetzner_server_id,
             name: server.name,
-            type: srv.server_type,
-            gpu: srv.gpu_type,
-            ip: srv.ip || server.public_net?.ipv4?.ip || "No asignada",
+            type: srv.server_type || "Desconocido",
+            gpu: srv.gpu_type || "N/A",
+            ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
             status: server.status,
           };
         } catch {
           return {
             id: srv.hetzner_server_id,
             name: "Desconocido",
-            type: srv.server_type,
-            gpu: srv.gpu_type,
-            ip: srv.ip || "Desconocido",
+            type: srv.server_type || "Desconocido",
+            gpu: srv.gpu_type || "N/A",
+            ip: srv.ip || "No asignada",
             status: "desconectado",
           };
         }
