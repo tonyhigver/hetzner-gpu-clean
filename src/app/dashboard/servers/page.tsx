@@ -1,73 +1,43 @@
 "use client";
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export default function ServersPage() {
-  const [servers, setServers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Server {
+  id: string;
+  name: string;
+  type: string;
+  gpu: string;
+  ip: string;
+  status: string;
+}
 
+export default function ServersPage() {
+  const [servers, setServers] = useState<Server[]>([]);
+  const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
     const fetchServers = async () => {
       try {
-        // 🟢 1. Obtener el usuario logueado
+        // 🔹 Obtener user_id del usuario autenticado
         const {
           data: { user },
         } = await supabase.auth.getUser();
+
         if (!user) {
           setServers([]);
           setLoading(false);
           return;
         }
 
-        // 🟢 2. Obtener servidores del usuario desde Supabase
-        const { data: userServers, error } = await supabase
-          .from("user_servers")
-          .select("*")
-          .eq("user_id", user.id);
+        // 🔹 Llamar a nuestra API pasando el user_id
+        const res = await fetch(`/api/get-user-servers?user_id=${user.id}`);
+        if (!res.ok) throw new Error("Error al obtener servidores");
 
-        if (error) throw error;
-        if (!userServers || userServers.length === 0) {
-          setServers([]);
-          setLoading(false);
-          return;
-        }
-
-        // 🟢 3. Consultar información actual desde Hetzner por ID
-        const hetznerServers = await Promise.all(
-          userServers.map(async (srv) => {
-            try {
-              const res = await fetch(
-                `https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
-                  },
-                }
-              );
-
-              if (!res.ok) throw new Error("No encontrado en Hetzner");
-              const { server } = await res.json();
-
-              return {
-                id: srv.hetzner_server_id,
-                name: server.name,
-                gpu: srv.gpu_type || "N/A",
-                status: server.status,
-              };
-            } catch {
-              return {
-                id: srv.hetzner_server_id,
-                name: "Desconocido",
-                gpu: srv.gpu_type || "N/A",
-                status: "desconectado",
-              };
-            }
-          })
-        );
-
-        setServers(hetznerServers);
+        const data = await res.json();
+        setServers(data.servers || []);
       } catch (err) {
         console.error("Error al cargar servidores:", err);
       } finally {
@@ -76,25 +46,24 @@ export default function ServersPage() {
     };
 
     fetchServers();
-  }, []);
+  }, [supabase]);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="text-center text-gray-400 mt-32">
         Cargando servidores...
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] pt-28 p-6 flex flex-col gap-6">
       <h1 className="text-3xl font-bold text-[#00C896] mb-4 text-center">
-        SERVERS
+        MIS SERVIDORES
       </h1>
 
       {servers.length === 0 ? (
         <p className="text-center text-gray-400">
-          No tienes servidores activos.
+          No tienes servidores activos en tu cuenta.
         </p>
       ) : (
         <ul className="space-y-4">
@@ -105,15 +74,17 @@ export default function ServersPage() {
             >
               <div>
                 <p className="font-semibold text-lg">{server.name}</p>
+                <p>Tipo: {server.type}</p>
                 <p>GPU: {server.gpu}</p>
+                <p>IP: {server.ip}</p>
               </div>
               <div className="text-right">
                 <p>
-                  Status:{" "}
+                  Estado:{" "}
                   {server.status === "running"
-                    ? "🟢 Running"
+                    ? "🟢 Activo"
                     : server.status === "off"
-                    ? "🔴 Stopped"
+                    ? "🔴 Apagado"
                     : "🟠 Desconocido"}
                 </p>
                 <p>ID: {server.id}</p>

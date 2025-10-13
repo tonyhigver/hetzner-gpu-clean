@@ -1,27 +1,66 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const serverId = searchParams.get("serverId");
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Service Role Key para poder leer cualquier user_servers
+);
 
-  if (!serverId) {
-    return NextResponse.json(
-      { error: "Falta el parámetro serverId" },
-      { status: 400 }
-    );
-  }
-
+export async function GET(req: Request) {
   try {
-    // 🔹 Reenvía la petición al backend real
-    const res = await fetch(`http://157.180.118.67:4000/api/get-server-status?serverId=${serverId}`);
+    // 🔹 Obtener user_id desde query
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("user_id");
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch (err) {
-    console.error("🔥 Error en proxy get-server-status:", err);
-    return NextResponse.json(
-      { error: "Error conectando con el backend" },
-      { status: 500 }
+    if (!userId) {
+      return NextResponse.json({ error: "Falta el parámetro user_id" }, { status: 400 });
+    }
+
+    // 🔹 Obtener servidores asociados a este user_id
+    const { data: userServers, error } = await supabase
+      .from("user_servers")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    // 🔹 Consultar Hetzner para cada servidor
+    const hetznerServers = await Promise.all(
+      (userServers || []).map(async (srv) => {
+        try {
+          const res = await fetch(`https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`, {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_HETZNER_API_TOKEN_PROJECT1}`,
+            },
+          });
+
+          if (!res.ok) throw new Error("No encontrado en Hetzner");
+
+          const { server } = await res.json();
+          return {
+            id: srv.hetzner_server_id,
+            name: server.name,
+            type: srv.server_type,
+            gpu: srv.gpu_type,
+            ip: srv.ip || server.public_net?.ipv4?.ip || "No asignada",
+            status: server.status,
+          };
+        } catch {
+          return {
+            id: srv.hetzner_server_id,
+            name: "Desconocido",
+            type: srv.server_type,
+            gpu: srv.gpu_type,
+            ip: srv.ip || "Desconocido",
+            status: "desconectado",
+          };
+        }
+      })
     );
+
+    return NextResponse.json({ servers: hetznerServers });
+  } catch (err) {
+    console.error("Error en get-user-servers:", err);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
