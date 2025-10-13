@@ -10,8 +10,8 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Usamos solo userId de la sesión
-  const userId = session?.user?.id || null;
+  // 🔹 Usamos email de la sesión en lugar de userId
+  const userEmail = session?.user?.email || null;
 
   const searchParams = new URLSearchParams(window.location.search);
   const serverType = searchParams.get("serverType") || "CX32";
@@ -24,11 +24,11 @@ export default function ProcessingInner() {
   useEffect(() => {
     console.log("🔍 sessionStatus:", sessionStatus);
     console.log("🔍 session object:", session);
-    console.log("🔍 userId:", userId);
+    console.log("🔍 userEmail:", userEmail);
 
     if (sessionStatus === "loading") return;
 
-    if (!userId) {
+    if (!userEmail) {
       setStatus("unauthenticated");
       setMessage("Debes iniciar sesión con Google para continuar.");
       return;
@@ -37,7 +37,7 @@ export default function ProcessingInner() {
     async function createServer() {
       try {
         console.log("📡 Enviando solicitud al backend con:", {
-          userId,
+          userEmail,
           serverType,
           gpuType,
           osImage,
@@ -46,7 +46,7 @@ export default function ProcessingInner() {
         const res = await fetch("/api/create-user-server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, serverType, gpuType, osImage }),
+          body: JSON.stringify({ userEmail, serverType, gpuType, osImage }),
         });
 
         const data = await res.json();
@@ -69,7 +69,7 @@ export default function ProcessingInner() {
     }
 
     createServer();
-  }, [userId, serverType, gpuType, osImage, router, sessionStatus]);
+  }, [userEmail, serverType, gpuType, osImage, router, sessionStatus]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white text-center p-6">
