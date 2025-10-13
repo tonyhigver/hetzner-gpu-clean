@@ -10,22 +10,19 @@ export default function ProcessingInner() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
-  // 🔹 Usamos email de la sesión en lugar de userId
+  // 🔹 Email de la sesión
   const userEmail = session?.user?.email || null;
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const serverType = searchParams.get("serverType") || "CX32";
-  const gpuType = searchParams.get("gpuType") || "NVIDIA RTX 3060";
-  const osImage = searchParams.get("osImage") || "ubuntu-22.04";
+  // 🔹 Parámetros de la URL
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const serverType = searchParams?.get("serverType") || "CX32";
+  const gpuType = searchParams?.get("gpuType") || "NVIDIA RTX 3060";
+  const osImage = searchParams?.get("osImage") || "ubuntu-22.04";
 
   const [status, setStatus] = useState<"loading" | "error" | "unauthenticated">("loading");
   const [message, setMessage] = useState("Creando tu servidor...");
 
   useEffect(() => {
-    console.log("🔍 sessionStatus:", sessionStatus);
-    console.log("🔍 session object:", session);
-    console.log("🔍 userEmail:", userEmail);
-
     if (sessionStatus === "loading") return;
 
     if (!userEmail) {
