@@ -11,57 +11,49 @@ export const authOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
-        params: {
-          // ✅ Pedimos explícitamente el correo y el perfil
-          scope: "openid email profile",
-        },
+        params: { scope: "openid email profile" },
       },
     }),
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  // ✅ Evita errores "OAuth state mismatch"
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-    },
+  session: {
+    strategy: "database", // ✅ asegura que use PrismaAdapter correctamente
   },
 
   callbacks: {
-    // ✅ Incluir todos los campos relevantes en la sesión
-    async session({ session, user }: any) {
-      session.user.id = user.id;
-      session.user.email = user.email; // 👈 ahora el correo estará siempre disponible
-      session.user.isAdmin = user.isAdmin ?? false;
-      session.user.hasPaid = user.hasPaid ?? false;
+    // ✅ Incluye siempre todos los campos necesarios en la sesión
+    async session({ session, user }) {
+      if (session.user) {
+        session.user.id = user.id;
+        session.user.email = user.email;
+        session.user.isAdmin = user.isAdmin ?? false;
+        session.user.hasPaid = user.hasPaid ?? false;
+      }
       return session;
     },
 
-    // ✅ Si el email coincide con el admin, se actualizan permisos
-    async signIn({ user }: any) {
+    // ✅ Marca al admin automáticamente
+    async signIn({ user }) {
       if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { isAdmin: true, hasPaid: true },
-        });
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { isAdmin: true, hasPaid: true },
+          });
+        } catch (err) {
+          console.error("Error al actualizar admin:", err);
+        }
       }
       return true;
     },
 
-    // 🔹 Permitimos que la app decida a dónde ir después del login
     async redirect({ url, baseUrl }) {
-      // Si la URL es interna
-      if (url && url.startsWith(baseUrl)) return url;
-
-      // Si no, devolvemos undefined para permitir redirecciones del router
-      return undefined;
+      // ✅ Evita redirecciones externas inseguras
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
     },
   },
 };
