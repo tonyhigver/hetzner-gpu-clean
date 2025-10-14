@@ -3,13 +3,11 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// --- Inicializar Supabase ---
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// --- Definimos los tokens de Hetzner ---
 const hetznerProjects = [
   { name: "PROJECT1", token: process.env.HETZNER_API_TOKEN_PROJECT1 },
   { name: "PROJECT2", token: process.env.HETZNER_API_TOKEN_PROJECT2 },
@@ -17,13 +15,19 @@ const hetznerProjects = [
   { name: "PROJECT4", token: process.env.HETZNER_API_TOKEN_PROJECT4 },
 ].filter((p) => !!p.token);
 
-// --- Función que busca un servidor en todos los proyectos ---
 async function fetchHetznerServer(serverId: string) {
+  console.log(`🔍 Inicio de fetchHetznerServer para ID: ${serverId}`);
+
   for (const { name, token } of hetznerProjects) {
     try {
+      console.log(`🛰 Consultando proyecto ${name} con token ${token?.slice(0,6)}...`);
+
       const res = await fetch(`https://api.hetzner.cloud/v1/servers/${serverId}`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
+
+      console.log(`📥 Respuesta status: ${res.status} del proyecto ${name}`);
 
       if (res.ok) {
         const data = await res.json();
@@ -41,71 +45,100 @@ async function fetchHetznerServer(serverId: string) {
         continue;
       }
 
-      console.error(`❌ Error ${res.status} al consultar ${name}:`, await res.text());
+      const text = await res.text();
+      console.error(`❌ Error ${res.status} al consultar ${name}:`, text);
+
     } catch (err) {
       console.error(`💥 Error al consultar ${name}:`, err);
     }
   }
 
-  // No encontrado en ninguno
+  console.log(`❌ Servidor ${serverId} no encontrado en ningún proyecto`);
   return null;
 }
 
-// --- Handler principal ---
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
+    console.log("📩 Email recibido:", rawEmail);
+
     if (!rawEmail) {
+      console.warn("⚠️ Falta el parámetro email");
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
     const email = rawEmail.trim().toLowerCase();
-    console.log(`📩 Petición recibida para email: "${email}"`);
+    console.log(`📧 Email normalizado: "${email}"`);
 
-    // --- Obtener servidores del usuario ---
+    // SELECT completo desde Supabase
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
       .eq("user_id", email);
 
-    if (error) throw error;
-
-    console.log("🧠 Data bruta de Supabase:", userServers);
-
-    if (!userServers || userServers.length === 0) {
-      console.log("⚠️ No hay servidores guardados en Supabase para este usuario");
-      return NextResponse.json({ servers: [] });
+    if (error) {
+      console.error("💥 Error al consultar Supabase:", error);
+      throw error;
     }
 
-    // Filtrar registros válidos (IDs no vacíos y numéricos)
-    const filtered = userServers.filter(
-      (s) => s.hetzner_server_id && /^[0-9]+$/.test(String(s.hetzner_server_id))
-    );
+    console.log("🧾 Servidores obtenidos de Supabase:", JSON.stringify(userServers, null, 2));
 
-    console.log(
-      `🧾 Servidores válidos encontrados (${filtered.length}):`,
-      filtered.map((s) => s.hetzner_server_id)
-    );
+    if (!userServers || userServers.length === 0) {
+      console.log("⚠️ No hay servidores registrados para este usuario");
+      return NextResponse.json({ servers: [] });
+    }
 
     const validServers = [];
     const removedServers = [];
 
-    for (const srv of filtered) {
-      const id = String(srv.hetzner_server_id);
-      console.log(`🔍 Consultando Hetzner para servidor ${id}...`);
+    for (const srv of userServers) {
+      console.log("🟢 Procesando registro de Supabase:", srv);
 
+      const id = String(srv.hetzner_server_id);
+      if (!id || id === "null" || id === "undefined") {
+        console.warn(`⚠️ ID inválido para registro: ${JSON.stringify(srv)}`);
+        continue;
+      }
+
+      console.log(`🔎 Consultando Hetzner para servidor ${id}...`);
       const result = await fetchHetznerServer(id);
 
       if (!result) {
-        console.warn(`🧹 Eliminando ${id}: no existe en ningún proyecto Hetzner`);
-        await supabase.from("user_servers").delete().eq("hetzner_server_id", id);
-        removedServers.push(id);
+        console.log(`🧹 Intentando eliminar registro de Supabase para ID ${id}`);
+        const { data: confirm, error: confirmErr } = await supabase
+          .from("user_servers")
+          .select("hetzner_server_id")
+          .eq("hetzner_server_id", id)
+          .eq("user_id", email)
+          .maybeSingle();
+
+        if (confirmErr) {
+          console.error(`💥 Error confirmando existencia en Supabase para ${id}:`, confirmErr);
+        } else if (!confirm) {
+          console.log(`⚪ Registro ${id} ya no existe en Supabase`);
+        } else {
+          console.warn(`🧹 Eliminando registro obsoleto ${id} de Supabase`);
+          const { error: deleteErr } = await supabase
+            .from("user_servers")
+            .delete()
+            .eq("hetzner_server_id", id)
+            .eq("user_id", email);
+
+          if (deleteErr) {
+            console.error(`💥 Error al eliminar ${id}:`, deleteErr);
+          } else {
+            console.log(`✅ Registro ${id} eliminado correctamente`);
+            removedServers.push(id);
+          }
+        }
         continue;
       }
 
       const { server, project } = result;
+
+      console.log(`✅ Servidor válido encontrado: ${server.name} (${id}) en proyecto ${project}`);
 
       validServers.push({
         id,
@@ -118,19 +151,19 @@ export async function GET(req: Request) {
       });
     }
 
-    console.log(`✅ ${validServers.length} servidores válidos encontrados`);
+    console.log(`📊 Total servidores válidos: ${validServers.length}`);
     if (removedServers.length > 0) {
-      console.log(`🧹 Eliminados de Supabase: ${removedServers.join(", ")}`);
+      console.log(`🧹 Total eliminados: ${removedServers.join(", ")}`);
     }
 
-    // Devuelve todos los encontrados, con nombres y proyectos
     return NextResponse.json({
       servers: validServers,
       removed: removedServers,
-      total: filtered.length,
+      total: userServers.length,
     });
+
   } catch (err) {
-    console.error("💥 Error en get-user-servers:", err);
+    console.error("💥 Error general en get-user-servers:", err);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
