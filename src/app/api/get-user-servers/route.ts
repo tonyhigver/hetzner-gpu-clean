@@ -55,14 +55,16 @@ async function fetchHetznerServer(serverId: string) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
+    const rawEmail = searchParams.get("email");
 
-    if (!email) {
+    if (!rawEmail) {
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
-    console.log(`📩 Petición recibida para email: ${email}`);
+    const email = rawEmail.trim().toLowerCase();
+    console.log(`📩 Petición recibida para email: "${email}"`);
 
+    // --- Obtener servidores del usuario ---
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
@@ -70,18 +72,28 @@ export async function GET(req: Request) {
 
     if (error) throw error;
 
+    console.log("🧠 Data bruta de Supabase:", userServers);
+
     if (!userServers || userServers.length === 0) {
       console.log("⚠️ No hay servidores guardados en Supabase para este usuario");
       return NextResponse.json({ servers: [] });
     }
 
-    console.log(`🧾 Servidores en Supabase para ${email}:`, userServers.length);
+    // Filtrar registros válidos (IDs no vacíos y numéricos)
+    const filtered = userServers.filter(
+      (s) => s.hetzner_server_id && /^[0-9]+$/.test(String(s.hetzner_server_id))
+    );
+
+    console.log(
+      `🧾 Servidores válidos encontrados (${filtered.length}):`,
+      filtered.map((s) => s.hetzner_server_id)
+    );
 
     const validServers = [];
     const removedServers = [];
 
-    for (const srv of userServers) {
-      const id = srv.hetzner_server_id;
+    for (const srv of filtered) {
+      const id = String(srv.hetzner_server_id);
       console.log(`🔍 Consultando Hetzner para servidor ${id}...`);
 
       const result = await fetchHetznerServer(id);
@@ -96,7 +108,7 @@ export async function GET(req: Request) {
       const { server, project } = result;
 
       validServers.push({
-        id: id,
+        id,
         name: server.name,
         ip: server.public_net?.ipv4?.ip || "No asignada",
         status: server.status,
@@ -115,7 +127,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       servers: validServers,
       removed: removedServers,
-      total: userServers.length,
+      total: filtered.length,
     });
   } catch (err) {
     console.error("💥 Error en get-user-servers:", err);
