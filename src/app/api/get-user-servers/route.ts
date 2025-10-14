@@ -57,6 +57,35 @@ async function fetchHetznerServer(serverId: string) {
   return null;
 }
 
+// --- Función para esperar hasta que el servidor esté "running" o timeout ---
+async function waitForServerRunning(serverId: string, maxAttempts = 12, intervalMs = 5000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.log(`⏳ Intento ${attempt} de ${maxAttempts} para ${serverId}`);
+    const result = await fetchHetznerServer(serverId);
+
+    if (!result) {
+      console.log(`⚠️ Servidor ${serverId} no encontrado en este intento, esperando...`);
+      await new Promise(res => setTimeout(res, intervalMs));
+      continue;
+    }
+
+    const { server } = result;
+    console.log(`📊 Estado actual de ${serverId}: ${server.status}`);
+
+    if (server.status === "running") {
+      console.log(`✅ Servidor ${serverId} ya está running`);
+      return result;
+    }
+
+    // Si está en pending/initializing, esperar
+    console.log(`⏳ Servidor ${serverId} todavía en ${server.status}, esperando...`);
+    await new Promise(res => setTimeout(res, intervalMs));
+  }
+
+  console.warn(`⚠️ Timeout alcanzado para ${serverId}, estado final desconocido`);
+  return null;
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -72,7 +101,6 @@ export async function GET(req: Request) {
     const email = rawEmail.trim().toLowerCase();
     console.log(`📧 Email normalizado: "${email}"`);
 
-    // SELECT completo desde Supabase
     const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
@@ -102,43 +130,17 @@ export async function GET(req: Request) {
         continue;
       }
 
-      console.log(`🔎 Consultando Hetzner para servidor ${id}...`);
-      const result = await fetchHetznerServer(id);
+      // 🔁 Esperar a que esté running o timeout
+      const result = await waitForServerRunning(id);
 
       if (!result) {
-        console.log(`🧹 Intentando eliminar registro de Supabase para ID ${id}`);
-        const { data: confirm, error: confirmErr } = await supabase
-          .from("user_servers")
-          .select("hetzner_server_id")
-          .eq("hetzner_server_id", id)
-          .eq("user_id", email)
-          .maybeSingle();
-
-        if (confirmErr) {
-          console.error(`💥 Error confirmando existencia en Supabase para ${id}:`, confirmErr);
-        } else if (!confirm) {
-          console.log(`⚪ Registro ${id} ya no existe en Supabase`);
-        } else {
-          console.warn(`🧹 Eliminando registro obsoleto ${id} de Supabase`);
-          const { error: deleteErr } = await supabase
-            .from("user_servers")
-            .delete()
-            .eq("hetzner_server_id", id)
-            .eq("user_id", email);
-
-          if (deleteErr) {
-            console.error(`💥 Error al eliminar ${id}:`, deleteErr);
-          } else {
-            console.log(`✅ Registro ${id} eliminado correctamente`);
-            removedServers.push(id);
-          }
-        }
+        console.log(`⚠️ Servidor ${id} no está running tras varios intentos, pero se mantiene en Supabase`);
+        // No eliminar, solo reportar
+        removedServers.push(id); // opcional: marcar como pendiente
         continue;
       }
 
       const { server, project } = result;
-
-      console.log(`✅ Servidor válido encontrado: ${server.name} (${id}) en proyecto ${project}`);
 
       validServers.push({
         id,
@@ -149,11 +151,13 @@ export async function GET(req: Request) {
         type: srv.server_type || "Desconocido",
         gpu: srv.gpu_type || "N/A",
       });
+
+      console.log(`✅ Servidor válido: ${server.name} (${id}) estado ${server.status}`);
     }
 
     console.log(`📊 Total servidores válidos: ${validServers.length}`);
     if (removedServers.length > 0) {
-      console.log(`🧹 Total eliminados: ${removedServers.join(", ")}`);
+      console.log(`🟠 Servidores pendientes/no running: ${removedServers.join(", ")}`);
     }
 
     return NextResponse.json({
