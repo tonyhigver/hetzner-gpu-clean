@@ -4,44 +4,62 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Debug: verificar que las variables de entorno están disponibles
-console.log(
-  "🔑 NEXT_PUBLIC_SUPABASE_URL:",
-  process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅ OK" : "❌ NO EXISTE"
-);
-console.log(
-  "🔑 SUPABASE_SERVICE_ROLE_KEY:",
-  process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅ OK" : "❌ NO EXISTE"
-);
-console.log(
-  "🔑 HETZNER_API_TOKEN_PROJECT1:",
-  process.env.HETZNER_API_TOKEN_PROJECT1 ? "✅ OK" : "❌ NO EXISTE"
-);
-console.log(
-  "🔑 HETZNER_API_TOKEN_PROJECT2:",
-  process.env.HETZNER_API_TOKEN_PROJECT2 ? "✅ OK" : "❌ NO EXISTE"
-);
-console.log(
-  "🔑 HETZNER_API_TOKEN_PROJECT3:",
-  process.env.HETZNER_API_TOKEN_PROJECT3 ? "✅ OK" : "❌ NO EXISTE"
-);
-console.log(
-  "🔑 HETZNER_API_TOKEN_PROJECT4:",
-  process.env.HETZNER_API_TOKEN_PROJECT4 ? "✅ OK" : "❌ NO EXISTE"
-);
+// --- 🔍 Verificar variables de entorno ---
+console.log("🔑 NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 HETZNER_API_TOKEN_PROJECT1:", process.env.HETZNER_API_TOKEN_PROJECT1 ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 HETZNER_API_TOKEN_PROJECT2:", process.env.HETZNER_API_TOKEN_PROJECT2 ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 HETZNER_API_TOKEN_PROJECT3:", process.env.HETZNER_API_TOKEN_PROJECT3 ? "✅ OK" : "❌ NO EXISTE");
+console.log("🔑 HETZNER_API_TOKEN_PROJECT4:", process.env.HETZNER_API_TOKEN_PROJECT4 ? "✅ OK" : "❌ NO EXISTE");
 
+// --- Inicializar Supabase ---
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Mapeo de tokens según proyecto
-const hetznerTokens: Record<string, string> = {
-  project1: process.env.HETZNER_API_TOKEN_PROJECT1!,
-  project2: process.env.HETZNER_API_TOKEN_PROJECT2!,
-  project3: process.env.HETZNER_API_TOKEN_PROJECT3!,
-  project4: process.env.HETZNER_API_TOKEN_PROJECT4!,
-};
+// --- Lista de tokens disponibles ---
+const hetznerTokens = [
+  process.env.HETZNER_API_TOKEN_PROJECT1,
+  process.env.HETZNER_API_TOKEN_PROJECT2,
+  process.env.HETZNER_API_TOKEN_PROJECT3,
+  process.env.HETZNER_API_TOKEN_PROJECT4,
+].filter(Boolean);
+
+// --- Función auxiliar para probar todos los tokens ---
+async function fetchHetznerServer(serverId: string) {
+  for (const [index, token] of hetznerTokens.entries()) {
+    try {
+      const res = await fetch(`https://api.hetzner.cloud/v1/servers/${serverId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const { server } = await res.json();
+        console.log(`✅ Servidor ${serverId} encontrado con TOKEN PROJECT${index + 1}`);
+        return { server, tokenUsed: `PROJECT${index + 1}` };
+      }
+
+      if (res.status === 404) {
+        console.warn(`⚠️ Servidor ${serverId} no encontrado con PROJECT${index + 1}`);
+        continue;
+      }
+
+      if (res.status === 401) {
+        console.warn(`🚫 Token inválido (401) para PROJECT${index + 1}`);
+        continue;
+      }
+
+      // Otros errores
+      console.error(`❌ Error inesperado (${res.status}) con PROJECT${index + 1}:`, await res.text());
+    } catch (err) {
+      console.error(`💥 Error al probar PROJECT${index + 1}:`, err);
+    }
+  }
+
+  // Ningún token funcionó
+  return null;
+}
 
 export async function GET(req: Request) {
   try {
@@ -51,7 +69,6 @@ export async function GET(req: Request) {
     console.log("✅ Request recibido para email:", email);
 
     if (!email) {
-      console.error("❌ Falta el parámetro email");
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
 
@@ -60,65 +77,45 @@ export async function GET(req: Request) {
       .select("*")
       .eq("user_id", email);
 
-    console.log("📊 Datos de Supabase:", userServers, "Error:", error);
-
-    if (error) {
-      console.error("💥 Error al consultar Supabase:", error);
-      throw error;
-    }
+    if (error) throw error;
 
     if (!userServers || userServers.length === 0) {
       console.warn("⚠️ No se encontraron servidores para este usuario");
       return NextResponse.json({ servers: [] });
     }
 
-    const hetznerServers = await Promise.all(
-      userServers.map(async (srv) => {
-        try {
-          console.log("🌐 Consultando Hetzner para server_id:", srv.hetzner_server_id);
+    const validServers = [];
 
-          // Elegir token correcto según el proyecto del server
-          const token = hetznerTokens[srv.hetzner_project] || process.env.HETZNER_API_TOKEN_PROJECT1!;
+    for (const srv of userServers) {
+      try {
+        console.log(`🌐 Consultando Hetzner para server_id: ${srv.hetzner_server_id}`);
 
-          const res = await fetch(
-            `https://api.hetzner.cloud/v1/servers/${srv.hetzner_server_id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+        const result = await fetchHetznerServer(srv.hetzner_server_id);
 
-          if (!res.ok) {
-            console.error("❌ Error al consultar Hetzner:", res.status, await res.text());
-            throw new Error("No encontrado en Hetzner");
-          }
-
-          const { server } = await res.json();
-
-          return {
-            id: srv.hetzner_server_id,
-            name: server.name,
-            type: srv.server_type || "Desconocido",
-            gpu: srv.gpu_type || "N/A",
-            ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
-            status: server.status,
-          };
-        } catch (err) {
-          console.error("⚠️ Error al procesar servidor Hetzner:", err);
-          return {
-            id: srv.hetzner_server_id,
-            name: "Desconocido",
-            type: srv.server_type || "Desconocido",
-            gpu: srv.gpu_type || "N/A",
-            ip: srv.ip || "No asignada",
-            status: "desconectado",
-          };
+        if (!result) {
+          console.warn(`🧹 Eliminando de Supabase: servidor ${srv.hetzner_server_id} no existe en Hetzner`);
+          await supabase.from("user_servers").delete().eq("hetzner_server_id", srv.hetzner_server_id);
+          continue;
         }
-      })
-    );
 
-    console.log("✅ Servidores listos:", hetznerServers);
+        const { server, tokenUsed } = result;
 
-    return NextResponse.json({ servers: hetznerServers });
+        validServers.push({
+          id: srv.hetzner_server_id,
+          name: server.name,
+          type: srv.server_type || "Desconocido",
+          gpu: srv.gpu_type || "N/A",
+          ip: server.public_net?.ipv4?.ip || srv.ip || "No asignada",
+          status: server.status,
+          projectToken: tokenUsed,
+        });
+      } catch (err) {
+        console.error("⚠️ Error al procesar servidor Hetzner:", err);
+      }
+    }
+
+    console.log("✅ Servidores válidos:", validServers.length);
+    return NextResponse.json({ servers: validServers });
   } catch (err) {
     console.error("💥 Error en get-user-servers:", err);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
