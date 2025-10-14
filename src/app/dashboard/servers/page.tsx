@@ -30,10 +30,11 @@ export default function ServersPage() {
       return;
     }
 
+    // 🔹 LOG: mostrar el email antes de enviar al backend
+    console.log("[ServersPage] Email que se enviará al backend:", session.user.email);
+
     const fetchServers = async () => {
       try {
-        console.log("[ServersPage] Fetching servidores para:", session.user.email);
-
         const res = await fetch(
           `/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`
         );

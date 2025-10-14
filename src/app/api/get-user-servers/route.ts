@@ -57,7 +57,7 @@ async function fetchHetznerServer(serverId: string) {
   return null;
 }
 
-// --- Función para esperar hasta que el servidor esté "running" o timeout ---
+// Esperar hasta que el servidor esté running o timeout
 async function waitForServerRunning(serverId: string, maxAttempts = 12, intervalMs = 5000) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     console.log(`⏳ Intento ${attempt} de ${maxAttempts} para ${serverId}`);
@@ -77,7 +77,6 @@ async function waitForServerRunning(serverId: string, maxAttempts = 12, interval
       return result;
     }
 
-    // Si está en pending/initializing, esperar
     console.log(`⏳ Servidor ${serverId} todavía en ${server.status}, esperando...`);
     await new Promise(res => setTimeout(res, intervalMs));
   }
@@ -91,7 +90,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
-    console.log("📩 Email recibido:", rawEmail);
+    // 🔹 LOG: mostrar exactamente qué email llega desde frontend
+    console.log("📩 Email recibido desde query params:", rawEmail);
 
     if (!rawEmail) {
       console.warn("⚠️ Falta el parámetro email");
@@ -130,12 +130,10 @@ export async function GET(req: Request) {
         continue;
       }
 
-      // 🔁 Esperar a que esté running o timeout
       const result = await waitForServerRunning(id);
 
       if (!result) {
-        console.log(`⚠️ Servidor ${id} no está running tras varios intentos, pero se mantiene en Supabase`);
-        // No eliminar, solo reportar
+        console.log(`⚠️ Servidor ${id} no está running tras varios intentos, se mantiene en Supabase`);
         removedServers.push(id); // opcional: marcar como pendiente
         continue;
       }
