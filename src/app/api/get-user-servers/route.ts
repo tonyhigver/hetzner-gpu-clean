@@ -101,19 +101,26 @@ export async function GET(req: Request) {
     const email = rawEmail.trim().toLowerCase();
     console.log(`📧 Email normalizado: "${email}"`);
 
+    // 🔹 Recolectar TODO lo que hay en la tabla sin filtrar
     const { data: userServers, error } = await supabase
       .from("user_servers")
-      .select("*")
-      .eq("user_id", email);
+      .select("*");
 
     if (error) {
       console.error("💥 Error al consultar Supabase:", error);
       throw error;
     }
 
-    console.log("🧾 Servidores obtenidos de Supabase:", JSON.stringify(userServers, null, 2));
+    console.log("🧾 TODOS los registros en user_servers:", JSON.stringify(userServers, null, 2));
 
-    if (!userServers || userServers.length === 0) {
+    // 🔹 Filtrar localmente por coincidencia exacta o parcial
+    const filteredServers = userServers.filter(
+      (srv) => String(srv.user_id).trim().toLowerCase() === email
+    );
+
+    console.log(`🔹 Servidores que coinciden con ${email}:`, JSON.stringify(filteredServers, null, 2));
+
+    if (!filteredServers || filteredServers.length === 0) {
       console.log("⚠️ No hay servidores registrados para este usuario");
       return NextResponse.json({ servers: [] });
     }
@@ -121,7 +128,7 @@ export async function GET(req: Request) {
     const validServers = [];
     const removedServers = [];
 
-    for (const srv of userServers) {
+    for (const srv of filteredServers) {
       console.log("🟢 Procesando registro de Supabase:", srv);
 
       const id = String(srv.hetzner_server_id);
@@ -161,7 +168,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       servers: validServers,
       removed: removedServers,
-      total: userServers.length,
+      total: filteredServers.length,
     });
 
   } catch (err) {
