@@ -90,7 +90,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
-    // 🔹 LOG: mostrar exactamente qué email llega desde frontend
     console.log("📩 Email recibido desde query params:", rawEmail);
 
     if (!rawEmail) {
@@ -101,20 +100,20 @@ export async function GET(req: Request) {
     const email = rawEmail.trim().toLowerCase();
     console.log(`📧 Email normalizado: "${email}"`);
 
-    // 🔹 Recolectar TODO lo que hay en la tabla sin filtrar
-    const { data: userServers, error } = await supabase
+    // 🔹 Obtener TODOS los registros de la tabla
+    const { data: allServers, error: allError } = await supabase
       .from("user_servers")
       .select("*");
 
-    if (error) {
-      console.error("💥 Error al consultar Supabase:", error);
-      throw error;
+    if (allError) {
+      console.error("💥 Error al consultar Supabase:", allError);
+      throw allError;
     }
 
-    console.log("🧾 TODOS los registros en user_servers:", JSON.stringify(userServers, null, 2));
+    console.log("🧾 TODOS los registros en user_servers:", JSON.stringify(allServers, null, 2));
 
-    // 🔹 Filtrar localmente por coincidencia exacta o parcial
-    const filteredServers = userServers.filter(
+    // 🔹 Filtrar los registros que coinciden exactamente con el email
+    const filteredServers = allServers.filter(
       (srv) => String(srv.user_id).trim().toLowerCase() === email
     );
 
