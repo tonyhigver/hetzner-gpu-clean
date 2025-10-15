@@ -11,6 +11,7 @@ interface Server {
   gpu: string;
   ip: string;
   status: string;
+  project?: string;
 }
 
 export default function ServersPage() {
@@ -30,13 +31,14 @@ export default function ServersPage() {
       return;
     }
 
-    // 🔹 LOG: mostrar el email antes de enviar al backend
-    console.log("[ServersPage] Email que se enviará al backend:", session.user.email);
-
     const fetchServers = async () => {
       try {
+        const email = session.user.email;
+        console.log("[ServersPage] Solicitando servidores para:", email);
+
+        // ✅ Nuevo endpoint
         const res = await fetch(
-          `/api/get-user-servers?email=${encodeURIComponent(session.user.email)}`
+          `/api/servers?email=${encodeURIComponent(email)}`
         );
 
         console.log("[ServersPage] Response status:", res.status);
@@ -101,6 +103,7 @@ export default function ServersPage() {
                 <p>Tipo: {server.type}</p>
                 <p>GPU: {server.gpu}</p>
                 <p>IP: {server.ip}</p>
+                {server.project && <p>Proyecto: {server.project}</p>}
               </div>
               <div className="text-right">
                 <p>
