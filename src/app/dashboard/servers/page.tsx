@@ -36,9 +36,9 @@ export default function ServersPage() {
         const email = session.user.email;
         console.log("[ServersPage] Solicitando servidores para:", email);
 
-        // ✅ Nuevo endpoint
+        // ✅ Cambiado al endpoint correcto
         const res = await fetch(
-          `/api/servers?email=${encodeURIComponent(email)}`
+          `/api/get-user-servers?email=${encodeURIComponent(email)}`
         );
 
         console.log("[ServersPage] Response status:", res.status);
