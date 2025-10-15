@@ -4,13 +4,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
 
-// ✅ Conexión a Supabase
+// ✅ Conexión Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// ✅ Tokens de Hetzner
+// ✅ Tokens Hetzner
 const hetznerProjects = [
   { name: "PROJECT1", token: process.env.HETZNER_API_TOKEN_PROJECT1 },
   { name: "PROJECT2", token: process.env.HETZNER_API_TOKEN_PROJECT2 },
@@ -80,19 +80,17 @@ async function syncServers() {
   return hetznerServers;
 }
 
-// 🚀 Route principal
+// 🚀 Endpoint principal
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
-
     if (!rawEmail) {
       return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
     }
-
     const email = rawEmail.trim().toLowerCase();
 
-    // 1️⃣ Ejecutar sincronización automáticamente y obtener servidores
+    // 1️⃣ Ejecutar sincronización automáticamente
     let hetznerServers: any[] = [];
     try {
       hetznerServers = await syncServers();
@@ -101,7 +99,7 @@ export async function GET(req: Request) {
       console.error("⚠️ Error al ejecutar syncServers:", err);
     }
 
-    // 2️⃣ Obtener servidores desde Supabase
+    // 2️⃣ Traer todos los servidores de Supabase
     const { data: allServers, error } = await supabase.from("user_servers").select("*");
     if (error) throw error;
 
@@ -114,7 +112,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ servers: [] });
     }
 
-    // 4️⃣ Mapear y combinar info de Hetzner
+    // 4️⃣ Mapear info combinada Hetzner + Supabase
     const results = userServers.map((srv) => {
       const id = String(srv.hetzner_server_id);
       const server = hetznerServers.find((s) => s.id.toString() === id);
@@ -137,7 +135,7 @@ export async function GET(req: Request) {
       email,
     });
   } catch (err) {
-    console.error("💥 Error general en /api/get-user-servers:", err);
+    console.error("💥 Error general en /api/servers:", err);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
