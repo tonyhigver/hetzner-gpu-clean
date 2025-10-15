@@ -11,17 +11,17 @@ const supabase = createClient(
 );
 
 // ✅ Tokens de Hetzner
-const hetznerTokens = [
-  process.env.HETZNER_API_TOKEN_PROJECT1,
-  process.env.HETZNER_API_TOKEN_PROJECT2,
-  process.env.HETZNER_API_TOKEN_PROJECT3,
-  process.env.HETZNER_API_TOKEN_PROJECT4,
-].filter(Boolean);
+const hetznerProjects = [
+  { name: "PROJECT1", token: process.env.HETZNER_API_TOKEN_PROJECT1 },
+  { name: "PROJECT2", token: process.env.HETZNER_API_TOKEN_PROJECT2 },
+  { name: "PROJECT3", token: process.env.HETZNER_API_TOKEN_PROJECT3 },
+  { name: "PROJECT4", token: process.env.HETZNER_API_TOKEN_PROJECT4 },
+].filter((p) => !!p.token);
 
 // 🔹 Obtener todos los servidores de Hetzner
 async function fetchHetznerServers() {
   let allServers: any[] = [];
-  for (const token of hetznerTokens) {
+  for (const { token } of hetznerProjects) {
     try {
       const res = await axios.get("https://api.hetzner.cloud/v1/servers", {
         headers: { Authorization: `Bearer ${token}` },
@@ -34,20 +34,20 @@ async function fetchHetznerServers() {
   return allServers;
 }
 
-// 🔹 Sincronizar Hetzner ↔ Supabase
+// 🔹 Sincronizar Hetzner ↔ Supabase y retornar servidores
 async function syncServers() {
   const hetznerServers = await fetchHetznerServers();
-  if (!hetznerServers.length) return;
+  if (!hetznerServers.length) return [];
 
   const { data: dbServers, error } = await supabase.from("user_servers").select("*");
   if (error) {
     console.error("❌ Error leyendo Supabase:", error);
-    return;
+    return [];
   }
 
   const hetznerIds = hetznerServers.map((s) => s.id.toString());
 
-  // Eliminar servidores que ya no existen
+  // 🧹 Eliminar servidores que ya no existen
   for (const server of dbServers) {
     if (!hetznerIds.includes(server.hetzner_server_id)) {
       await supabase.from("user_servers").delete().eq("id", server.id);
@@ -55,9 +55,10 @@ async function syncServers() {
     }
   }
 
-  // Insertar o actualizar servidores activos
+  // 🔄 Insertar o actualizar servidores activos
   for (const server of hetznerServers) {
     const existing = dbServers.find((s) => s.hetzner_server_id === server.id.toString());
+
     const serverData = {
       hetzner_server_id: server.id.toString(),
       server_name: server.name,
@@ -75,56 +76,68 @@ async function syncServers() {
       console.log(`🆕 Insertado nuevo servidor: ${server.name}`);
     }
   }
+
+  return hetznerServers;
 }
 
-// 🔹 Obtener servidores de un usuario y ejecutar sync automáticamente
+// 🚀 Route principal
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
-    if (!rawEmail) return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
+
+    if (!rawEmail) {
+      return NextResponse.json({ error: "Falta el parámetro email" }, { status: 400 });
+    }
+
     const email = rawEmail.trim().toLowerCase();
 
-    // 1️⃣ Ejecutar sincronización automáticamente
+    // 1️⃣ Ejecutar sincronización automáticamente y obtener servidores
+    let hetznerServers: any[] = [];
     try {
-      await syncServers();
+      hetznerServers = await syncServers();
       console.log("✅ Sync ejecutado desde route");
     } catch (err) {
       console.error("⚠️ Error al ejecutar syncServers:", err);
     }
 
-    // 2️⃣ Obtener servidores desde Supabase filtrando por email
+    // 2️⃣ Obtener servidores desde Supabase
     const { data: allServers, error } = await supabase.from("user_servers").select("*");
     if (error) throw error;
 
+    // 3️⃣ Filtrar por email
     const userServers = allServers.filter(
       (srv) => String(srv.user_id).trim().toLowerCase() === email
     );
 
-    if (!userServers.length) return NextResponse.json({ servers: [] });
+    if (!userServers.length) {
+      return NextResponse.json({ servers: [] });
+    }
 
-    // 3️⃣ Opcional: verificar estado running en Hetzner (como en tu route original)
-    const results = await Promise.all(
-      userServers.map(async (srv) => {
-        const id = String(srv.hetzner_server_id);
-        if (!id) return null;
-        const server = hetznerServers.find((s) => s.id.toString() === id);
-        return server
-          ? {
-              id,
-              name: server.name,
-              ip: server.public_net?.ipv4?.ip || "Sin IP",
-              status: server.status,
-              type: srv.server_type || "Desconocido",
-              gpu: srv.gpu_type || "N/A",
-            }
-          : null;
-      })
-    );
+    // 4️⃣ Mapear y combinar info de Hetzner
+    const results = userServers.map((srv) => {
+      const id = String(srv.hetzner_server_id);
+      const server = hetznerServers.find((s) => s.id.toString() === id);
+      return server
+        ? {
+            id,
+            name: server.name,
+            ip: server.public_net?.ipv4?.ip || "Sin IP",
+            status: server.status,
+            type: srv.server_type || "Desconocido",
+            gpu: srv.gpu_type || "N/A",
+            project: hetznerProjects.find((p) => p.token === server.token)?.name || "Desconocido",
+          }
+        : null;
+    }).filter(Boolean);
 
-    return NextResponse.json({ servers: results.filter(Boolean) });
+    return NextResponse.json({
+      servers: results,
+      total: results.length,
+      email,
+    });
   } catch (err) {
-    console.error("💥 Error en /api/get-user-servers:", err);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    console.error("💥 Error general en /api/get-user-servers:", err);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
