@@ -8,6 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// 🔹 Lista de proyectos Hetzner
 const hetznerProjects = [
   { name: "PROJECT1", token: process.env.HETZNER_API_TOKEN_PROJECT1 },
   { name: "PROJECT2", token: process.env.HETZNER_API_TOKEN_PROJECT2 },
@@ -15,12 +16,13 @@ const hetznerProjects = [
   { name: "PROJECT4", token: process.env.HETZNER_API_TOKEN_PROJECT4 },
 ].filter((p) => !!p.token);
 
+// 🔍 Buscar un servidor por ID en todos los proyectos Hetzner
 async function fetchHetznerServer(serverId: string) {
   console.log(`🔍 Inicio de fetchHetznerServer para ID: ${serverId}`);
 
   for (const { name, token } of hetznerProjects) {
     try {
-      console.log(`🛰 Consultando proyecto ${name} con token ${token?.slice(0,6)}...`);
+      console.log(`🛰 Consultando proyecto ${name} con token ${token?.slice(0, 6)}...`);
 
       const res = await fetch(`https://api.hetzner.cloud/v1/servers/${serverId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -47,7 +49,6 @@ async function fetchHetznerServer(serverId: string) {
 
       const text = await res.text();
       console.error(`❌ Error ${res.status} al consultar ${name}:`, text);
-
     } catch (err) {
       console.error(`💥 Error al consultar ${name}:`, err);
     }
@@ -57,7 +58,7 @@ async function fetchHetznerServer(serverId: string) {
   return null;
 }
 
-// Esperar hasta que el servidor esté running o timeout
+// 🕓 Esperar hasta que el servidor esté "running"
 async function waitForServerRunning(serverId: string, maxAttempts = 12, intervalMs = 5000) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     console.log(`⏳ Intento ${attempt} de ${maxAttempts} para ${serverId}`);
@@ -65,7 +66,7 @@ async function waitForServerRunning(serverId: string, maxAttempts = 12, interval
 
     if (!result) {
       console.log(`⚠️ Servidor ${serverId} no encontrado en este intento, esperando...`);
-      await new Promise(res => setTimeout(res, intervalMs));
+      await new Promise((res) => setTimeout(res, intervalMs));
       continue;
     }
 
@@ -78,13 +79,14 @@ async function waitForServerRunning(serverId: string, maxAttempts = 12, interval
     }
 
     console.log(`⏳ Servidor ${serverId} todavía en ${server.status}, esperando...`);
-    await new Promise(res => setTimeout(res, intervalMs));
+    await new Promise((res) => setTimeout(res, intervalMs));
   }
 
   console.warn(`⚠️ Timeout alcanzado para ${serverId}, estado final desconocido`);
   return null;
 }
 
+// 🧠 Ruta principal
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -100,10 +102,8 @@ export async function GET(req: Request) {
     const email = rawEmail.trim().toLowerCase();
     console.log(`📧 Email normalizado: "${email}"`);
 
-    // 🔹 Obtener TODOS los registros de la tabla
-    const { data: allServers, error: allError } = await supabase
-      .from("user_servers")
-      .select("*");
+    // 🔹 Obtener todos los registros de la tabla
+    const { data: allServers, error: allError } = await supabase.from("user_servers").select("*");
 
     if (allError) {
       console.error("💥 Error al consultar Supabase:", allError);
@@ -112,7 +112,7 @@ export async function GET(req: Request) {
 
     console.log("🧾 TODOS los registros en user_servers:", JSON.stringify(allServers, null, 2));
 
-    // 🔹 Filtrar los registros que coinciden exactamente con el email
+    // 🔹 Filtrar por correo
     const filteredServers = allServers.filter(
       (srv) => String(srv.user_id).trim().toLowerCase() === email
     );
@@ -124,44 +124,48 @@ export async function GET(req: Request) {
       return NextResponse.json({ servers: [] });
     }
 
-    const validServers = [];
-    const removedServers = [];
+    // ⚡ Procesar todos los servidores en paralelo
+    const results = await Promise.all(
+      filteredServers.map(async (srv) => {
+        console.log("🟢 Procesando registro de Supabase:", srv);
 
-    for (const srv of filteredServers) {
-      console.log("🟢 Procesando registro de Supabase:", srv);
+        const id = String(srv.hetzner_server_id);
+        if (!id || id === "null" || id === "undefined") {
+          console.warn(`⚠️ ID inválido para registro: ${JSON.stringify(srv)}`);
+          return null;
+        }
 
-      const id = String(srv.hetzner_server_id);
-      if (!id || id === "null" || id === "undefined") {
-        console.warn(`⚠️ ID inválido para registro: ${JSON.stringify(srv)}`);
-        continue;
-      }
+        const result = await waitForServerRunning(id);
 
-      const result = await waitForServerRunning(id);
+        if (!result) {
+          console.log(`⚠️ Servidor ${id} no está running tras varios intentos`);
+          return { id, valid: false };
+        }
 
-      if (!result) {
-        console.log(`⚠️ Servidor ${id} no está running tras varios intentos, se mantiene en Supabase`);
-        removedServers.push(id); // opcional: marcar como pendiente
-        continue;
-      }
+        const { server, project } = result;
 
-      const { server, project } = result;
+        return {
+          id,
+          name: server.name,
+          ip: server.public_net?.ipv4?.ip || "No asignada",
+          status: server.status,
+          project,
+          type: srv.server_type || "Desconocido",
+          gpu: srv.gpu_type || "N/A",
+          valid: true,
+        };
+      })
+    );
 
-      validServers.push({
-        id,
-        name: server.name,
-        ip: server.public_net?.ipv4?.ip || "No asignada",
-        status: server.status,
-        project,
-        type: srv.server_type || "Desconocido",
-        gpu: srv.gpu_type || "N/A",
-      });
-
-      console.log(`✅ Servidor válido: ${server.name} (${id}) estado ${server.status}`);
-    }
+    // 🧹 Clasificar válidos y no válidos
+    const validServers = results.filter((r) => r && r.valid);
+    const removedServers = results
+      .filter((r) => r && !r.valid)
+      .map((r) => r.id);
 
     console.log(`📊 Total servidores válidos: ${validServers.length}`);
     if (removedServers.length > 0) {
-      console.log(`🟠 Servidores pendientes/no running: ${removedServers.join(", ")}`);
+      console.log(`🟠 Servidores no válidos: ${removedServers.join(", ")}`);
     }
 
     return NextResponse.json({
@@ -169,7 +173,6 @@ export async function GET(req: Request) {
       removed: removedServers,
       total: filteredServers.length,
     });
-
   } catch (err) {
     console.error("💥 Error general en get-user-servers:", err);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
