@@ -104,6 +104,7 @@ async function cleanDuplicateServers() {
 async function syncServers(userEmail: string) {
   console.log(`👤 Sincronizando para usuario: ${userEmail}`);
 
+  // 🔹 Limpieza inicial de duplicados
   await cleanDuplicateServers();
 
   const hetznerServers = await fetchHetznerServers();
@@ -112,19 +113,18 @@ async function syncServers(userEmail: string) {
     return [];
   }
 
+  // 🔹 Leer servidores actuales
   const { data: dbServers, error: dbError } = await supabase
     .from("user_servers")
     .select("*");
-
   if (dbError) {
     console.error("❌ Error leyendo Supabase:", dbError);
     return [];
   }
 
   const hetznerIds = hetznerServers.map((s) => s.id);
-  const existingIds = dbServers.map((s) => s.hetzner_server_id);
 
-  // 🗑️ ELIMINAR LOS QUE YA NO EXISTEN
+  // 🗑️ Eliminar los servidores que ya no existen en Hetzner
   const toDelete = dbServers.filter(
     (srv) => !hetznerIds.includes(srv.hetzner_server_id)
   );
@@ -134,9 +134,12 @@ async function syncServers(userEmail: string) {
     await supabase.from("user_servers").delete().eq("id", srv.id);
   }
 
-  // 🆕 INSERTAR / ACTUALIZAR LOS EXISTENTES
+  // 🔹 Leer nuevamente la DB para evitar duplicados
+  const { data: dbServersUpdated } = await supabase.from("user_servers").select("*");
+
+  // 🆕 Insertar / actualizar los existentes
   for (const server of hetznerServers) {
-    const existing = dbServers.find((s) => s.hetzner_server_id === server.id);
+    const existing = dbServersUpdated.find((s) => s.hetzner_server_id === server.id);
 
     const row = {
       hetzner_server_id: server.id,
@@ -158,10 +161,10 @@ async function syncServers(userEmail: string) {
     }
   }
 
-  // 🧹 LIMPIEZA FINAL
+  // 🔹 Limpieza final por seguridad
   await cleanDuplicateServers();
 
-  // ✅ VERIFICACIÓN FINAL EN SUPABASE
+  // ✅ Verificación final
   const { data: finalData, error: finalError } = await supabase
     .from("user_servers")
     .select("*")
