@@ -43,7 +43,6 @@ const hetznerProjects = [
 ──────────────────────────────────────────────── */
 async function fetchHetznerServers() {
   const allServers: any[] = [];
-  if (hetznerProjects.length === 0) return [];
 
   for (const { name, token } of hetznerProjects) {
     try {
@@ -51,20 +50,26 @@ async function fetchHetznerServers() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const servers = res.data.servers || [];
-      if (servers.length > 0) {
-        const enriched = servers.map((s: any) => ({
-          ...s,
+
+      console.log(`📡 ${name}: ${servers.length} servidores obtenidos`);
+
+      servers.forEach((s: any) => {
+        allServers.push({
+          id: s.id.toString(),
+          name: s.name,
+          status: s.status,
+          gpu: s.labels?.gpu || null,
+          ip: s.public_net?.ipv4?.ip || null,
+          location: s.datacenter?.location?.name || null,
           project: name,
-          token,
-        }));
-        allServers.push(...enriched);
-      }
+        });
+      });
     } catch (err: any) {
-      console.error(`❌ Error en proyecto ${name}:`, err.response?.data || err.message);
+      console.error(`❌ Error obteniendo servidores de ${name}:`, err.message);
     }
   }
 
-  console.log(`🔹 Total global de servidores Hetzner: ${allServers.length}`);
+  console.log(`🔹 Total global de Hetzner: ${allServers.length}`);
   return allServers;
 }
 
@@ -72,21 +77,20 @@ async function fetchHetznerServers() {
    🧹 LIMPIAR DUPLICADOS EN SUPABASE
 ──────────────────────────────────────────────── */
 async function cleanDuplicateServers() {
-  console.log("🧹 Buscando duplicados en user_servers...");
   const { data: allRows, error } = await supabase.from("user_servers").select("*");
   if (error) {
-    console.error("❌ Error leyendo Supabase:", error);
+    console.error("❌ Error al leer Supabase:", error);
     return;
   }
 
-  const seen = new Map<string, number>();
+  const seen = new Set<string>();
   const duplicates: number[] = [];
 
   for (const row of allRows) {
     if (seen.has(row.hetzner_server_id)) {
-      duplicates.push(row.id); // mantener solo la primera ocurrencia
+      duplicates.push(row.id);
     } else {
-      seen.set(row.hetzner_server_id, row.id);
+      seen.add(row.hetzner_server_id);
     }
   }
 
@@ -97,9 +101,9 @@ async function cleanDuplicateServers() {
       .delete()
       .in("id", duplicates);
     if (delError) console.error("❌ Error al eliminar duplicados:", delError);
-    else console.log("✅ Duplicados eliminados con éxito");
+    else console.log("✅ Duplicados eliminados correctamente.");
   } else {
-    console.log("✅ No se encontraron duplicados.");
+    console.log("✅ No hay duplicados en Supabase.");
   }
 }
 
@@ -109,21 +113,25 @@ async function cleanDuplicateServers() {
 async function syncServers(userEmail: string) {
   console.log(`👤 Sincronizando para usuario: ${userEmail}`);
 
+  // 🧹 Limpieza previa
+  await cleanDuplicateServers();
+
   const hetznerServers = await fetchHetznerServers();
   if (!hetznerServers.length) {
     console.warn("⚠️ No hay servidores disponibles desde Hetzner.");
     return [];
   }
 
+  // Leer servidores actuales
   const { data: dbServers, error: dbError } = await supabase.from("user_servers").select("*");
   if (dbError) {
     console.error("❌ Error leyendo Supabase:", dbError);
     return [];
   }
 
-  const hetznerIds = hetznerServers.map((s) => s.id.toString());
+  const hetznerIds = hetznerServers.map((s) => s.id);
 
-  // 🔹 Eliminar registros de Supabase que ya no existen en Hetzner
+  // 🗑️ Eliminar servidores que ya no existen en Hetzner
   for (const srv of dbServers) {
     if (!hetznerIds.includes(srv.hetzner_server_id)) {
       console.log(`🗑️ Eliminando inactivo: ${srv.server_name} (${srv.hetzner_server_id})`);
@@ -131,35 +139,34 @@ async function syncServers(userEmail: string) {
     }
   }
 
-  // 🔹 Insertar o actualizar registros
+  // 🆕 Insertar o actualizar
   for (const server of hetznerServers) {
-    const idStr = server.id.toString();
-    const existing = dbServers.find((s) => s.hetzner_server_id === idStr);
+    const existing = dbServers.find((s) => s.hetzner_server_id === server.id);
 
-    const serverData: any = {
-      hetzner_server_id: idStr,
+    const data = {
+      hetzner_server_id: server.id,
       server_name: server.name,
       status: server.status,
-      gpu_type: server.labels?.gpu || null,
-      ip: server.public_net?.ipv4?.ip || null,
+      gpu_type: server.gpu,
+      ip: server.ip,
+      location: server.location,
       project: server.project,
-      location: server.datacenter?.location?.name || null,
       user_id: existing?.user_id || userEmail,
     };
 
     if (existing) {
-      await supabase.from("user_servers").update(serverData).eq("id", existing.id);
+      await supabase.from("user_servers").update(data).eq("id", existing.id);
       console.log(`🟢 Actualizado: ${server.name}`);
     } else {
-      await supabase.from("user_servers").insert(serverData);
+      await supabase.from("user_servers").insert(data);
       console.log(`🆕 Insertado: ${server.name}`);
     }
   }
 
-  // 🧹 Limpiar duplicados al final
+  // 🧹 Limpieza final por seguridad
   await cleanDuplicateServers();
 
-  console.log("✅ Sincronización terminada con éxito.");
+  console.log("✅ Sincronización completada.");
   return hetznerServers;
 }
 
@@ -177,16 +184,18 @@ export async function GET(req: Request) {
     const email = rawEmail.trim().toLowerCase();
     const synced = await syncServers(email);
 
-    const { data: userServers, error: userError } = await supabase
+    const { data: userServers, error } = await supabase
       .from("user_servers")
       .select("*")
       .eq("user_id", email);
 
-    if (userError) throw userError;
+    if (error) throw error;
+
+    console.log(`📦 ${userServers.length} servidores finales en Supabase.`);
 
     return NextResponse.json({
-      servers: userServers || [],
-      total: userServers?.length || 0,
+      servers: userServers,
+      total: userServers.length,
       synced: synced.length,
       email,
     });
