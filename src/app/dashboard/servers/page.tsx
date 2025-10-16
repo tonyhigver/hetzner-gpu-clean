@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link"; // ✅ añadido para la navegación
 
 interface Server {
   id: string;
@@ -90,31 +91,34 @@ export default function ServersPage() {
       ) : (
         <ul className="space-y-4">
           {servers.map((server) => (
-            <li
+            <Link
               key={server.id}
-              className="bg-[#1E1F26] p-5 rounded-2xl border border-[#00C896]/50 shadow-lg flex justify-between items-center"
+              href={`/dashboard/servers/${server.id}`} // ✅ enlace al detalle
+              className="block"
             >
-              <div>
-                <p className="font-semibold text-lg">
-                  🖥️ {server.server_name || "Servidor sin nombre"}
-                </p>
-                {server.project && <p>Proyecto: {server.project}</p>}
-                {server.location && <p>Ubicación: {server.location}</p>}
-                <p>GPU: {server.gpu_type || "—"}</p>
-                <p>IP: {server.ip || "—"}</p>
-              </div>
-              <div className="text-right">
-                <p>
-                  Estado:{" "}
-                  {server.status === "running"
-                    ? "🟢 Activo"
-                    : server.status === "off"
-                    ? "🔴 Apagado"
-                    : "🟠 Desconocido"}
-                </p>
-                <p>ID: {server.id}</p>
-              </div>
-            </li>
+              <li className="bg-[#1E1F26] p-5 rounded-2xl border border-[#00C896]/50 shadow-lg flex justify-between items-center hover:bg-[#2B2D35] transition cursor-pointer">
+                <div>
+                  <p className="font-semibold text-lg">
+                    🖥️ {server.server_name || "Servidor sin nombre"}
+                  </p>
+                  {server.project && <p>Proyecto: {server.project}</p>}
+                  {server.location && <p>Ubicación: {server.location}</p>}
+                  <p>GPU: {server.gpu_type || "—"}</p>
+                  <p>IP: {server.ip || "—"}</p>
+                </div>
+                <div className="text-right">
+                  <p>
+                    Estado:{" "}
+                    {server.status === "running"
+                      ? "🟢 Activo"
+                      : server.status === "off"
+                      ? "🔴 Apagado"
+                      : "🟠 Desconocido"}
+                  </p>
+                  <p>ID: {server.id}</p>
+                </div>
+              </li>
+            </Link>
           ))}
         </ul>
       )}
