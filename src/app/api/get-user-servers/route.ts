@@ -74,38 +74,39 @@ async function syncServers(userEmail: string) {
   console.log(`👤 Sincronizando para usuario: ${userEmail}`);
 
   const hetznerServers = await fetchHetznerServers();
+
+  // 🔹 Purga completa del usuario antes de insertar
+  const { error: delError } = await supabase.from("user_servers").delete().eq("user_id", userEmail);
+  if (delError) console.error("❌ Error eliminando servidores antiguos:", delError);
+  else console.log("🗑️ Servidores antiguos eliminados.");
+
   if (!hetznerServers.length) {
     console.warn("⚠️ Hetzner no devolvió servidores.");
-    // Eliminar todo del usuario si no hay servidores
-    await supabase.from("user_servers").delete().eq("user_id", userEmail);
     return [];
   }
 
-  // 🔹 PURGAR todos los servidores antiguos del usuario
-  await supabase.from("user_servers").delete().eq("user_id", userEmail);
-  console.log("🗑️ Servidores antiguos eliminados.");
-
-  // 🆕 INSERTAR solo los servidores actuales de Hetzner
+  // 🆕 Insertar solo los servidores actuales de Hetzner
+  const finalData: any[] = [];
   for (const server of hetznerServers) {
     const row = {
       hetzner_server_id: server.id,
       server_name: server.name,
       status: server.status,
-      gpu_type: server.gpu,
-      ip: server.ip,
-      location: server.location,
-      project: server.project,
+      gpu_type: server.gpu ?? "—",
+      ip: server.ip ?? "—",
+      location: server.location ?? "—",
+      project: server.project ?? "—",
       user_id: userEmail,
     };
 
-    await supabase.from("user_servers").insert(row);
-    console.log(`🆕 Insertado: ${server.name}`);
+    const { data, error } = await supabase.from("user_servers").insert(row).select().single();
+    if (error) {
+      console.error("❌ Error insertando servidor:", server.name, error);
+    } else {
+      finalData.push(data);
+      console.log(`🆕 Insertado: ${server.name}`);
+    }
   }
-
-  const { data: finalData } = await supabase
-    .from("user_servers")
-    .select("*")
-    .eq("user_id", userEmail);
 
   console.log(`📦 ${finalData.length} servidores finales confirmados en Supabase.`);
   console.log("✅ Sincronización completada.");
