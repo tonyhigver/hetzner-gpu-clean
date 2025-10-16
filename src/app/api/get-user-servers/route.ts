@@ -4,14 +4,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
 
-/* ────────────────────────────────────────────────
-   🔧 CONFIGURACIÓN INICIAL
-──────────────────────────────────────────────── */
+/* ────────────────────────────────
+   🔧 CONFIGURACIÓN
+────────────────────────────────── */
 console.log("==============================================");
 console.log("🚀 Iniciando /api/get-user-servers route...");
-console.log("🔹 NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅" : "❌");
-console.log("🔹 SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌");
-console.log("🔹 Tokens Hetzner detectados:");
+console.log("🔹 Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅" : "❌");
+console.log("🔹 Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌");
+console.log("🔹 Hetzner Tokens:");
 console.log({
   PROJECT1: process.env.HETZNER_API_TOKEN_PROJECT1 ? "✅" : "❌",
   PROJECT2: process.env.HETZNER_API_TOKEN_PROJECT2 ? "✅" : "❌",
@@ -20,17 +20,11 @@ console.log({
 });
 console.log("==============================================");
 
-/* ────────────────────────────────────────────────
-   🔗 CONEXIÓN SUPABASE
-──────────────────────────────────────────────── */
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-/* ────────────────────────────────────────────────
-   💡 TOKENS HETZNER
-──────────────────────────────────────────────── */
 const hetznerProjects = [
   { name: "PROJECT1", token: process.env.HETZNER_API_TOKEN_PROJECT1 },
   { name: "PROJECT2", token: process.env.HETZNER_API_TOKEN_PROJECT2 },
@@ -38,9 +32,9 @@ const hetznerProjects = [
   { name: "PROJECT4", token: process.env.HETZNER_API_TOKEN_PROJECT4 },
 ].filter((p) => !!p.token);
 
-/* ────────────────────────────────────────────────
-   📡 OBTENER TODOS LOS SERVIDORES HETZNER
-──────────────────────────────────────────────── */
+/* ────────────────────────────────
+   📡 OBTENER SERVIDORES DE HETZNER
+────────────────────────────────── */
 async function fetchHetznerServers() {
   const allServers: any[] = [];
 
@@ -53,7 +47,7 @@ async function fetchHetznerServers() {
 
       console.log(`📡 ${name}: ${servers.length} servidores obtenidos`);
 
-      servers.forEach((s: any) => {
+      for (const s of servers) {
         allServers.push({
           id: s.id.toString(),
           name: s.name,
@@ -63,7 +57,7 @@ async function fetchHetznerServers() {
           location: s.datacenter?.location?.name || null,
           project: name,
         });
-      });
+      }
     } catch (err: any) {
       console.error(`❌ Error obteniendo servidores de ${name}:`, err.message);
     }
@@ -73,77 +67,78 @@ async function fetchHetznerServers() {
   return allServers;
 }
 
-/* ────────────────────────────────────────────────
-   🧹 LIMPIAR DUPLICADOS EN SUPABASE
-──────────────────────────────────────────────── */
+/* ────────────────────────────────
+   🧹 ELIMINAR DUPLICADOS
+────────────────────────────────── */
 async function cleanDuplicateServers() {
-  const { data: allRows, error } = await supabase.from("user_servers").select("*");
+  const { data: rows, error } = await supabase.from("user_servers").select("*");
   if (error) {
-    console.error("❌ Error al leer Supabase:", error);
+    console.error("❌ Error leyendo Supabase:", error);
     return;
   }
 
-  const seen = new Set<string>();
+  const seen = new Set();
   const duplicates: number[] = [];
 
-  for (const row of allRows) {
-    if (seen.has(row.hetzner_server_id)) {
-      duplicates.push(row.id);
-    } else {
-      seen.add(row.hetzner_server_id);
-    }
+  for (const row of rows) {
+    if (seen.has(row.hetzner_server_id)) duplicates.push(row.id);
+    else seen.add(row.hetzner_server_id);
   }
 
   if (duplicates.length > 0) {
-    console.log(`🗑️ Eliminando ${duplicates.length} duplicados en Supabase...`);
+    console.log(`🗑️ Eliminando ${duplicates.length} duplicados...`);
     const { error: delError } = await supabase
       .from("user_servers")
       .delete()
       .in("id", duplicates);
     if (delError) console.error("❌ Error al eliminar duplicados:", delError);
-    else console.log("✅ Duplicados eliminados correctamente.");
+    else console.log("✅ Duplicados eliminados.");
   } else {
-    console.log("✅ No hay duplicados en Supabase.");
+    console.log("✅ No hay duplicados.");
   }
 }
 
-/* ────────────────────────────────────────────────
-   🔄 SINCRONIZAR HETZNER ↔ SUPABASE
-──────────────────────────────────────────────── */
+/* ────────────────────────────────
+   🔄 SINCRONIZACIÓN HETZNER ↔ SUPABASE
+────────────────────────────────── */
 async function syncServers(userEmail: string) {
   console.log(`👤 Sincronizando para usuario: ${userEmail}`);
 
-  // 🧹 Limpieza previa
   await cleanDuplicateServers();
 
   const hetznerServers = await fetchHetznerServers();
   if (!hetznerServers.length) {
-    console.warn("⚠️ No hay servidores disponibles desde Hetzner.");
+    console.warn("⚠️ Hetzner no devolvió servidores.");
     return [];
   }
 
-  // Leer servidores actuales
-  const { data: dbServers, error: dbError } = await supabase.from("user_servers").select("*");
+  const { data: dbServers, error: dbError } = await supabase
+    .from("user_servers")
+    .select("*");
+
   if (dbError) {
     console.error("❌ Error leyendo Supabase:", dbError);
     return [];
   }
 
   const hetznerIds = hetznerServers.map((s) => s.id);
+  const existingIds = dbServers.map((s) => s.hetzner_server_id);
 
-  // 🗑️ Eliminar servidores que ya no existen en Hetzner
-  for (const srv of dbServers) {
-    if (!hetznerIds.includes(srv.hetzner_server_id)) {
-      console.log(`🗑️ Eliminando inactivo: ${srv.server_name} (${srv.hetzner_server_id})`);
-      await supabase.from("user_servers").delete().eq("id", srv.id);
-    }
+  // 🗑️ ELIMINAR LOS QUE YA NO EXISTEN
+  const toDelete = dbServers.filter(
+    (srv) => !hetznerIds.includes(srv.hetzner_server_id)
+  );
+
+  for (const srv of toDelete) {
+    console.log(`🗑️ Eliminando inactivo: ${srv.server_name} (${srv.hetzner_server_id})`);
+    await supabase.from("user_servers").delete().eq("id", srv.id);
   }
 
-  // 🆕 Insertar o actualizar
+  // 🆕 INSERTAR / ACTUALIZAR LOS EXISTENTES
   for (const server of hetznerServers) {
     const existing = dbServers.find((s) => s.hetzner_server_id === server.id);
 
-    const data = {
+    const row = {
       hetzner_server_id: server.id,
       server_name: server.name,
       status: server.status,
@@ -155,48 +150,52 @@ async function syncServers(userEmail: string) {
     };
 
     if (existing) {
-      await supabase.from("user_servers").update(data).eq("id", existing.id);
+      await supabase.from("user_servers").update(row).eq("id", existing.id);
       console.log(`🟢 Actualizado: ${server.name}`);
     } else {
-      await supabase.from("user_servers").insert(data);
+      await supabase.from("user_servers").insert(row);
       console.log(`🆕 Insertado: ${server.name}`);
     }
   }
 
-  // 🧹 Limpieza final por seguridad
+  // 🧹 LIMPIEZA FINAL
   await cleanDuplicateServers();
 
+  // ✅ VERIFICACIÓN FINAL EN SUPABASE
+  const { data: finalData, error: finalError } = await supabase
+    .from("user_servers")
+    .select("*")
+    .eq("user_id", userEmail);
+
+  if (finalError) {
+    console.error("❌ Error leyendo lista final:", finalError);
+    return [];
+  }
+
+  console.log(`📦 ${finalData.length} servidores finales confirmados en Supabase.`);
   console.log("✅ Sincronización completada.");
-  return hetznerServers;
+
+  return finalData;
 }
 
-/* ────────────────────────────────────────────────
-   🧩 HANDLER GET /api/get-user-servers
-──────────────────────────────────────────────── */
+/* ────────────────────────────────
+   🧩 HANDLER GET
+────────────────────────────────── */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
-    if (!rawEmail) {
+
+    if (!rawEmail)
       return NextResponse.json({ error: "Falta email" }, { status: 400 });
-    }
 
     const email = rawEmail.trim().toLowerCase();
-    const synced = await syncServers(email);
 
-    const { data: userServers, error } = await supabase
-      .from("user_servers")
-      .select("*")
-      .eq("user_id", email);
-
-    if (error) throw error;
-
-    console.log(`📦 ${userServers.length} servidores finales en Supabase.`);
+    const syncedServers = await syncServers(email);
 
     return NextResponse.json({
-      servers: userServers,
-      total: userServers.length,
-      synced: synced.length,
+      servers: syncedServers,
+      total: syncedServers.length,
       email,
     });
   } catch (err: any) {
