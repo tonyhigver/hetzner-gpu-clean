@@ -27,11 +27,14 @@ export default function ServerDetailPage() {
 
   useEffect(() => {
     const fetchServer = async () => {
+      if (!id) return;
+
       // Primero intentamos con localStorage
       const stored = localStorage.getItem("selectedServer");
       if (stored) {
         const parsed = JSON.parse(stored) as Server;
-        if (parsed.id === id) {
+        // Convertimos ambos a string para asegurar coincidencia
+        if (String(parsed.id) === String(id)) {
           setServer(parsed);
           setLoading(false);
           return;
@@ -40,18 +43,19 @@ export default function ServerDetailPage() {
 
       // Si no hay datos en localStorage o no coinciden, consultamos Supabase
       try {
+        const numericId = Number(id); // ✅ convertimos a número para la consulta
         const { data, error } = await supabase
           .from("user_servers")
           .select("*")
-          .eq("id", id)
+          .eq("id", numericId)
           .single();
 
         if (error) throw error;
-        setServer(data);
+        setServer({ ...data, id: String(data.id) }); // Convertimos a string para el localStorage
 
-        // Actualizamos localStorage con el valor correcto
+        // Actualizamos localStorage
         localStorage.removeItem("selectedServer");
-        localStorage.setItem("selectedServer", JSON.stringify(data));
+        localStorage.setItem("selectedServer", JSON.stringify({ ...data, id: String(data.id) }));
       } catch (err) {
         console.error("[ServerDetailPage] Error al obtener servidor:", err);
       } finally {
@@ -59,10 +63,11 @@ export default function ServerDetailPage() {
       }
     };
 
-    if (id) fetchServer();
+    fetchServer();
   }, [id]);
 
-  if (loading) return <div className="text-center text-gray-400 mt-32">Cargando detalles del servidor...</div>;
+  if (loading)
+    return <div className="text-center text-gray-400 mt-32">Cargando detalles del servidor...</div>;
 
   if (!server)
     return (
