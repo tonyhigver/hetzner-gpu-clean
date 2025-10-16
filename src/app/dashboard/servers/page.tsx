@@ -7,8 +7,11 @@ import { useSession } from "next-auth/react";
 interface Server {
   id: string;
   server_name: string;
-  status: string;
+  gpu_type?: string;
+  ip?: string;
+  status?: string;
   project?: string;
+  location?: string;
 }
 
 export default function ServersPage() {
@@ -17,9 +20,12 @@ export default function ServersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("[ServersPage] useEffect ejecutado, status:", status, "session:", session);
+
     if (status === "loading") return;
 
     if (!session?.user?.email) {
+      console.log("[ServersPage] No hay email de usuario, no se pueden cargar servidores");
       setServers([]);
       setLoading(false);
       return;
@@ -28,19 +34,20 @@ export default function ServersPage() {
     const fetchServers = async () => {
       try {
         const email = session.user.email;
-        const res = await fetch(
-          `/api/get-user-servers?email=${encodeURIComponent(email)}`
-        );
-        if (!res.ok) throw new Error("Error al obtener servidores");
+        console.log("[ServersPage] Solicitando servidores para:", email);
+
+        const res = await fetch(`/api/get-user-servers?email=${encodeURIComponent(email)}`);
+        console.log("[ServersPage] Response status:", res.status);
+
+        if (!res.ok) {
+          console.error("[ServersPage] Error en fetch:", res.status, await res.text());
+          throw new Error("Error al obtener servidores");
+        }
 
         const data = await res.json();
+        console.log("[ServersPage] Datos recibidos:", data);
 
-        // 🔹 Filtrar servidores visibles (excluyendo backend-master)
-        const visibleServers = (data.servers || []).filter(
-          (srv: any) => srv.server_name !== "backend-master"
-        );
-
-        setServers(visibleServers);
+        setServers(data.servers || []);
       } catch (err) {
         console.error("[ServersPage] Error al cargar servidores:", err);
       } finally {
@@ -78,25 +85,46 @@ export default function ServersPage() {
 
       {servers.length === 0 ? (
         <p className="text-center text-gray-400">
-          No tienes servidores activos (o todos fueron filtrados).
+          No tienes servidores activos en tu cuenta.
         </p>
       ) : (
         <ul className="space-y-4">
           {servers.map((server) => (
             <li
               key={server.id}
-              className="bg-[#1E1F26] p-5 rounded-2xl border border-[#00C896]/50 shadow-lg flex justify-between items-center"
+              className="bg-[#1E1F26] p-5 rounded-2xl border border-[#00C896]/50 shadow-lg"
             >
-              <p className="font-semibold text-xl text-[#00C896]">
-                {server.server_name}
-              </p>
-              <p>
-                {server.status === "running"
-                  ? "🟢 Activo"
-                  : server.status === "off"
-                  ? "🔴 Apagado"
-                  : "🟠 Desconocido"}
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-xl text-[#00C896] mb-2">
+                    {server.server_name || "Servidor sin nombre"}
+                  </p>
+                  {server.location && (
+                    <p className="text-gray-400 text-sm mb-1">
+                      📍 {server.location}
+                    </p>
+                  )}
+                  {server.project && (
+                    <p className="text-gray-400 text-sm mb-1">
+                      🧩 Proyecto: {server.project}
+                    </p>
+                  )}
+                  <p className="text-gray-300 text-sm">GPU: {server.gpu_type || "N/A"}</p>
+                  <p className="text-gray-300 text-sm">IP: {server.ip || "N/A"}</p>
+                </div>
+
+                <div className="text-right">
+                  <p className="font-medium">
+                    Estado:{" "}
+                    {server.status === "running"
+                      ? "🟢 Activo"
+                      : server.status === "off"
+                      ? "🔴 Apagado"
+                      : "🟠 Desconocido"}
+                  </p>
+                  <p className="text-gray-400 text-sm">ID: {server.id}</p>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
