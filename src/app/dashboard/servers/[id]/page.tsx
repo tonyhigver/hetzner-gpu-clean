@@ -14,9 +14,10 @@ interface Server {
   location?: string | null;
 }
 
+// ✅ Usa las variables públicas (no el service role)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export default function ServerDetailPage() {
@@ -25,6 +26,8 @@ export default function ServerDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchServer = async () => {
       try {
         console.log("[ServerDetailPage] Obteniendo servidor:", id);
@@ -43,22 +46,24 @@ export default function ServerDetailPage() {
       }
     };
 
-    if (id) fetchServer();
+    fetchServer();
   }, [id]);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="text-center text-gray-400 mt-32">
         Cargando detalles del servidor...
       </div>
     );
+  }
 
-  if (!server)
+  if (!server) {
     return (
       <div className="text-center text-gray-400 mt-32">
         No se encontró el servidor con ID: {id}
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] flex flex-col items-center pt-28 p-6">
