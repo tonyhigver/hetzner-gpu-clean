@@ -68,6 +68,29 @@ async function fetchHetznerServers() {
 }
 
 /* ────────────────────────────────
+   🧹 ELIMINAR DUPLICADOS SOLO DEL USUARIO
+────────────────────────────────── */
+async function cleanDuplicateServers(userEmail: string) {
+  const { data: rows } = await supabase
+    .from("user_servers")
+    .select("*")
+    .eq("user_id", userEmail);
+
+  const seen = new Set();
+  const duplicates: number[] = [];
+
+  for (const row of rows) {
+    if (seen.has(row.hetzner_server_id)) duplicates.push(row.id);
+    else seen.add(row.hetzner_server_id);
+  }
+
+  if (duplicates.length > 0) {
+    console.log(`🗑️ Eliminando ${duplicates.length} duplicados del usuario ${userEmail}`);
+    await supabase.from("user_servers").delete().in("id", duplicates);
+  }
+}
+
+/* ────────────────────────────────
    🔄 SINCRONIZACIÓN HETZNER ↔ SUPABASE
 ────────────────────────────────── */
 async function syncServers(userEmail: string) {
@@ -79,7 +102,7 @@ async function syncServers(userEmail: string) {
     return [];
   }
 
-  // 🔹 Leer servidores actuales SOLO del usuario
+  // 🔹 Leer solo los servidores del usuario
   const { data: dbServers, error: dbError } = await supabase
     .from("user_servers")
     .select("*")
@@ -93,13 +116,11 @@ async function syncServers(userEmail: string) {
   const hetznerIds = hetznerServers.map((s) => s.id);
 
   // 🗑️ Eliminar servidores que ya no existen en Hetzner
-  const toDelete = dbServers.filter(
-    (srv) => !hetznerIds.includes(srv.hetzner_server_id)
-  );
-
-  for (const srv of toDelete) {
-    console.log(`🗑️ Eliminando inactivo: ${srv.server_name} (${srv.hetzner_server_id})`);
-    await supabase.from("user_servers").delete().eq("id", srv.id);
+  for (const srv of dbServers) {
+    if (!hetznerIds.includes(srv.hetzner_server_id)) {
+      console.log(`🗑️ Eliminando inactivo: ${srv.server_name} (${srv.hetzner_server_id})`);
+      await supabase.from("user_servers").delete().eq("id", srv.id);
+    }
   }
 
   // 🆕 Insertar / actualizar los existentes
@@ -114,7 +135,7 @@ async function syncServers(userEmail: string) {
       ip: server.ip,
       location: server.location,
       project: server.project,
-      user_id: userEmail, // ✅ siempre el usuario actual
+      user_id: userEmail,
     };
 
     if (existing) {
@@ -126,16 +147,13 @@ async function syncServers(userEmail: string) {
     }
   }
 
-  // ✅ Verificación final
-  const { data: finalData, error: finalError } = await supabase
+  // 🔹 Limpieza final solo del usuario
+  await cleanDuplicateServers(userEmail);
+
+  const { data: finalData } = await supabase
     .from("user_servers")
     .select("*")
     .eq("user_id", userEmail);
-
-  if (finalError) {
-    console.error("❌ Error leyendo lista final:", finalError);
-    return [];
-  }
 
   console.log(`📦 ${finalData.length} servidores finales confirmados en Supabase.`);
   console.log("✅ Sincronización completada.");
