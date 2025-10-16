@@ -14,7 +14,7 @@ interface Server {
   location?: string | null;
 }
 
-// ✅ Usa las variables públicas (no el service role)
+// Cliente público de Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -26,11 +26,20 @@ export default function ServerDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
-
     const fetchServer = async () => {
+      // Primero intentamos con localStorage
+      const stored = localStorage.getItem("selectedServer");
+      if (stored) {
+        const parsed = JSON.parse(stored) as Server;
+        if (parsed.id === id) {
+          setServer(parsed);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Si no hay datos en localStorage o no coinciden, consultamos Supabase
       try {
-        console.log("[ServerDetailPage] Obteniendo servidor:", id);
         const { data, error } = await supabase
           .from("user_servers")
           .select("*")
@@ -39,6 +48,10 @@ export default function ServerDetailPage() {
 
         if (error) throw error;
         setServer(data);
+
+        // Actualizamos localStorage con el valor correcto
+        localStorage.removeItem("selectedServer");
+        localStorage.setItem("selectedServer", JSON.stringify(data));
       } catch (err) {
         console.error("[ServerDetailPage] Error al obtener servidor:", err);
       } finally {
@@ -46,33 +59,22 @@ export default function ServerDetailPage() {
       }
     };
 
-    fetchServer();
+    if (id) fetchServer();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="text-center text-gray-400 mt-32">
-        Cargando detalles del servidor...
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center text-gray-400 mt-32">Cargando detalles del servidor...</div>;
 
-  if (!server) {
+  if (!server)
     return (
       <div className="text-center text-gray-400 mt-32">
-        No se encontró el servidor con ID: {id}
+        No se encontró información del servidor con ID: {id}
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] flex flex-col items-center pt-28 p-6">
-      {/* Nombre del servidor */}
-      <h1 className="text-5xl font-bold text-[#00C896] mb-8">
-        {server.server_name || "Servidor sin nombre"}
-      </h1>
+      <h1 className="text-5xl font-bold text-[#00C896] mb-8">{server.server_name}</h1>
 
-      {/* Info */}
       <div className="text-center text-gray-300 space-y-2 mb-10">
         <p>Estado: {server.status === "running" ? "🟢 Activo" : "🔴 Apagado"}</p>
         <p>Proyecto: {server.project || "—"}</p>
@@ -81,7 +83,6 @@ export default function ServerDetailPage() {
         <p>Ubicación: {server.location || "—"}</p>
       </div>
 
-      {/* Terminal simulada */}
       <div className="bg-black text-green-400 font-mono rounded-2xl shadow-lg p-6 w-full max-w-3xl h-[400px]">
         <p className="text-gray-500 mb-2">TERMINAL</p>
         <div className="text-sm">
