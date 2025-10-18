@@ -27,19 +27,28 @@ export default function ServerDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchServer = async () => {
-      if (!id) return;
+    if (!id) return;
 
-      const stored = localStorage.getItem("selectedServer");
-      if (stored) {
-        const parsed = JSON.parse(stored) as Server;
-        if (String(parsed.id) === String(id)) {
-          setServer(parsed);
-          setLoading(false);
-          return;
+    const fetchServer = async () => {
+      // ✅ Primero intentamos cargar desde localStorage
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("selectedServer");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as Server;
+            if (String(parsed.id) === String(id)) {
+              setServer(parsed);
+              setLoading(false);
+              return; // Salimos si encontramos el servidor en localStorage
+            }
+          } catch {
+            // Si localStorage tiene datos corruptos, ignoramos y seguimos
+            console.warn("[ServerDetailPage] localStorage corrupto, ignorando");
+          }
         }
       }
 
+      // 🔹 Si no hay datos en localStorage, hacemos fetch a Supabase
       try {
         const numericId = Number(id);
         const { data, error } = await supabase
@@ -48,12 +57,23 @@ export default function ServerDetailPage() {
           .eq("id", numericId)
           .single();
 
-        if (error) throw error;
-        setServer({ ...data, id: String(data.id) });
-        localStorage.removeItem("selectedServer");
-        localStorage.setItem("selectedServer", JSON.stringify({ ...data, id: String(data.id) }));
+        if (error || !data) {
+          setServer(null);
+          console.error("[ServerDetailPage] Error al obtener servidor:", error);
+          return;
+        }
+
+        const serverData = { ...data, id: String(data.id) };
+        setServer(serverData);
+
+        // Guardamos en localStorage para la próxima
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("selectedServer");
+          localStorage.setItem("selectedServer", JSON.stringify(serverData));
+        }
       } catch (err) {
-        console.error("[ServerDetailPage] Error al obtener servidor:", err);
+        console.error("[ServerDetailPage] Excepción al obtener servidor:", err);
+        setServer(null);
       } finally {
         setLoading(false);
       }
