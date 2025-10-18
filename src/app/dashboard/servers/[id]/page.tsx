@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import ServerTerminal from "@/components/ServerTerminal";
 
 interface Server {
   id: string;
@@ -29,11 +30,9 @@ export default function ServerDetailPage() {
     const fetchServer = async () => {
       if (!id) return;
 
-      // Primero intentamos con localStorage
       const stored = localStorage.getItem("selectedServer");
       if (stored) {
         const parsed = JSON.parse(stored) as Server;
-        // Convertimos ambos a string para asegurar coincidencia
         if (String(parsed.id) === String(id)) {
           setServer(parsed);
           setLoading(false);
@@ -41,9 +40,8 @@ export default function ServerDetailPage() {
         }
       }
 
-      // Si no hay datos en localStorage o no coinciden, consultamos Supabase
       try {
-        const numericId = Number(id); // ✅ convertimos a número para la consulta
+        const numericId = Number(id);
         const { data, error } = await supabase
           .from("user_servers")
           .select("*")
@@ -51,9 +49,7 @@ export default function ServerDetailPage() {
           .single();
 
         if (error) throw error;
-        setServer({ ...data, id: String(data.id) }); // Convertimos a string para el localStorage
-
-        // Actualizamos localStorage
+        setServer({ ...data, id: String(data.id) });
         localStorage.removeItem("selectedServer");
         localStorage.setItem("selectedServer", JSON.stringify({ ...data, id: String(data.id) }));
       } catch (err) {
@@ -90,11 +86,7 @@ export default function ServerDetailPage() {
 
       <div className="bg-black text-green-400 font-mono rounded-2xl shadow-lg p-6 w-full max-w-3xl h-[400px]">
         <p className="text-gray-500 mb-2">TERMINAL</p>
-        <div className="text-sm">
-          <p>$ echo Bienvenido a {server.server_name}</p>
-          <p>Bienvenido, usuario.</p>
-          <p>$ _</p>
-        </div>
+        <ServerTerminal serverId={server.id} />
       </div>
     </div>
   );
