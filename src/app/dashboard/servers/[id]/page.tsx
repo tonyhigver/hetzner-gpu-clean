@@ -27,19 +27,9 @@ export default function ServerDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchServer = async () => {
-      if (!id) return;
-
-      const stored = localStorage.getItem("selectedServer");
-      if (stored) {
-        const parsed = JSON.parse(stored) as Server;
-        if (String(parsed.id) === String(id)) {
-          setServer(parsed);
-          setLoading(false);
-          return;
-        }
-      }
-
       try {
         const numericId = Number(id);
         const { data, error } = await supabase
@@ -48,12 +38,15 @@ export default function ServerDetailPage() {
           .eq("id", numericId)
           .single();
 
-        if (error) throw error;
-        setServer({ ...data, id: String(data.id) });
-        localStorage.removeItem("selectedServer");
-        localStorage.setItem("selectedServer", JSON.stringify({ ...data, id: String(data.id) }));
+        if (error || !data) {
+          setServer(null);
+          console.error("[ServerDetailPage] Error al obtener servidor:", error);
+        } else {
+          setServer({ ...data, id: String(data.id) });
+        }
       } catch (err) {
-        console.error("[ServerDetailPage] Error al obtener servidor:", err);
+        console.error("[ServerDetailPage] Excepción al obtener servidor:", err);
+        setServer(null);
       } finally {
         setLoading(false);
       }
@@ -86,6 +79,7 @@ export default function ServerDetailPage() {
 
       <div className="bg-black text-green-400 font-mono rounded-2xl shadow-lg p-6 w-full max-w-3xl h-[400px]">
         <p className="text-gray-500 mb-2">TERMINAL</p>
+        {/* Client Component: solo se ejecuta en el navegador */}
         <ServerTerminal serverId={server.id} />
       </div>
     </div>
