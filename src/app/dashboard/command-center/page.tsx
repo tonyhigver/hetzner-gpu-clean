@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // Simulación de datos del usuario / servidores
 const serversData = [
@@ -14,6 +15,7 @@ const activitiesData = [
 
 export default function CommandCenter() {
   const [totalPrice, setTotalPrice] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const price = serversData.reduce((acc, srv) => acc + srv.price, 0);
@@ -63,7 +65,10 @@ export default function CommandCenter() {
       <section className="bg-[#1E1F26] p-6 rounded-2xl border border-[#00C896] shadow-lg flex flex-col gap-4">
         <h2 className="text-2xl font-bold text-[#00C896] mb-4">Acciones rápidas</h2>
         <div className="flex flex-wrap gap-4">
-          <button className="bg-[#00C896] px-4 py-2 rounded-lg hover:bg-[#00E676] transition font-semibold">
+          <button
+            className="bg-[#00C896] px-4 py-2 rounded-lg hover:bg-[#00E676] transition font-semibold"
+            onClick={() => router.push("/servers-available")}
+          >
             Deploy nuevo servidor
           </button>
           <button className="bg-[#29B6F6] px-4 py-2 rounded-lg hover:bg-[#64B5F6] transition font-semibold">
