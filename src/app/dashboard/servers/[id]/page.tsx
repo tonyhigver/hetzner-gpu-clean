@@ -30,7 +30,6 @@ export default function ServerDetailPage() {
     if (!id) return;
 
     const fetchServer = async () => {
-      // 🔹 Primero intentamos cargar desde localStorage
       if (typeof window !== "undefined") {
         const stored = localStorage.getItem("selectedServer");
         if (stored) {
@@ -39,15 +38,12 @@ export default function ServerDetailPage() {
             if (String(parsed.id) === String(id)) {
               setServer(parsed);
               setLoading(false);
-              return; // Ya tenemos el servidor
+              return;
             }
-          } catch {
-            console.warn("[ServerDetailPage] localStorage corrupto, ignorando");
-          }
+          } catch {}
         }
       }
 
-      // 🔹 Si no hay datos en localStorage, hacemos fetch a Supabase
       try {
         const numericId = Number(id);
         const { data, error } = await supabase
@@ -65,7 +61,6 @@ export default function ServerDetailPage() {
         const serverData = { ...data, id: String(data.id) };
         setServer(serverData);
 
-        // Guardamos en localStorage solo la info del servidor
         if (typeof window !== "undefined") {
           localStorage.setItem("selectedServer", JSON.stringify(serverData));
         }
@@ -91,21 +86,25 @@ export default function ServerDetailPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#E6E6E6] flex flex-col items-center pt-28 p-6">
-      <h1 className="text-5xl font-bold text-[#00C896] mb-8">{server.server_name}</h1>
-
-      <div className="text-center text-gray-300 space-y-2 mb-10">
-        <p>Estado: {server.status === "running" ? "🟢 Activo" : "🔴 Apagado"}</p>
-        <p>Proyecto: {server.project || "—"}</p>
-        <p>GPU: {server.gpu_type || "—"}</p>
-        <p>IP: {server.ip || "—"}</p>
-        <p>Ubicación: {server.location || "—"}</p>
+    <div className="min-h-screen flex flex-col bg-[#0B0C10] text-[#E6E6E6] pt-28 p-6">
+      {/* Info del servidor */}
+      <div className="mb-6">
+        <h1 className="text-5xl font-bold text-[#00C896] mb-4">{server.server_name}</h1>
+        <div className="text-gray-300 space-y-1">
+          <p>Estado: {server.status === "running" ? "🟢 Activo" : "🔴 Apagado"}</p>
+          <p>Proyecto: {server.project || "—"}</p>
+          <p>GPU: {server.gpu_type || "—"}</p>
+          <p>IP: {server.ip || "—"}</p>
+          <p>Ubicación: {server.location || "—"}</p>
+        </div>
       </div>
 
-      <div className="bg-black text-green-400 font-mono rounded-2xl shadow-lg p-6 w-full max-w-3xl h-[400px]">
+      {/* Terminal que ocupa todo el espacio restante */}
+      <div className="flex-1 bg-black text-green-400 font-mono rounded-2xl shadow-lg p-4 w-full">
         <p className="text-gray-500 mb-2">TERMINAL</p>
-        {/* ✅ ServerTerminal se conectará usando JWT desde /api/ssh-token */}
-        <ServerTerminal serverId={server.id} />
+        <div className="w-full h-full">
+          <ServerTerminal serverId={server.id} />
+        </div>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
         const res = await fetch("/api/ssh-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ serverId, email }),
+          body: JSON.stringify({ serverId, email }), // solo envías serverId
         });
 
         if (!res.ok) {
@@ -47,17 +47,13 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
           return;
         }
 
-        const json = await res.json();
-        console.log("[ServerTerminal] Respuesta del endpoint /api/ssh-token:", json);
-
-        const { token } = json;
+        const { token } = await res.json();
         if (!token) {
           term.writeln("❌ No se recibió token JWT válido.");
           console.error("[ServerTerminal] Token ausente o inválido.");
           return;
         }
 
-        // ⚠️ CAMBIO IMPORTANTE: quitar :8080
         const wsUrl = `wss://terminal.allyrogue.site/?token=${token}`;
         term.writeln(`🌐 Conectando al WebSocket:\n${wsUrl}`);
         console.log("[ServerTerminal] Conectando al WS con token:", wsUrl);
@@ -66,19 +62,13 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
 
         ws.onopen = () => {
           term.writeln("✅ Conectado al servidor WebSocket.");
-          console.log("[ServerTerminal] WS conectado correctamente.");
         };
 
         ws.onmessage = (msg) => {
           try {
             const { type, data } = JSON.parse(msg.data);
-            if (type === "output") {
-              term.write(data);
-            } else {
-              console.log("[ServerTerminal] Mensaje WS recibido (sin output):", msg.data);
-            }
-          } catch (err) {
-            console.warn("[ServerTerminal] Mensaje no JSON:", msg.data);
+            if (type === "output") term.write(data);
+          } catch {
             term.write(msg.data);
           }
         };
@@ -90,15 +80,11 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
 
         ws.onclose = (e) => {
           term.writeln(`\n🔴 Conexión cerrada (código: ${e.code}, motivo: ${e.reason || "sin motivo"})`);
-          console.log("[ServerTerminal] WS cerrado:", e);
         };
 
         term.onData((data) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "input", data }));
-          } else {
-            term.writeln("\n⚠️ WebSocket no disponible para enviar datos.");
-          }
+          if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "input", data }));
+          else term.writeln("\n⚠️ WebSocket no disponible para enviar datos.");
         });
       } catch (err) {
         term.writeln("💥 Error crítico en la conexión o fetch.");
@@ -109,10 +95,5 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
     connect();
   }, [serverId, session, status]);
 
-  return (
-    <div
-      ref={termRef}
-      className="w-full h-[500px] bg-black text-white rounded-lg overflow-hidden"
-    />
-  );
+  return <div ref={termRef} className="w-full h-[500px] bg-black text-white rounded-lg overflow-hidden" />;
 }
