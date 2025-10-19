@@ -8,39 +8,29 @@ export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // ✅ Si el usuario ya está autenticado, lo enviamos a /servers-available
+  // ✅ Si el usuario ya está autenticado, lo enviamos al Command Center
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/servers-available");
+      router.replace("/dashboard/command-center"); // <- Aquí es la ruta del Command Center
     }
   }, [status, router]);
 
   // ✅ Mientras se verifica la sesión
   if (status === "loading") {
-    return <p>Cargando...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen text-white text-2xl">
+        Cargando...
+      </div>
+    );
   }
 
   // ✅ Si NO está logueado → mostrar solo el botón de login
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100vh",
-      flexDirection: "column"
-    }}>
-      <h1>GPU SaaS</h1>
+    <div className="flex flex-col items-center justify-center h-screen gap-6">
+      <h1 className="text-4xl font-bold text-white">GPU SaaS</h1>
       <button
         onClick={() => signIn("google")}
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#4285F4",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontSize: "16px"
-        }}
+        className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
       >
         Iniciar sesión con Google
       </button>
