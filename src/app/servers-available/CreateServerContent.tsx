@@ -33,7 +33,7 @@ export default function CreateServerContent() {
   const [countdown, setCountdown] = useState(10);
   const [serverId, setServerId] = useState<string | null>(null);
 
-  // Si no hay sesión, redirige al login
+  // Redirigir si no hay sesión
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -63,16 +63,14 @@ export default function CreateServerContent() {
     { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
   ];
 
-  const handleSelectServer = (id: string) =>
-    setSelectedServer((prev) => (prev === id ? null : id));
-  const handleSelectGPU = (id: string) =>
-    setSelectedGPU((prev) => (prev === id ? null : id));
+  const handleSelectServer = (id: string) => setSelectedServer(prev => (prev === id ? null : id));
+  const handleSelectGPU = (id: string) => setSelectedGPU(prev => (prev === id ? null : id));
 
-  const selectedServerObj = servers.find((s) => s.id === selectedServer);
-  const selectedGPUObj = saladGPUs.find((g) => g.id === selectedGPU);
+  const selectedServerObj = servers.find(s => s.id === selectedServer);
+  const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // 🔹 Crear servidor y mostrar pantalla de cuenta atrás
+  // Crear servidor
   const handleContinue = async () => {
     if (!selectedServer) return alert("Por favor selecciona un servidor.");
     if (!userEmail) return alert("⚠️ Espera a que la sesión cargue correctamente o inicia sesión.");
@@ -104,25 +102,24 @@ export default function CreateServerContent() {
     }
   };
 
-  // ⏱️ Cuenta regresiva y redirección al dashboard
+  // Cuenta regresiva
   useEffect(() => {
     if (loading && serverId) {
       const interval = setInterval(() => {
-        setCountdown((prev) => {
+        setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(interval);
-            router.push(`/dashboard?serverId=${serverId}`);
+            router.push(`/dashboard/command-center`);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-
       return () => clearInterval(interval);
     }
   }, [loading, serverId, router]);
 
-  // Pantalla de carga con contador
+  // Pantalla de creación con contador
   if (loading && serverId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center">
@@ -138,11 +135,10 @@ export default function CreateServerContent() {
     );
   }
 
-  // Pantalla principal
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 min-h-screen pb-20">
+    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 min-h-screen pb-32">
       <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">
         Selecciona tu Servidor y GPU
       </h1>
@@ -206,14 +202,14 @@ export default function CreateServerContent() {
         })}
       </div>
 
-      <div className="mt-24 mb-24 w-full">
+      <div className="mt-24 mb-12 w-full">
         <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
         <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
           {totalCost > 0
             ? `💰 Total: ${totalCost} €/mes`
             : "Selecciona un servidor y una GPU para ver el total"}
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-between gap-4">
           <button
             onClick={handleContinue}
             disabled={!selectedServer || !userEmail}
@@ -224,6 +220,14 @@ export default function CreateServerContent() {
             }`}
           >
             ✅ Aceptar y continuar
+          </button>
+
+          {/* 🔹 Botón Volver al Command Center */}
+          <button
+            onClick={() => router.push("/dashboard/command-center")}
+            className="px-6 py-3 text-lg font-semibold rounded-xl bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+          >
+            🔙 Volver al Command Center
           </button>
         </div>
       </div>
