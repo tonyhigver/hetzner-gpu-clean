@@ -86,7 +86,8 @@ export default function ServerDetailPage() {
     );
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-[#0B0C10] text-[#E6E6E6]">
+    // Ajustamos el padding superior para bajar todo el contenido y evitar el header
+    <div className="flex flex-col w-screen h-screen bg-[#0B0C10] text-[#E6E6E6] pt-32">
       {/* Info del servidor */}
       <div className="px-6 py-4 bg-[#0B0C10] z-10">
         <h1 className="text-5xl font-bold text-[#00C896] mb-2">{server.server_name}</h1>
