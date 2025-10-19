@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { Terminal } from "xterm";
 import "xterm/css/xterm.css";
 
 export default function ServerTerminal({ serverId }: { serverId: string }) {
   const termRef = useRef<HTMLDivElement>(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     if (!serverId) return;
@@ -17,13 +19,26 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
 
     const connect = async () => {
       try {
-        term.writeln("🔄 Obteniendo token JWT del endpoint /api/ssh-token...");
-        console.log("[ServerTerminal] Solicitando token JWT...");
+        if (status === "loading") {
+          term.writeln("⏳ Esperando autenticación...");
+          return;
+        }
+
+        const email = session?.user?.email;
+        if (!email) {
+          term.writeln("⚠️ No hay usuario autenticado. No se puede generar el token SSH.");
+          console.error("[ServerTerminal] Falta email del usuario autenticado");
+          return;
+        }
+
+        term.writeln(`📧 Usuario autenticado: ${email}`);
+        term.writeln("🔄 Solicitando token JWT del endpoint /api/ssh-token...");
+        console.log("[ServerTerminal] Solicitando token JWT con:", { serverId, email });
 
         const res = await fetch("/api/ssh-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ serverId }),
+          body: JSON.stringify({ serverId, email }),
         });
 
         if (!res.ok) {
@@ -33,7 +48,7 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
         }
 
         const json = await res.json();
-        console.log("[ServerTerminal] Respuesta del endpoint:", json);
+        console.log("[ServerTerminal] Respuesta del endpoint /api/ssh-token:", json);
 
         const { token } = json;
         if (!token) {
@@ -92,7 +107,7 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
     };
 
     connect();
-  }, [serverId]);
+  }, [serverId, session, status]);
 
   return (
     <div
