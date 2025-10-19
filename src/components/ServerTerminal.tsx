@@ -57,7 +57,8 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
           return;
         }
 
-        const wsUrl = `wss://terminal.allyrogue.site:8080/?token=${token}`;
+        // ⚠️ CAMBIO IMPORTANTE: quitar :8080
+        const wsUrl = `wss://terminal.allyrogue.site/?token=${token}`;
         term.writeln(`🌐 Conectando al WebSocket:\n${wsUrl}`);
         console.log("[ServerTerminal] Conectando al WS con token:", wsUrl);
 
@@ -92,7 +93,6 @@ export default function ServerTerminal({ serverId }: { serverId: string }) {
           console.log("[ServerTerminal] WS cerrado:", e);
         };
 
-        // Reenvía lo que el usuario escriba al WebSocket
         term.onData((data) => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "input", data }));
