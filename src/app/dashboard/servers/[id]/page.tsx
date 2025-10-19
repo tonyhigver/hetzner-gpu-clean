@@ -86,10 +86,10 @@ export default function ServerDetailPage() {
     );
 
   return (
-    <div className="flex flex-col h-screen bg-[#0B0C10] text-[#E6E6E6]">
+    <div className="flex flex-col w-screen h-screen bg-[#0B0C10] text-[#E6E6E6]">
       {/* Info del servidor */}
-      <div className="p-6">
-        <h1 className="text-5xl font-bold text-[#00C896] mb-4">{server.server_name}</h1>
+      <div className="px-6 py-4 bg-[#0B0C10] z-10">
+        <h1 className="text-5xl font-bold text-[#00C896] mb-2">{server.server_name}</h1>
         <div className="text-gray-300 space-y-1">
           <p>Estado: {server.status === "running" ? "🟢 Activo" : "🔴 Apagado"}</p>
           <p>Proyecto: {server.project || "—"}</p>
@@ -99,14 +99,9 @@ export default function ServerDetailPage() {
         </div>
       </div>
 
-      {/* Terminal expandida */}
-      <div className="flex-1 p-4">
-        <div className="w-full h-full bg-black text-green-400 font-mono rounded-2xl shadow-lg">
-          <p className="text-gray-500 mb-2 p-2">TERMINAL</p>
-          <div className="w-full h-full">
-            <ServerTerminal serverId={server.id} />
-          </div>
-        </div>
+      {/* Terminal ocupando todo lo restante */}
+      <div className="flex-1 w-full">
+        <ServerTerminal serverId={server.id} />
       </div>
     </div>
   );
