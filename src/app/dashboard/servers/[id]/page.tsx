@@ -30,7 +30,7 @@ export default function ServerDetailPage() {
     if (!id) return;
 
     const fetchServer = async () => {
-      // ✅ Primero intentamos cargar desde localStorage
+      // 🔹 Primero intentamos cargar desde localStorage
       if (typeof window !== "undefined") {
         const stored = localStorage.getItem("selectedServer");
         if (stored) {
@@ -39,10 +39,9 @@ export default function ServerDetailPage() {
             if (String(parsed.id) === String(id)) {
               setServer(parsed);
               setLoading(false);
-              return; // Salimos si encontramos el servidor en localStorage
+              return; // Ya tenemos el servidor
             }
           } catch {
-            // Si localStorage tiene datos corruptos, ignoramos y seguimos
             console.warn("[ServerDetailPage] localStorage corrupto, ignorando");
           }
         }
@@ -66,9 +65,8 @@ export default function ServerDetailPage() {
         const serverData = { ...data, id: String(data.id) };
         setServer(serverData);
 
-        // Guardamos en localStorage para la próxima
+        // Guardamos en localStorage solo la info del servidor
         if (typeof window !== "undefined") {
-          localStorage.removeItem("selectedServer");
           localStorage.setItem("selectedServer", JSON.stringify(serverData));
         }
       } catch (err) {
@@ -106,6 +104,7 @@ export default function ServerDetailPage() {
 
       <div className="bg-black text-green-400 font-mono rounded-2xl shadow-lg p-6 w-full max-w-3xl h-[400px]">
         <p className="text-gray-500 mb-2">TERMINAL</p>
+        {/* ✅ ServerTerminal se conectará usando JWT desde /api/ssh-token */}
         <ServerTerminal serverId={server.id} />
       </div>
     </div>
