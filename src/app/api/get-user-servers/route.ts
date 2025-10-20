@@ -8,7 +8,7 @@ import axios from "axios";
    🔧 CONFIGURACIÓN INICIAL
 ────────────────────────────────── */
 console.log("==============================================");
-console.log("🚀 Iniciando /api/get-user-servers route (sin borrar tipos locales)...");
+console.log("🚀 Iniciando /api/get-user-servers route (sin perder tipos locales, eliminando los obsoletos)...");
 console.log("🔹 Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅" : "❌");
 console.log("🔹 Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌");
 console.log("🔹 Hetzner Tokens:");
@@ -68,19 +68,14 @@ async function fetchHetznerServers() {
 }
 
 /* ────────────────────────────────
-   🔄 SINCRONIZACIÓN (sin borrar tipos)
+   🔄 SINCRONIZACIÓN COMPLETA
 ────────────────────────────────── */
 async function syncServers(userEmail: string) {
   console.log(`👤 Sincronizando servidores para usuario: ${userEmail}`);
 
   const hetznerServers = await fetchHetznerServers();
 
-  if (!hetznerServers.length) {
-    console.warn("⚠️ Hetzner no devolvió servidores.");
-    return [];
-  }
-
-  // 🔍 Traer los registros existentes del usuario en Supabase
+  // 🔍 Leer los registros existentes del usuario
   const { data: existing, error: fetchError } = await supabase
     .from("user_servers")
     .select("*")
@@ -93,6 +88,7 @@ async function syncServers(userEmail: string) {
 
   const updatedServers: any[] = [];
 
+  // 🧩 1️⃣ ACTUALIZAR E INSERTAR
   for (const srv of hetznerServers) {
     const match = existing?.find((r) => String(r.hetzner_server_id) === String(srv.hetzner_id));
 
@@ -107,7 +103,7 @@ async function syncServers(userEmail: string) {
     };
 
     if (match) {
-      // 🧠 Mantiene los valores locales (serverType, gpuType)
+      // 🧠 Mantener valores locales (server_type, gpu_type)
       const updatedData = {
         ...baseData,
         gpu_type: match.gpu_type || srv.gpu || "—",
@@ -148,7 +144,29 @@ async function syncServers(userEmail: string) {
     }
   }
 
-  console.log(`📦 ${updatedServers.length} servidores sincronizados (sin eliminar los tipos locales).`);
+  // 🧩 2️⃣ ELIMINAR LOS QUE YA NO EXISTEN EN HETZNER
+  const hetznerIds = hetznerServers.map((s) => String(s.hetzner_id));
+  const existingIds = existing?.map((r) => String(r.hetzner_server_id)) || [];
+  const obsoleteIds = existingIds.filter((id) => !hetznerIds.includes(id));
+
+  if (obsoleteIds.length > 0) {
+    console.log(`🗑️ Eliminando ${obsoleteIds.length} servidores obsoletos de Supabase...`);
+    const { error: deleteError } = await supabase
+      .from("user_servers")
+      .delete()
+      .in("hetzner_server_id", obsoleteIds)
+      .eq("user_id", userEmail);
+
+    if (deleteError) {
+      console.error("❌ Error eliminando servidores obsoletos:", deleteError.message);
+    } else {
+      console.log(`✅ Eliminados ${obsoleteIds.length} servidores no presentes en Hetzner.`);
+    }
+  } else {
+    console.log("🧩 No hay servidores obsoletos que eliminar.");
+  }
+
+  console.log(`📦 ${updatedServers.length} servidores sincronizados (con limpieza).`);
   console.log("✅ Sincronización completada.");
   return updatedServers;
 }
