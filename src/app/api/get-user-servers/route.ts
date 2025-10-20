@@ -8,7 +8,7 @@ import axios from "axios";
    🔧 CONFIGURACIÓN INICIAL
 ────────────────────────────────── */
 console.log("==============================================");
-console.log("🚀 Iniciando /api/get-user-servers route (sin perder tipos locales, eliminando los obsoletos)...");
+console.log("🚀 Iniciando /api/get-user-servers route (sin perder tipos locales, eliminando obsoletos)");
 console.log("🔹 Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅" : "❌");
 console.log("🔹 Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌");
 console.log("🔹 Hetzner Tokens:");
@@ -75,7 +75,7 @@ async function syncServers(userEmail: string) {
 
   const hetznerServers = await fetchHetznerServers();
 
-  // 🔍 Leer los registros existentes del usuario
+  // 🔍 Leer registros actuales del usuario
   const { data: existing, error: fetchError } = await supabase
     .from("user_servers")
     .select("*")
@@ -88,7 +88,7 @@ async function syncServers(userEmail: string) {
 
   const updatedServers: any[] = [];
 
-  // 🧩 1️⃣ ACTUALIZAR E INSERTAR
+  // 🧩 1️⃣ ACTUALIZAR O INSERTAR SERVIDORES QUE EXISTEN EN HETZNER
   for (const srv of hetznerServers) {
     const match = existing?.find((r) => String(r.hetzner_server_id) === String(srv.hetzner_id));
 
@@ -103,7 +103,7 @@ async function syncServers(userEmail: string) {
     };
 
     if (match) {
-      // 🧠 Mantener valores locales (server_type, gpu_type)
+      // 🧠 Mantiene los valores locales (server_type, gpu_type)
       const updatedData = {
         ...baseData,
         gpu_type: match.gpu_type || srv.gpu || "—",
@@ -166,7 +166,7 @@ async function syncServers(userEmail: string) {
     console.log("🧩 No hay servidores obsoletos que eliminar.");
   }
 
-  console.log(`📦 ${updatedServers.length} servidores sincronizados (con limpieza).`);
+  console.log(`📦 ${updatedServers.length} servidores finales confirmados en Supabase.`);
   console.log("✅ Sincronización completada.");
   return updatedServers;
 }
