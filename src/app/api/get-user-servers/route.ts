@@ -5,10 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
 
 /* ────────────────────────────────
-   🔧 CONFIGURACIÓN INICIAL
+   🔧 CONFIGURACIÓN
 ────────────────────────────────── */
 console.log("==============================================");
-console.log("🚀 Iniciando /api/get-user-servers route (sin perder tipos locales, eliminando obsoletos)");
+console.log("🚀 Iniciando /api/get-user-servers route...");
 console.log("🔹 Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅" : "❌");
 console.log("🔹 Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌");
 console.log("🔹 Hetzner Tokens:");
@@ -49,7 +49,7 @@ async function fetchHetznerServers() {
 
       for (const s of servers) {
         allServers.push({
-          hetzner_id: s.id.toString(),
+          id: s.id.toString(),
           name: s.name,
           status: s.status,
           gpu: s.labels?.gpu || null,
@@ -68,107 +68,50 @@ async function fetchHetznerServers() {
 }
 
 /* ────────────────────────────────
-   🔄 SINCRONIZACIÓN COMPLETA
+   🔄 SINCRONIZACIÓN PURGA + INSERTA
 ────────────────────────────────── */
 async function syncServers(userEmail: string) {
-  console.log(`👤 Sincronizando servidores para usuario: ${userEmail}`);
+  console.log(`👤 Sincronizando para usuario: ${userEmail}`);
 
   const hetznerServers = await fetchHetznerServers();
 
-  // 🔍 Leer registros actuales del usuario
-  const { data: existing, error: fetchError } = await supabase
-    .from("user_servers")
-    .select("*")
-    .eq("user_id", userEmail);
+  // 🔹 Purga completa del usuario antes de insertar
+  const { error: delError } = await supabase.from("user_servers").delete().eq("user_id", userEmail);
+  if (delError) console.error("❌ Error eliminando servidores antiguos:", delError);
+  else console.log("🗑️ Servidores antiguos eliminados.");
 
-  if (fetchError) {
-    console.error("❌ Error leyendo Supabase:", fetchError);
+  if (!hetznerServers.length) {
+    console.warn("⚠️ Hetzner no devolvió servidores.");
     return [];
   }
 
-  const updatedServers: any[] = [];
-
-  // 🧩 1️⃣ ACTUALIZAR O INSERTAR SERVIDORES QUE EXISTEN EN HETZNER
-  for (const srv of hetznerServers) {
-    const match = existing?.find((r) => String(r.hetzner_server_id) === String(srv.hetzner_id));
-
-    const baseData = {
-      hetzner_server_id: srv.hetzner_id,
-      server_name: srv.name,
-      status: srv.status,
-      ip: srv.ip ?? "—",
-      location: srv.location ?? "—",
-      project: srv.project ?? "—",
+  // 🆕 Insertar solo los servidores actuales de Hetzner
+  const finalData: any[] = [];
+  for (const server of hetznerServers) {
+    const row = {
+      hetzner_server_id: server.id,
+      server_name: server.name,
+      status: server.status,
+      gpu_type: server.gpu ?? "—",
+      ip: server.ip ?? "—",
+      location: server.location ?? "—",
+      project: server.project ?? "—",
       user_id: userEmail,
     };
 
-    if (match) {
-      // 🧠 Mantiene los valores locales (server_type, gpu_type)
-      const updatedData = {
-        ...baseData,
-        gpu_type: match.gpu_type || srv.gpu || "—",
-        server_type: match.server_type || "—",
-      };
-
-      const { error: updateError } = await supabase
-        .from("user_servers")
-        .update(updatedData)
-        .eq("id", match.id);
-
-      if (updateError) {
-        console.error(`⚠️ Error actualizando ${srv.name}:`, updateError.message);
-      } else {
-        updatedServers.push(updatedData);
-        console.log(`🔄 Actualizado: ${srv.name}`);
-      }
+    const { data, error } = await supabase.from("user_servers").insert(row).select().single();
+    if (error) {
+      console.error("❌ Error insertando servidor:", server.name, error);
     } else {
-      // 🆕 Nuevo servidor → se inserta
-      const insertData = {
-        ...baseData,
-        gpu_type: srv.gpu ?? "—",
-        server_type: "—",
-      };
-
-      const { data: inserted, error: insertError } = await supabase
-        .from("user_servers")
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error(`❌ Error insertando ${srv.name}:`, insertError.message);
-      } else {
-        updatedServers.push(inserted);
-        console.log(`🆕 Insertado: ${srv.name}`);
-      }
+      finalData.push(data);
+      console.log(`🆕 Insertado: ${server.name}`);
     }
   }
 
-  // 🧩 2️⃣ ELIMINAR LOS QUE YA NO EXISTEN EN HETZNER
-  const hetznerIds = hetznerServers.map((s) => String(s.hetzner_id));
-  const existingIds = existing?.map((r) => String(r.hetzner_server_id)) || [];
-  const obsoleteIds = existingIds.filter((id) => !hetznerIds.includes(id));
-
-  if (obsoleteIds.length > 0) {
-    console.log(`🗑️ Eliminando ${obsoleteIds.length} servidores obsoletos de Supabase...`);
-    const { error: deleteError } = await supabase
-      .from("user_servers")
-      .delete()
-      .in("hetzner_server_id", obsoleteIds)
-      .eq("user_id", userEmail);
-
-    if (deleteError) {
-      console.error("❌ Error eliminando servidores obsoletos:", deleteError.message);
-    } else {
-      console.log(`✅ Eliminados ${obsoleteIds.length} servidores no presentes en Hetzner.`);
-    }
-  } else {
-    console.log("🧩 No hay servidores obsoletos que eliminar.");
-  }
-
-  console.log(`📦 ${updatedServers.length} servidores finales confirmados en Supabase.`);
+  console.log(`📦 ${finalData.length} servidores finales confirmados en Supabase.`);
   console.log("✅ Sincronización completada.");
-  return updatedServers;
+
+  return finalData;
 }
 
 /* ────────────────────────────────
