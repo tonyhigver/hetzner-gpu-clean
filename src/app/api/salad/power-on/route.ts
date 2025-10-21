@@ -1,38 +1,64 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+/**
+ * 🔥 POST /api/salad/power-on
+ * Encapsula la llamada a SaladCloud desde el backend (para evitar CORS)
+ */
+export async function POST(req: Request) {
+  console.log("[API /salad/power-on] ▶️ Recibida solicitud POST");
+
   try {
-    const body = await request.json();
+    const body = await req.json();
+    console.log("[API /salad/power-on] Body recibido:", body);
 
-    console.log("[API/salad/power-on] Recibido payload:", body);
-
-    const res = await fetch("https://api.salad.com/api/public/container-groups", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.SALAD_API_KEY}`, // sin NEXT_PUBLIC_
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: body.name,
-        image: "ubuntu:22.04",
-        resources: {
-          gpuClass: body.gpuClass,
-          replicas: 1,
-        },
-        command: ["sleep", "60"],
-      }),
-    });
-
-    const text = await res.text();
-    console.log("[API/salad/power-on] Respuesta SaladCloud:", text);
-
-    if (!res.ok) {
-      return NextResponse.json({ error: text }, { status: res.status });
+    const apiKey = process.env.SALAD_API_KEY;
+    if (!apiKey) {
+      console.error("[API /salad/power-on] ❌ Falta SALAD_API_KEY en .env.local");
+      return NextResponse.json(
+        { error: "Falta SALAD_API_KEY en configuración del servidor" },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ success: true, data: text });
+    // Payload que se enviará a SaladCloud
+    const payload = {
+      name: body.name || `gpu-${Date.now()}`,
+      container: {
+        image: "ubuntu:22.04",
+        command: ["bash", "-c", "sleep 60"],
+        resources: {
+          gpus: 1,
+          gpuClasses: [body.gpuClass],
+          priority: "batch",
+        },
+      },
+    };
+
+    console.log("[API /salad/power-on] Payload final enviado a SaladCloud:", payload);
+
+    // Llamada a SaladCloud
+    const response = await fetch("https://api.salad.com/api/public/container-groups", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("[API /salad/power-on] Respuesta SaladCloud:", response.status, response.statusText);
+
+    const text = await response.text();
+    console.log("[API /salad/power-on] Cuerpo respuesta SaladCloud:", text);
+
+    if (!response.ok) {
+      console.error("[API /salad/power-on] ❌ Error al crear contenedor:", text);
+      return NextResponse.json({ error: text }, { status: response.status });
+    }
+
+    return NextResponse.json({ success: true, data: JSON.parse(text) });
   } catch (err: any) {
-    console.error("[API/salad/power-on] Error general:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("[API /salad/power-on] ❌ Excepción:", err);
+    return NextResponse.json({ error: err.message || "Error interno" }, { status: 500 });
   }
 }
