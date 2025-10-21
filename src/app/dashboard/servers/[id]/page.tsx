@@ -15,7 +15,7 @@ interface Server {
   location?: string | null;
 }
 
-// Cliente público de Supabase
+// 🟩 Cliente Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -28,26 +28,37 @@ export default function ServerDetailPage() {
   const [countdown, setCountdown] = useState(0);
   const [activating, setActivating] = useState(false);
 
-  // 🔹 Cargar info del servidor
+  // 🧠 Fetch de servidor
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      console.warn("[ServerDetailPage] No hay ID en URL.");
+      return;
+    }
 
     const fetchServer = async () => {
+      console.log("[ServerDetailPage] Iniciando fetchServer para ID:", id);
+
+      // LocalStorage cache
       if (typeof window !== "undefined") {
         const stored = localStorage.getItem("selectedServer");
         if (stored) {
           try {
             const parsed = JSON.parse(stored) as Server;
+            console.log("[ServerDetailPage] Encontrado en localStorage:", parsed);
             if (String(parsed.id) === String(id)) {
               setServer(parsed);
               setLoading(false);
               return;
             }
-          } catch {}
+          } catch (e) {
+            console.error("[ServerDetailPage] Error al parsear localStorage:", e);
+          }
         }
       }
 
+      // Supabase fallback
       try {
+        console.log("[ServerDetailPage] Buscando en Supabase...");
         const numericId = Number(id);
         const { data, error } = await supabase
           .from("user_servers")
@@ -56,83 +67,112 @@ export default function ServerDetailPage() {
           .single();
 
         if (error || !data) {
-          console.error("[ServerDetailPage] Error al obtener servidor:", error);
+          console.error("[ServerDetailPage] Error desde Supabase:", error);
           setServer(null);
           return;
         }
 
+        console.log("[ServerDetailPage] Datos de Supabase:", data);
         const serverData = { ...data, id: String(data.id) };
         setServer(serverData);
 
         if (typeof window !== "undefined") {
           localStorage.setItem("selectedServer", JSON.stringify(serverData));
+          console.log("[ServerDetailPage] Guardado en localStorage.");
         }
       } catch (err) {
         console.error("[ServerDetailPage] Excepción al obtener servidor:", err);
         setServer(null);
       } finally {
         setLoading(false);
+        console.log("[ServerDetailPage] fetchServer finalizado.");
       }
     };
 
     fetchServer();
   }, [id]);
 
-  // 🔹 Contador de 30 segundos
+  // 🕒 Countdown 30s
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [countdown]);
 
-  // 🔹 Encender GPU
+  // ⚡ Encender GPU
   const handlePowerOnGPU = async () => {
+    console.log("[ServerDetailPage] handlePowerOnGPU pulsado.");
+
     if (!server?.gpu_type) {
       alert("No se encontró el tipo de GPU para este servidor.");
+      console.error("[ServerDetailPage] GPU_TYPE no definido en servidor:", server);
       return;
     }
+
+    const apiKey = process.env.NEXT_PUBLIC_SALAD_API_KEY;
+    if (!apiKey) {
+      console.error("[ServerDetailPage] ❌ Falta NEXT_PUBLIC_SALAD_API_KEY en .env.local");
+      alert("Falta la API key de SaladCloud. Configúrala en tu .env.local");
+      return;
+    }
+
+    console.log("[ServerDetailPage] Preparando activación GPU...");
+    console.log("  GPU_TYPE:", server.gpu_type);
+    console.log("  SERVER:", server);
+    console.log("  API_KEY:", apiKey.substring(0, 10) + "*****");
 
     setActivating(true);
     setCountdown(30);
 
     try {
-      // 🔸 Crear container en SaladCloud
+      const payload = {
+        name: `gpu-${server.gpu_type?.toLowerCase()}-${Date.now()}`,
+        container: {
+          image: "ubuntu:22.04",
+          command: ["bash", "-c", "sleep 60"],
+          resources: {
+            gpus: 1,
+            gpuClasses: [server.gpu_type],
+            priority: "batch",
+          },
+        },
+      };
+
+      console.log("[ServerDetailPage] Payload enviado a SaladCloud:", payload);
+
       const res = await fetch("https://api.salad.com/api/public/container-groups", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SALAD_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: `gpu-${server.gpu_type?.toLowerCase()}-${Date.now()}`,
-          container: {
-            image: "ubuntu:22.04",
-            command: ["bash", "-c", "sleep 60"],
-            resources: {
-              gpus: 1,
-              gpuClasses: [server.gpu_type],
-              priority: "batch",
-            },
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log("[ServerDetailPage] Respuesta HTTP:", res.status, res.statusText);
+
+      const text = await res.text();
+      console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
+
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
+        throw new Error(`[${res.status}] ${text}`);
       }
 
       console.log("✅ GPU encendida correctamente en SaladCloud");
+      alert("GPU encendida correctamente ✅");
     } catch (err) {
       console.error("❌ Error encendiendo GPU:", err);
-      alert("Error al intentar encender la GPU. Revisa la consola.");
+      alert("Error al intentar encender la GPU. Revisa la consola (ver logs con [ServerDetailPage]).");
     } finally {
       setActivating(false);
+      console.log("[ServerDetailPage] handlePowerOnGPU completado.");
     }
   };
 
-  // 🔹 Interfaz
+  // 🖥️ UI
   if (loading)
     return <div className="text-center text-gray-400 mt-32">Cargando detalles del servidor...</div>;
 
@@ -145,7 +185,7 @@ export default function ServerDetailPage() {
 
   return (
     <div className="flex flex-col w-screen h-screen bg-[#0B0C10] text-[#E6E6E6] pt-32">
-      {/* Encabezado con información del servidor */}
+      {/* ENCABEZADO */}
       <div className="px-6 py-4 bg-[#0B0C10] flex justify-between items-center z-10">
         <div>
           <h1 className="text-5xl font-bold text-[#00C896] mb-2">{server.server_name}</h1>
@@ -158,7 +198,7 @@ export default function ServerDetailPage() {
           </div>
         </div>
 
-        {/* 🔹 Botón Encender GPU + contador */}
+        {/* BOTÓN ENCENDER */}
         <div className="flex items-center gap-4">
           {countdown > 0 && (
             <span className="text-lg text-gray-400 font-mono">{countdown}s</span>
@@ -177,7 +217,7 @@ export default function ServerDetailPage() {
         </div>
       </div>
 
-      {/* Terminal */}
+      {/* TERMINAL */}
       <div className="flex-1 w-full">
         <ServerTerminal serverId={server.id} />
       </div>
