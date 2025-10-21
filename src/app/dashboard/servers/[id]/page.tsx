@@ -92,12 +92,10 @@ export default function ServerDetailPage() {
     fetchServer();
   }, [id]);
 
-  // 🕒 Countdown 30s
+  // 🕒 Countdown
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [countdown]);
@@ -112,17 +110,9 @@ export default function ServerDetailPage() {
       return;
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_SALAD_API_KEY;
-    if (!apiKey) {
-      console.error("[ServerDetailPage] ❌ Falta NEXT_PUBLIC_SALAD_API_KEY en .env.local");
-      alert("Falta la API key de SaladCloud. Configúrala en tu .env.local");
-      return;
-    }
-
     console.log("[ServerDetailPage] Preparando activación GPU...");
     console.log("  GPU_TYPE:", server.gpu_type);
     console.log("  SERVER:", server);
-    console.log("  API_KEY:", apiKey.substring(0, 10) + "*****");
 
     setActivating(true);
     setCountdown(30);
@@ -130,29 +120,19 @@ export default function ServerDetailPage() {
     try {
       const payload = {
         name: `gpu-${server.gpu_type?.toLowerCase()}-${Date.now()}`,
-        container: {
-          image: "ubuntu:22.04",
-          command: ["bash", "-c", "sleep 60"],
-          resources: {
-            gpus: 1,
-            gpuClasses: [server.gpu_type],
-            priority: "batch",
-          },
-        },
+        gpuClass: server.gpu_type,
       };
 
-      console.log("[ServerDetailPage] Payload enviado a SaladCloud:", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend local:", payload);
 
-      const res = await fetch("https://api.salad.com/api/public/container-groups", {
+      // 🚀 Nueva ruta API sin CORS
+      const res = await fetch("/api/salad/power-on", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log("[ServerDetailPage] Respuesta HTTP:", res.status, res.statusText);
+      console.log("[ServerDetailPage] Respuesta HTTP local:", res.status, res.statusText);
 
       const text = await res.text();
       console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
@@ -161,7 +141,7 @@ export default function ServerDetailPage() {
         throw new Error(`[${res.status}] ${text}`);
       }
 
-      console.log("✅ GPU encendida correctamente en SaladCloud");
+      console.log("✅ GPU encendida correctamente (via backend SaladCloud)");
       alert("GPU encendida correctamente ✅");
     } catch (err) {
       console.error("❌ Error encendiendo GPU:", err);
