@@ -33,7 +33,7 @@ export default function CreateServerContent() {
   const [countdown, setCountdown] = useState(10);
   const [serverId, setServerId] = useState<string | null>(null);
 
-  // Redirigir si no hay sesión
+  // 🔒 Redirigir si no hay sesión
   useEffect(() => {
     if (status === "unauthenticated") {
       alert("⚠️ Debes iniciar sesión antes de continuar.");
@@ -41,13 +41,22 @@ export default function CreateServerContent() {
     }
   }, [status, router]);
 
-  // Cargar lista de servidores
+  // 🚀 Cargar lista de servidores personalizados
   useEffect(() => {
     setServers([
-      { id: "1", title: "CX32", cpu: "8 vCPU", ram: "32GB", price: 45 },
-      { id: "2", title: "CX42", cpu: "16 vCPU", ram: "64GB", price: 80 },
-      { id: "3", title: "AX101", cpu: "32 vCPU", ram: "128GB", price: 130 },
-      { id: "4", title: "AX161", cpu: "48 vCPU", ram: "256GB", price: 200 },
+      { id: "1", title: "Nimbus I", cpu: "4 vCPU", ram: "8GB", price: 20 },
+      { id: "2", title: "Nimbus II", cpu: "8 vCPU", ram: "16GB", price: 35 },
+      { id: "3", title: "Nimbus III", cpu: "16 vCPU", ram: "32GB", price: 60 },
+      { id: "4", title: "Stratus I", cpu: "8 vCPU", ram: "32GB", price: 45 },
+      { id: "5", title: "Stratus II", cpu: "16 vCPU", ram: "64GB", price: 70 },
+      { id: "6", title: "Stratus III", cpu: "24 vCPU", ram: "96GB", price: 95 },
+      { id: "7", title: "Stratus IV", cpu: "32 vCPU", ram: "128GB", price: 130 },
+      { id: "8", title: "Stratus V", cpu: "48 vCPU", ram: "192GB", price: 160 },
+      { id: "9", title: "Titan I", cpu: "32 vCPU", ram: "128GB", price: 180 },
+      { id: "10", title: "Titan II", cpu: "48 vCPU", ram: "192GB", price: 210 },
+      { id: "11", title: "Titan III", cpu: "64 vCPU", ram: "256GB", price: 250 },
+      { id: "12", title: "Titan IV", cpu: "72 vCPU", ram: "384GB", price: 290 },
+      { id: "13", title: "Titan V", cpu: "96 vCPU", ram: "512GB", price: 350 },
     ]);
   }, []);
 
@@ -70,7 +79,6 @@ export default function CreateServerContent() {
   const selectedGPUObj = saladGPUs.find(g => g.id === selectedGPU);
   const totalCost = (selectedServerObj?.price || 0) + (selectedGPUObj?.price || 0);
 
-  // Crear servidor
   const handleContinue = async () => {
     if (!selectedServer) return alert("Por favor selecciona un servidor.");
     if (!userEmail) return alert("⚠️ Espera a que la sesión cargue correctamente o inicia sesión.");
@@ -102,7 +110,7 @@ export default function CreateServerContent() {
     }
   };
 
-  // Cuenta regresiva
+  // ⏳ Cuenta regresiva
   useEffect(() => {
     if (loading && serverId) {
       const interval = setInterval(() => {
@@ -119,10 +127,10 @@ export default function CreateServerContent() {
     }
   }, [loading, serverId, router]);
 
-  // Pantalla de creación con contador
+  // 🧠 Pantalla de carga
   if (loading && serverId) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center">
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white text-center">
         <h1 className="text-4xl font-bold text-blue-400 mb-4">Creando tu servidor...</h1>
         <p className="text-2xl mb-6">Tu servidor estará listo en {countdown} segundos ⏳</p>
         <div className="w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
@@ -138,16 +146,17 @@ export default function CreateServerContent() {
   const maxRows = Math.max(servers.length, saladGPUs.length);
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10 text-white px-6 min-h-screen pb-32">
-      <h1 className="text-4xl font-bold mb-8 text-center text-blue-400">
+    <div className="min-h-screen w-full bg-gray-900 text-white flex flex-col items-center py-10 px-6">
+      <h1 className="text-5xl font-bold mb-8 text-blue-400 text-center">
         Selecciona tu Servidor y GPU
       </h1>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-2">
+      <div className="grid grid-cols-2 gap-8 w-full max-w-7xl">
+        {/* 🔹 Columnas principales */}
+        <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-3">
           Servidores Hetzner
         </div>
-        <div className="text-center text-2xl font-semibold text-blue-400 border-b border-gray-700 pb-2">
+        <div className="text-center text-2xl font-semibold text-blue-400 border-b border-gray-700 pb-3">
           GPUs disponibles (Salad)
         </div>
 
@@ -156,12 +165,13 @@ export default function CreateServerContent() {
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
+              {/* 🔸 Servidores */}
               <div>
                 {server && (
                   <button
                     onClick={() => handleSelectServer(server.id)}
                     disabled={selectedServer && selectedServer !== server.id}
-                    className={`w-full p-5 rounded-lg text-center border-2 text-2xl font-bold transition-all duration-300 ${
+                    className={`w-full p-4 rounded-xl border-2 text-xl font-bold transition-all duration-300 flex flex-col items-center justify-center ${
                       selectedServer === server.id
                         ? "bg-blue-950 border-blue-400 shadow-[0_0_25px_8px_rgba(96,165,250,0.8)] text-blue-300"
                         : selectedServer && selectedServer !== server.id
@@ -169,17 +179,21 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400 hover:text-blue-300"
                     }`}
                   >
-                    {server.title}
+                    <div>{server.title}</div>
+                    <div className="text-sm text-gray-400 mt-1 animate-pulse">
+                      info ↓
+                    </div>
                   </button>
                 )}
               </div>
 
+              {/* 🔹 GPUs */}
               <div>
                 {gpu && (
                   <button
                     onClick={() => handleSelectGPU(gpu.id)}
                     disabled={selectedGPU && selectedGPU !== gpu.id}
-                    className={`w-full p-5 rounded-lg text-left border-2 transition-all duration-300 ${
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-300 ${
                       selectedGPU === gpu.id
                         ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
                         : selectedGPU && selectedGPU !== gpu.id
@@ -187,13 +201,13 @@ export default function CreateServerContent() {
                         : "bg-gray-800 border-gray-700 hover:border-blue-400"
                     }`}
                   >
-                    <h3 className={`text-xl font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                    <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
                       {gpu.name}
                     </h3>
-                    <p className="text-md text-gray-300">
+                    <p className="text-sm text-gray-300">
                       {gpu.vram} • {gpu.architecture}
                     </p>
-                    <p className="text-md text-gray-400">{gpu.price} €/mes</p>
+                    <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
                   </button>
                 )}
               </div>
@@ -202,18 +216,17 @@ export default function CreateServerContent() {
         })}
       </div>
 
-      <div className="mt-24 mb-12 w-full">
-        <hr className="border-t-4 border-dashed border-gray-500 mb-12" />
-        <div className="text-center text-2xl font-semibold text-blue-400 mb-10">
-          {totalCost > 0
-            ? `💰 Total: ${totalCost} €/mes`
-            : "Selecciona un servidor y una GPU para ver el total"}
+      {/* 💰 Total y botones */}
+      <div className="mt-20 w-full max-w-4xl text-center">
+        <hr className="border-t-4 border-dashed border-gray-600 mb-10" />
+        <div className="text-2xl font-semibold text-blue-400 mb-8">
+          {totalCost > 0 ? `💰 Total: ${totalCost} €/mes` : "Selecciona un servidor y una GPU para ver el total"}
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-center gap-6">
           <button
             onClick={handleContinue}
             disabled={!selectedServer || !userEmail}
-            className={`px-8 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
+            className={`px-10 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
               selectedServer && userEmail
                 ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
@@ -222,10 +235,9 @@ export default function CreateServerContent() {
             ✅ Aceptar y continuar
           </button>
 
-          {/* 🔹 Botón Volver al Command Center */}
           <button
             onClick={() => router.push("/dashboard/command-center")}
-            className="px-6 py-3 text-lg font-semibold rounded-xl bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+            className="px-8 py-3 text-lg font-semibold rounded-xl bg-gray-700 hover:bg-gray-600 transition-all duration-300"
           >
             🔙 Volver al Command Center
           </button>
