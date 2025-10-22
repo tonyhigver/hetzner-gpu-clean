@@ -22,17 +22,39 @@ export default function ServersPage() {
   const router = useRouter();
 
   /* ────────────────────────────────
-     🧹 Limpiar localStorage al cambiar de usuario
+     🧹 Limpiar localStorage al cambiar de usuario (safe)
   ───────────────────────────────── */
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.email) {
+    if (status !== "authenticated" || !session?.user?.email) return;
+
+    const currentEmail = session.user.email;
+
+    try {
       const storedEmail = localStorage.getItem("lastUserEmail");
-      if (storedEmail && storedEmail !== session.user.email) {
-        console.log("🧹 Usuario cambiado, limpiando cache local...");
-        localStorage.clear();
+
+      if (storedEmail && storedEmail !== currentEmail) {
+        console.log("🧹 Usuario cambiado detectado. Limpiando claves locales seguras...");
+        localStorage.removeItem("selectedServer"); // solo clave usada para servidor seleccionado
       }
-      localStorage.setItem("lastUserEmail", session.user.email);
+
+      localStorage.setItem("lastUserEmail", currentEmail);
+    } catch (err) {
+      console.warn("⚠️ Error accediendo a localStorage:", err);
     }
+
+    // Escuchar cambios en otras pestañas
+    function onStorage(e: StorageEvent) {
+      if (e.key === "lastUserEmail") {
+        const newEmail = e.newValue;
+        if (newEmail && newEmail !== currentEmail) {
+          console.log("🔁 Cambio de usuario detectado en otra pestaña. Refetching servidores...");
+          setLoading(true); // disparará el useEffect de fetchServers
+        }
+      }
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, [session, status]);
 
   /* ────────────────────────────────
@@ -61,13 +83,14 @@ export default function ServersPage() {
         }
       } catch (err) {
         console.error("[ServersPage] Error al cargar servidores:", err);
+        setServers([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchServers();
-  }, [status, session]);
+  }, [status, session, loading]); // `loading` permite re-fetch cuando cambia usuario en otra pestaña
 
   /* ────────────────────────────────
      ⚙️ Manejar selección de servidor
