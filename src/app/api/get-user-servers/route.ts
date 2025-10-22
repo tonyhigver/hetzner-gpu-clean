@@ -23,15 +23,15 @@ const hetznerProjects = [
    📡 OBTENER SERVIDORES DE HETZNER
 ────────────────────────────────── */
 async function fetchHetznerServers() {
-  const allServers: any[] = [];
+  const allServers: string[] = [];
 
   for (const { name, token } of hetznerProjects) {
     try {
       const res = await axios.get("https://api.hetzner.cloud/v1/servers", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const servers = res.data.servers || [];
 
+      const servers = res.data.servers || [];
       for (const s of servers) {
         allServers.push(s.id.toString());
       }
@@ -44,7 +44,7 @@ async function fetchHetznerServers() {
 }
 
 /* ────────────────────────────────
-   🔄 SINCRONIZACIÓN: PURGA SOLO LOS NO EXISTENTES
+   🔄 SINCRONIZACIÓN SEGURA
 ────────────────────────────────── */
 async function syncUserServers(userEmail: string) {
   // 1️⃣ Obtener todos los servidores del usuario en Supabase
@@ -54,30 +54,32 @@ async function syncUserServers(userEmail: string) {
     .eq("user_id", userEmail);
 
   if (error) throw new Error(`Error obteniendo servidores del usuario: ${error.message}`);
-
   if (!dbServers || dbServers.length === 0) return [];
 
-  // 2️⃣ Obtener todos los server_id de Hetzner
+  // 2️⃣ Obtener IDs actuales de Hetzner
   const hetznerIds = await fetchHetznerServers();
 
-  // 3️⃣ Comparar y eliminar los que no existen
+  // 3️⃣ Identificar los que ya no existen
   const serversToDelete = dbServers.filter(
     (s) => !hetznerIds.includes(s.hetzner_server_id)
   );
 
+  // 4️⃣ Eliminar solo los que no existen en Hetzner
   for (const s of serversToDelete) {
     const { error: delError } = await supabase
       .from("user_servers")
       .delete()
       .eq("id", s.id);
 
-    if (delError) console.error(`❌ Error eliminando servidor ${s.server_name}:`, delError.message);
-    else console.log(`🗑️ Eliminado servidor no existente en Hetzner: ${s.server_name}`);
+    if (delError)
+      console.error(`❌ Error eliminando servidor ${s.server_name}:`, delError.message);
+    else
+      console.log(`🗑️ Eliminado servidor no existente en Hetzner: ${s.server_name}`);
   }
 
-  // 4️⃣ Devolver los servidores que siguen activos
-  const activeServers = dbServers.filter(
-    (s) => hetznerIds.includes(s.hetzner_server_id)
+  // 5️⃣ Devolver solo los activos
+  const activeServers = dbServers.filter((s) =>
+    hetznerIds.includes(s.hetzner_server_id)
   );
 
   return activeServers;
@@ -91,15 +93,25 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
-    if (!rawEmail)
-      return NextResponse.json({ error: "Falta email" }, { status: 400 });
+    // 🚫 Validar email antes de seguir
+    if (
+      !rawEmail ||
+      rawEmail === "undefined" ||
+      rawEmail === "null" ||
+      !rawEmail.includes("@")
+    ) {
+      console.warn("🚫 Petición rechazada: email inválido →", rawEmail);
+      return NextResponse.json({ servers: [], error: "Email inválido" }, { status: 400 });
+    }
 
     const email = rawEmail.trim().toLowerCase();
+    console.log(`📩 Sincronizando servidores para: ${email}`);
+
     const servers = await syncUserServers(email);
 
     return NextResponse.json({ servers, total: servers.length, email });
   } catch (err: any) {
-    console.error("💥 Error general:", err.message || err);
+    console.error("💥 Error general en get-user-servers:", err.message || err);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
