@@ -153,15 +153,30 @@ export default function CreateServerContent() {
   }, []);
 
   const saladGPUs: GPU[] = [
-    { id: "1", name: "NVIDIA RTX 3060", vram: "12 GB", architecture: "Ampere", price: 40 },
-    { id: "2", name: "NVIDIA RTX 3070", vram: "8 GB", architecture: "Ampere", price: 55 },
-    { id: "3", name: "NVIDIA RTX 3080", vram: "10 GB", architecture: "Ampere", price: 70 },
-    { id: "4", name: "NVIDIA RTX 3090", vram: "24 GB", architecture: "Ampere", price: 90 },
-    { id: "5", name: "NVIDIA RTX 4070", vram: "12 GB", architecture: "Ada Lovelace", price: 80 },
-    { id: "6", name: "NVIDIA RTX 4080", vram: "16 GB", architecture: "Ada Lovelace", price: 100 },
-    { id: "7", name: "NVIDIA RTX 4090", vram: "24 GB", architecture: "Ada Lovelace", price: 130 },
-    { id: "8", name: "NVIDIA A100", vram: "80 GB", architecture: "Ampere", price: 200 },
-    { id: "9", name: "NVIDIA H100", vram: "80 GB", architecture: "Hopper", price: 250 },
+    { id: "1", name: "RTX 2080 (8 GB)", vram: "8 GB", architecture: "Turing", price: 23 },
+    { id: "2", name: "RTX 3050 (8 GB)", vram: "8 GB", architecture: "Ampere", price: 13.7 },
+    { id: "3", name: "RTX 3060 (8 GB)", vram: "8 GB", architecture: "Ampere", price: 13.7 },
+    { id: "4", name: "RTX 3060 (12 GB)", vram: "12 GB", architecture: "Ampere", price: 18.3 },
+    { id: "5", name: "RTX 3070 (8 GB)", vram: "8 GB", architecture: "Ampere", price: 18.3 },
+    { id: "6", name: "RTX 3080 (10 GB)", vram: "10 GB", architecture: "Ampere", price: 27.54 },
+    { id: "7", name: "RTX 3080 Ti (12 GB)", vram: "12 GB", architecture: "Ampere", price: 36.7 },
+    { id: "8", name: "RTX 3090 (24 GB)", vram: "24 GB", architecture: "Ampere", price: 41.31 },
+    { id: "9", name: "RTX 3090 Ti (24 GB)", vram: "24 GB", architecture: "Ampere", price: 45.9 },
+    { id: "10", name: "RTX 4060 Ti (16 GB)", vram: "16 GB", architecture: "Ada Lovelace", price: 36.7 },
+    { id: "11", name: "RTX 4070 (12 GB)", vram: "12 GB", architecture: "Ada Lovelace", price: 36.7 },
+    { id: "12", name: "RTX 4070 Ti (12 GB)", vram: "12 GB", architecture: "Ada Lovelace", price: 36.7 },
+    { id: "13", name: "RTX 4070 Ti Super (16 GB)", vram: "16 GB", architecture: "Ada Lovelace", price: 50.79 },
+    { id: "14", name: "RTX 4080 (16 GB)", vram: "16 GB", architecture: "Ada Lovelace", price: 50.79 },
+    { id: "15", name: "RTX 4090 (24 GB)", vram: "24 GB", architecture: "Ada Lovelace", price: 73.44 },
+    { id: "16", name: "RTX 5060 Ti (16 GB)", vram: "16 GB", architecture: "Blackwell", price: 31.13 },
+    { id: "17", name: "RTX 5070 (12 GB)", vram: "12 GB", architecture: "Blackwell", price: 36.7 },
+    { id: "18", name: "RTX 5070 Ti (16 GB)", vram: "16 GB", architecture: "Blackwell", price: 45.9 },
+    { id: "19", name: "RTX 5080 (16 GB)", vram: "16 GB", architecture: "Blackwell", price: 82.6 },
+    { id: "20", name: "RTX 5090 (32 GB)", vram: "32 GB", architecture: "Blackwell", price: 114.75 },
+    { id: "21", name: "L40S (48 GB)", vram: "48 GB", architecture: "Ada Lovelace", price: 147.18 },
+    { id: "22", name: "A100 (40 GB PCIe)", vram: "40 GB", architecture: "Ampere", price: 183.6 },
+    { id: "23", name: "A100 (80 GB SXM)", vram: "80 GB", architecture: "Ampere", price: 230 },
+    { id: "24", name: "H100 NVL (94 GB)", vram: "94 GB", architecture: "Hopper", price: 460 },
   ];
 
   const handleSelectServer = (id: string) => setSelectedServer(prev => (prev === id ? null : id));
@@ -238,9 +253,14 @@ export default function CreateServerContent() {
 
   return (
     <div className="min-h-screen w-full bg-gray-900 text-white flex flex-col items-center py-10 px-6">
-      <h1 className="text-5xl font-bold mb-8 text-blue-400 text-center">
+      <motion.h1
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="text-5xl font-bold mb-8 text-blue-400 text-center"
+      >
         Selecciona tu Servidor y GPU
-      </h1>
+      </motion.h1>
 
       <div className="grid grid-cols-2 gap-8 w-full max-w-7xl">
         <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-3">
@@ -257,7 +277,12 @@ export default function CreateServerContent() {
             <React.Fragment key={index}>
               <div>
                 {server && (
-                  <div className="relative w-full">
+                  <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 250 }}
+                    className="relative w-full"
+                  >
                     <button
                       onClick={() => handleSelectServer(server.id)}
                       disabled={selectedServer && selectedServer !== server.id}
@@ -285,11 +310,11 @@ export default function CreateServerContent() {
                     <AnimatePresence>
                       {openInfo === server.id && (
                         <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute mt-2 left-0 w-64 bg-gray-800/90 border border-blue-500/50 shadow-lg rounded-lg p-3 text-xs text-gray-300 z-20"
                         >
                           {server.specs.map((line, i) => (
                             <div key={i}>{line}</div>
@@ -297,31 +322,27 @@ export default function CreateServerContent() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
               <div>
                 {gpu && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => handleSelectGPU(gpu.id)}
                     disabled={selectedGPU && selectedGPU !== gpu.id}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-300 ${
+                    className={`w-full p-4 rounded-xl border-2 text-xl font-bold transition-all duration-300 ${
                       selectedGPU === gpu.id
-                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
+                        ? "bg-green-950 border-green-400 shadow-[0_0_25px_8px_rgba(74,222,128,0.8)] text-green-300"
                         : selectedGPU && selectedGPU !== gpu.id
                         ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-800 border-gray-700 hover:border-blue-400"
+                        : "bg-gray-800 border-gray-700 hover:border-green-400 hover:text-green-300"
                     }`}
                   >
-                    <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
-                      {gpu.name}
-                    </h3>
-                    <p className="text-sm text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
-                    <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
-                  </button>
+                    {gpu.name}
+                  </motion.button>
                 )}
               </div>
             </React.Fragment>
@@ -329,34 +350,30 @@ export default function CreateServerContent() {
         })}
       </div>
 
-      <div className="mt-20 w-full max-w-4xl text-center">
-        <hr className="border-t-4 border-dashed border-gray-600 mb-10" />
-        <div className="text-2xl font-semibold text-blue-400 mb-8">
-          {totalCost > 0
-            ? `💰 Total: ${totalCost.toFixed(2)} €/mes`
-            : "Selecciona un servidor y una GPU para ver el total"}
-        </div>
-        <div className="flex justify-center gap-6">
+      {selectedServer && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-10 text-center"
+        >
+          <div className="text-2xl mb-3 text-gray-300">
+            {selectedGPU
+              ? `Servidor: ${selectedServerObj?.title} + GPU: ${selectedGPUObj?.name}`
+              : `Servidor seleccionado: ${selectedServerObj?.title}`}
+          </div>
+          {selectedGPU && (
+            <div className="text-xl text-gray-400 mb-6">
+              Costo total estimado: <span className="text-blue-400 font-bold">{totalCost.toFixed(2)} €/mes</span>
+            </div>
+          )}
           <button
             onClick={handleContinue}
-            disabled={!selectedServer || !userEmail}
-            className={`px-10 py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
-              selectedServer && userEmail
-                ? "bg-blue-600 hover:bg-blue-700 shadow-[0_0_20px_4px_rgba(96,165,250,0.8)] text-white"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
-            }`}
+            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-lg font-semibold shadow-lg transition-all duration-300"
           >
-            ✅ Aceptar y continuar
+            Continuar 🚀
           </button>
-
-          <button
-            onClick={() => router.push("/dashboard/command-center")}
-            className="px-8 py-3 text-lg font-semibold rounded-xl bg-gray-700 hover:bg-gray-600 transition-all duration-300"
-          >
-            🔙 Volver al Command Center
-          </button>
-        </div>
-      </div>
+        </motion.div>
+      )}
     </div>
   );
 }
