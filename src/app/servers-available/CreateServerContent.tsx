@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 export default function ServerGpuSelector() {
   const router = useRouter();
 
+  // ======================
   // SERVIDORES
+  // ======================
   const servers = [
     {
       id: "1",
@@ -206,7 +208,9 @@ export default function ServerGpuSelector() {
     },
   ];
 
+  // ======================
   // GPUS
+  // ======================
   const gpus = [
     ["RTX 2080", 8, 23],
     ["RTX 3050", 8, 13.7],
@@ -233,7 +237,7 @@ export default function ServerGpuSelector() {
     ["A100 (80GB SXM)", 80, 230],
     ["H100 NVL", 94, 460],
   ].map(([name, vram, price], i) => {
-    const hourly = (price as number) / 720;
+    const hourly = (price as number) / (30 * 24);
     return {
       id: String(i + 1),
       title: name as string,
@@ -256,10 +260,13 @@ export default function ServerGpuSelector() {
     };
   });
 
+  // ======================
   // ESTADOS
+  // ======================
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [selectedGpu, setSelectedGpu] = useState<string | null>(null);
-  const [openInfo, setOpenInfo] = useState<string | null>(null);
+  const [openServerInfo, setOpenServerInfo] = useState<string | null>(null);
+  const [openGpuInfo, setOpenGpuInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -267,12 +274,12 @@ export default function ServerGpuSelector() {
     (selectedServer ? servers.find((s) => s.id === selectedServer)?.price || 0 : 0) +
     (selectedGpu ? gpus.find((g) => g.id === selectedGpu)?.price || 0 : 0);
 
+  // ======================
+  // FUNCIONES
+  // ======================
   const handleSelect = (type: "server" | "gpu", id: string) => {
-    if (type === "server") {
-      setSelectedServer(selectedServer === id ? null : id);
-    } else {
-      setSelectedGpu(selectedGpu === id ? null : id);
-    }
+    if (type === "server") setSelectedServer(selectedServer === id ? null : id);
+    else setSelectedGpu(selectedGpu === id ? null : id);
   };
 
   const handleCreate = async () => {
@@ -287,6 +294,9 @@ export default function ServerGpuSelector() {
     router.push("/dashboard/command-center");
   };
 
+  // ======================
+  // RENDER
+  // ======================
   return (
     <div className="p-10 text-white max-w-[1600px] mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-center">
@@ -317,7 +327,9 @@ export default function ServerGpuSelector() {
                   <div className="flex gap-2">
                     <button
                       className="text-blue-400"
-                      onClick={() => setOpenInfo(openInfo === s.id ? null : s.id)}
+                      onClick={() =>
+                        setOpenServerInfo(openServerInfo === s.id ? null : s.id)
+                      }
                     >
                       ℹ️
                     </button>
@@ -331,7 +343,7 @@ export default function ServerGpuSelector() {
                 </div>
 
                 <AnimatePresence>
-                  {openInfo === s.id && (
+                  {openServerInfo === s.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
@@ -372,7 +384,9 @@ export default function ServerGpuSelector() {
                   <div className="flex gap-2">
                     <button
                       className="text-blue-400"
-                      onClick={() => setOpenInfo(openInfo === g.id ? null : g.id)}
+                      onClick={() =>
+                        setOpenGpuInfo(openGpuInfo === g.id ? null : g.id)
+                      }
                     >
                       ℹ️
                     </button>
@@ -386,7 +400,7 @@ export default function ServerGpuSelector() {
                 </div>
 
                 <AnimatePresence>
-                  {openInfo === g.id && (
+                  {openGpuInfo === g.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
