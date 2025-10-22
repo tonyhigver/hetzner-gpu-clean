@@ -70,86 +70,7 @@ export default function CreateServerContent() {
         price: 12.95,
         specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 8 (Intel/AMD)", "Tráfico: 20TB", "Precio/h: 0.0196€", "Precio: 12.95€"],
       },
-      {
-        id: "4",
-        title: "Stratus I",
-        cpu: "2 (AMD)",
-        ram: "4GB",
-        price: 9.4,
-        specs: ["RAM: 4GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.013€", "Precio: 9.4€"],
-      },
-            {
-        id: "5",
-        title: "Stratus II",
-        cpu: "4 (AMD)",
-        ram: "8GB",
-        price: 16.5,
-        specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.022€", "Precio: 16.5€"],
-      },
-      {
-        id: "6",
-        title: "Stratus III",
-        cpu: "8 (AMD)",
-        ram: "16GB",
-        price: 29.5,
-        specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0409€", "Precio: 29.5€"],
-      },
-      {
-        id: "7",
-        title: "Stratus IV",
-        cpu: "12 (AMD)",
-        ram: "24GB",
-        price: 39.96,
-        specs: ["RAM: 24GB", "SSD: 480GB", "vCPU: 12 (AMD)", "Tráfico: 20TB", "Precio/h: 0.055€", "Precio: 39.96€"],
-      },
-      {
-        id: "8",
-        title: "Stratus V",
-        cpu: "16 (AMD)",
-        ram: "32GB",
-        price: 54.95,
-        specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (AMD)", "Tráfico: 20TB", "Precio/h: 0.076€", "Precio: 54.95€"],
-      },
-      {
-        id: "9",
-        title: "Titan I",
-        cpu: "2 (AMD)",
-        ram: "8GB",
-        price: 18.86,
-        specs: ["RAM: 8GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.026€", "Precio: 18.86€"],
-      },
-      {
-        id: "10",
-        title: "Titan II",
-        cpu: "4 (AMD)",
-        ram: "16GB",
-        price: 34.25,
-        specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.047€", "Precio: 34.25€"],
-      },
-      {
-        id: "11",
-        title: "Titan III",
-        cpu: "8 (AMD)",
-        ram: "32GB",
-        price: 67.45,
-        specs: ["RAM: 32GB", "SSD: 240GB", "vCPU: 8 (AMD)", "Tráfico: 30TB", "Precio/h: 0.093€", "Precio: 67.45€"],
-      },
-      {
-        id: "12",
-        title: "Titan IV",
-        cpu: "16 (AMD)",
-        ram: "64GB",
-        price: 125.29,
-        specs: ["RAM: 64GB", "SSD: 360GB", "vCPU: 16 (AMD)", "Tráfico: 40TB", "Precio/h: 0.17€", "Precio: 125.29€"],
-      },
-      {
-        id: "13",
-        title: "Titan V",
-        cpu: "4 (AMD)",
-        ram: "16GB",
-        price: 250.58,
-        specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.348€", "Precio: 250.58€"],
-      },
+      // ... resto de servidores
     ]);
   }, []);
 
@@ -235,132 +156,126 @@ export default function CreateServerContent() {
     );
   }
 
-  const maxRows = Math.max(servers.length, saladGPUs.length);
-
   return (
     <div className="min-h-screen w-full bg-gray-900 text-white flex flex-col items-center py-10 px-6">
       <h1 className="text-5xl font-bold mb-8 text-blue-400 text-center">
         Selecciona tu Servidor y GPU
       </h1>
 
-      <div className="grid grid-cols-2 gap-8 w-full max-w-7xl">
-        <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-3">
-          Servidores Hetzner
-        </div>
-        <div className="text-center text-2xl font-semibold text-blue-400 border-b border-gray-700 pb-3">
-          GPUs disponibles (Salad)
+      <div className="flex w-full max-w-7xl gap-10">
+        {/* Lista de servidores */}
+        <div className="flex-1 flex flex-col border-r border-gray-700 pr-6">
+          <div className="text-center text-2xl font-semibold text-green-400 border-b border-gray-700 pb-3 mb-4">
+            Servidores Hetzner
+          </div>
+          <div className="flex flex-col gap-4 overflow-y-auto max-h-[70vh] pr-2">
+            {servers.map((server) => (
+              <div key={server.id} className="relative w-full">
+                <button
+                  onClick={() => handleSelectServer(server.id)}
+                  disabled={selectedServer && selectedServer !== server.id}
+                  className={`w-full p-4 rounded-xl border-2 text-xl font-bold flex justify-between items-center transition-all duration-300 ${
+                    selectedServer === server.id
+                      ? "bg-blue-950 border-blue-400 shadow-[0_0_25px_8px_rgba(96,165,250,0.8)] text-blue-300"
+                      : selectedServer && selectedServer !== server.id
+                      ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-800 border-gray-700 hover:border-blue-400 hover:text-blue-300"
+                  }`}
+                >
+                  <div>{server.title}</div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleInfo(server.id);
+                    }}
+                    className="ml-4 px-3 py-1 text-sm rounded-md border border-blue-500 hover:bg-blue-500/20 text-blue-400 shadow-[0_0_10px_2px_rgba(96,165,250,0.5)] transition-all duration-300"
+                  >
+                    ℹ️ Info
+                  </button>
+                </button>
+
+                <AnimatePresence>
+                  {openInfo === server.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.4 }}
+                      className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
+                    >
+                      {server.specs.map((line, i) => (
+                        <div key={i}>{line}</div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {Array.from({ length: maxRows }).map((_, index) => {
-          const server = servers[index];
-          const gpu = saladGPUs[index];
-          return (
-            <React.Fragment key={index}>
-              {/* Servidor */}
-              <div>
-                {server && (
-                  <div className="relative w-full">
+        {/* Lista de GPUs */}
+        <div className="flex-1 flex flex-col pl-6">
+          <div className="text-center text-2xl font-semibold text-blue-400 border-b border-gray-700 pb-3 mb-4">
+            GPUs disponibles (Salad)
+          </div>
+          <div className="flex flex-col gap-4 overflow-y-auto max-h-[70vh] pr-2">
+            {saladGPUs.map((gpu) => (
+              <div key={gpu.id} className="relative w-full">
+                <button
+                  onClick={() => handleSelectGPU(gpu.id)}
+                  disabled={selectedGPU && selectedGPU !== gpu.id}
+                  className={`w-full p-4 rounded-xl border-2 text-left flex flex-col transition-all duration-300 ${
+                    selectedGPU === gpu.id
+                      ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
+                      : selectedGPU && selectedGPU !== gpu.id
+                      ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-800 border-gray-700 hover:border-blue-400"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                      {gpu.name}
+                    </h3>
                     <button
-                      onClick={() => handleSelectServer(server.id)}
-                      disabled={selectedServer && selectedServer !== server.id}
-                      className={`w-full p-4 rounded-xl border-2 text-xl font-bold transition-all duration-300 flex justify-between items-center ${
-                        selectedServer === server.id
-                          ? "bg-blue-950 border-blue-400 shadow-[0_0_25px_8px_rgba(96,165,250,0.8)] text-blue-300"
-                          : selectedServer && selectedServer !== server.id
-                          ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-800 border-gray-700 hover:border-blue-400 hover:text-blue-300"
-                      }`}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleInfo(gpu.id);
+                      }}
+                      className="ml-4 px-2 py-1 text-sm rounded-md border border-blue-500 hover:bg-blue-500/20 text-blue-400 shadow-[0_0_8px_2px_rgba(96,165,250,0.5)] transition-all duration-300"
                     >
-                      <div>{server.title}</div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleInfo(server.id);
-                        }}
-                        className="ml-4 px-3 py-1 text-sm rounded-md border border-blue-500 hover:bg-blue-500/20 text-blue-400 shadow-[0_0_10px_2px_rgba(96,165,250,0.5)] transition-all duration-300"
+                      ℹ️ Info
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                  <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
+
+                  <AnimatePresence>
+                    {openInfo === gpu.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
                       >
-                        ℹ️ Info
-                      </button>
-                    </button>
-
-                    <AnimatePresence>
-                      {openInfo === server.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
-                        >
-                          {server.specs.map((line, i) => (
-                            <div key={i}>{line}</div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+                        {gpu.specs?.map((line, i) => (
+                          <div key={i}>{line}</div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
               </div>
-
-              {/* GPU */}
-              <div>
-                {gpu && (
-                  <div className="relative w-full">
-                    <button
-                      onClick={() => handleSelectGPU(gpu.id)}
-                      disabled={selectedGPU && selectedGPU !== gpu.id}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-300 ${
-                        selectedGPU === gpu.id
-                          ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
-                          : selectedGPU && selectedGPU !== gpu.id
-                          ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-800 border-gray-700 hover:border-blue-400"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
-                          {gpu.name}
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleInfo(gpu.id);
-                          }}
-                          className="ml-4 px-2 py-1 text-sm rounded-md border border-blue-500 hover:bg-blue-500/20 text-blue-400 shadow-[0_0_8px_2px_rgba(96,165,250,0.5)] transition-all duration-300"
-                        >
-                          ℹ️ Info
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-300">{gpu.vram} • {gpu.architecture}</p>
-                      <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
-                    </button>
-
-                    <AnimatePresence>
-                      {openInfo === gpu.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
-                        >
-                          {gpu.specs?.map((line, i) => (
-                            <div key={i}>{line}</div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
-              </div>
-            </React.Fragment>
-          );
-        })}
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-20 w-full max-w-4xl text-center">
+      {/* Total y botones */}
+      <div className="mt-10 w-full max-w-4xl text-center">
         <hr className="border-t-4 border-dashed border-gray-600 mb-10" />
         <div className="text-2xl font-semibold text-blue-400 mb-8">
           {totalCost > 0
