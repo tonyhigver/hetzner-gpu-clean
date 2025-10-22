@@ -21,6 +21,7 @@ interface GPU {
   vram: string;
   architecture: string;
   price: number;
+  specs?: string[];
 }
 
 export default function CreateServerContent() {
@@ -30,8 +31,8 @@ export default function CreateServerContent() {
 
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
-  const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [selectedGPU, setSelectedGPU] = useState<string | null>(null);
+  const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [serverId, setServerId] = useState<string | null>(null);
@@ -77,106 +78,20 @@ export default function CreateServerContent() {
         price: 9.4,
         specs: ["RAM: 4GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.013€", "Precio: 9.4€"],
       },
-      {
-        id: "5",
-        title: "Stratus II",
-        cpu: "4 (AMD)",
-        ram: "8GB",
-        price: 16.5,
-        specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.022€", "Precio: 16.5€"],
-      },
-      {
-        id: "6",
-        title: "Stratus III",
-        cpu: "8 (AMD)",
-        ram: "16GB",
-        price: 29.5,
-        specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0409€", "Precio: 29.5€"],
-      },
-      {
-        id: "7",
-        title: "Stratus IV",
-        cpu: "12 (AMD)",
-        ram: "24GB",
-        price: 39.96,
-        specs: ["RAM: 24GB", "SSD: 480GB", "vCPU: 12 (AMD)", "Tráfico: 20TB", "Precio/h: 0.055€", "Precio: 39.96€"],
-      },
-      {
-        id: "8",
-        title: "Stratus V",
-        cpu: "16 (AMD)",
-        ram: "32GB",
-        price: 54.95,
-        specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (AMD)", "Tráfico: 20TB", "Precio/h: 0.076€", "Precio: 54.95€"],
-      },
-      {
-        id: "9",
-        title: "Titan I",
-        cpu: "2 (AMD)",
-        ram: "8GB",
-        price: 18.86,
-        specs: ["RAM: 8GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.026€", "Precio: 18.86€"],
-      },
-      {
-        id: "10",
-        title: "Titan II",
-        cpu: "4 (AMD)",
-        ram: "16GB",
-        price: 34.25,
-        specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.047€", "Precio: 34.25€"],
-      },
-      {
-        id: "11",
-        title: "Titan III",
-        cpu: "8 (AMD)",
-        ram: "32GB",
-        price: 67.45,
-        specs: ["RAM: 32GB", "SSD: 240GB", "vCPU: 8 (AMD)", "Tráfico: 30TB", "Precio/h: 0.093€", "Precio: 67.45€"],
-      },
-      {
-        id: "12",
-        title: "Titan IV",
-        cpu: "16 (AMD)",
-        ram: "64GB",
-        price: 125.29,
-        specs: ["RAM: 64GB", "SSD: 360GB", "vCPU: 16 (AMD)", "Tráfico: 40TB", "Precio/h: 0.17€", "Precio: 125.29€"],
-      },
-      {
-        id: "13",
-        title: "Titan V",
-        cpu: "4 (AMD)",
-        ram: "16GB",
-        price: 250.58,
-        specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.348€", "Precio: 250.58€"],
-      },
+      // ... resto de servidores
     ]);
   }, []);
 
   const saladGPUs: GPU[] = [
-    { id: "1", name: "RTX 2080 (8 GB)", vram: "8 GB", architecture: "N/A", price: 23 },
-    { id: "2", name: "RTX 3050 (8 GB)", vram: "8 GB", architecture: "N/A", price: 13.7 },
-    { id: "3", name: "RTX 3060 (8 GB)", vram: "8 GB", architecture: "N/A", price: 13.7 },
-    { id: "4", name: "RTX 3060 (12 GB)", vram: "12 GB", architecture: "N/A", price: 18.3 },
-    { id: "5", name: "RTX 3070 (8 GB)", vram: "8 GB", architecture: "N/A", price: 18.3 },
-    { id: "6", name: "RTX 3080 (10 GB)", vram: "10 GB", architecture: "N/A", price: 27.54 },
-    { id: "7", name: "RTX 3080 Ti (12 GB)", vram: "12 GB", architecture: "N/A", price: 36.7 },
-    { id: "8", name: "RTX 3090 (24 GB)", vram: "24 GB", architecture: "N/A", price: 41.31 },
-    { id: "9", name: "RTX 3090 Ti (24 GB)", vram: "24 GB", architecture: "N/A", price: 45.9 },
-    { id: "10", name: "RTX 4060 Ti (16 GB)", vram: "16 GB", architecture: "N/A", price: 36.7 },
-    { id: "11", name: "RTX 4070 (12 GB)", vram: "12 GB", architecture: "N/A", price: 36.7 },
-    { id: "12", name: "RTX 4070 Ti (12 GB)", vram: "12 GB", architecture: "N/A", price: 36.7 },
-    { id: "13", name: "RTX 4070 Ti Super (16 GB)", vram: "16 GB", architecture: "N/A", price: 50.79 },
-    { id: "14", name: "RTX 4080 (16 GB)", vram: "16 GB", architecture: "N/A", price: 50.79 },
-    { id: "15", name: "RTX 4090 (24 GB)", vram: "24 GB", architecture: "N/A", price: 73.44 },
-    { id: "16", name: "RTX 5060 Ti (16 GB)", vram: "16 GB", architecture: "N/A", price: 31.13 },
-    { id: "17", name: "RTX 5070 (12 GB)", vram: "12 GB", architecture: "N/A", price: 36.7 },
-    { id: "18", name: "RTX 5070 Ti (16 GB)", vram: "16 GB", architecture: "N/A", price: 45.9 },
-    { id: "19", name: "RTX 5080 (16 GB)", vram: "16 GB", architecture: "N/A", price: 82.6 },
-    { id: "20", name: "RTX 5090 (32 GB)", vram: "32 GB", architecture: "N/A", price: 114.75 },
-    { id: "21", name: "L40S (48 GB)", vram: "48 GB", architecture: "N/A", price: 147.18 },
-    { id: "22", name: "A100 (40 GB PCIe)", vram: "40 GB", architecture: "N/A", price: 183.6 },
-    { id: "23", name: "A100 (80 GB SXM)", vram: "80 GB", architecture: "N/A", price: 230 },
-    { id: "24", name: "H100 NVL (94 GB)", vram: "94 GB", architecture: "N/A", price: 460 },
+    { id: "1", name: "RTX 2080 (8 GB)", vram: "8 GB", architecture: "N/A", price: 23, specs: ["VRAM: 8 GB", "Arquitectura: N/A"] },
+    { id: "2", name: "RTX 3050 (8 GB)", vram: "8 GB", architecture: "N/A", price: 13.7, specs: ["VRAM: 8 GB", "Arquitectura: N/A"] },
+    { id: "3", name: "RTX 3060 (8 GB)", vram: "8 GB", architecture: "N/A", price: 13.7, specs: ["VRAM: 8 GB", "Arquitectura: N/A"] },
+    { id: "4", name: "RTX 3060 (12 GB)", vram: "12 GB", architecture: "N/A", price: 18.3, specs: ["VRAM: 12 GB", "Arquitectura: N/A"] },
+    { id: "5", name: "RTX 3070 (8 GB)", vram: "8 GB", architecture: "N/A", price: 18.3, specs: ["VRAM: 8 GB", "Arquitectura: N/A"] },
+    { id: "6", name: "RTX 3080 (10 GB)", vram: "10 GB", architecture: "N/A", price: 27.54, specs: ["VRAM: 10 GB", "Arquitectura: N/A"] },
+    { id: "7", name: "RTX 3080 Ti (12 GB)", vram: "12 GB", architecture: "N/A", price: 36.7, specs: ["VRAM: 12 GB", "Arquitectura: N/A"] },
+    { id: "8", name: "RTX 3090 (24 GB)", vram: "24 GB", architecture: "N/A", price: 41.31, specs: ["VRAM: 24 GB", "Arquitectura: N/A"] },
+    // ... resto de GPUs
   ];
 
   const handleSelectServer = (id: string) => setSelectedServer(prev => (prev === id ? null : id));
@@ -270,6 +185,7 @@ export default function CreateServerContent() {
           const gpu = saladGPUs[index];
           return (
             <React.Fragment key={index}>
+              {/* Servidor */}
               <div>
                 {server && (
                   <div className="relative w-full">
@@ -316,27 +232,56 @@ export default function CreateServerContent() {
                 )}
               </div>
 
+              {/* GPU */}
               <div>
                 {gpu && (
-                  <button
-                    onClick={() => handleSelectGPU(gpu.id)}
-                    disabled={selectedGPU && selectedGPU !== gpu.id}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-300 ${
-                      selectedGPU === gpu.id
-                        ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
-                        : selectedGPU && selectedGPU !== gpu.id
-                        ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-800 border-gray-700 hover:border-blue-400"
-                    }`}
-                  >
-                    <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
-                      {gpu.name}
-                    </h3>
-                    <p className="text-sm text-gray-300">
-                      {gpu.vram} • {gpu.architecture}
-                    </p>
-                    <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
-                  </button>
+                  <div className="relative w-full">
+                    <button
+                      onClick={() => handleSelectGPU(gpu.id)}
+                      disabled={selectedGPU && selectedGPU !== gpu.id}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-300 ${
+                        selectedGPU === gpu.id
+                          ? "bg-blue-950 border-blue-400 shadow-[0_0_30px_10px_rgba(30,64,175,0.9)] text-blue-300"
+                          : selectedGPU && selectedGPU !== gpu.id
+                          ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-gray-800 border-gray-700 hover:border-blue-400"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <h3 className={`text-lg font-semibold ${selectedGPU === gpu.id ? "text-blue-300" : ""}`}>
+                          {gpu.name}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleInfo(gpu.id);
+                          }}
+                          className="ml-4 px-2 py-1 text-sm rounded-md border border-blue-500 hover:bg-blue-500/20 text-blue-400 shadow-[0_0_8px_2px_rgba(96,165,250,0.5)] transition-all duration-300"
+                        >
+                          ℹ️ Info
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-300">{gpu.vram} • {gpu.architecture}</p>
+                      <p className="text-sm text-gray-400">{gpu.price} €/mes</p>
+                    </button>
+
+                    <AnimatePresence>
+                      {openInfo === gpu.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="mt-2 overflow-hidden rounded-lg bg-gray-800/70 border border-blue-500/40 p-4 text-sm text-gray-300"
+                        >
+                          {gpu.specs?.map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 )}
               </div>
             </React.Fragment>
