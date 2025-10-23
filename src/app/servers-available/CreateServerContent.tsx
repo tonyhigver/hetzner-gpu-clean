@@ -411,13 +411,21 @@ export default function ServerGpuSelector() {
       </div>
 
       {/* BOTÓN CREAR */}
-      <div className="text-center mt-6">
+      <div className="text-center mt-6 flex flex-col gap-4">
         <button
           onClick={handleCreate}
           disabled={!selectedServer || !selectedGpu || loading}
           className="px-6 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 disabled:bg-gray-600"
         >
           {loading ? "Creando servidor..." : "Crear Servidor"}
+        </button>
+
+        {/* BOTÓN VOLVER AL COMMAND CENTER */}
+        <button
+          onClick={() => router.push("/dashboard/command-center")}
+          className="px-8 py-3 text-lg font-semibold rounded-xl bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+        >
+          🔙 Volver al Command Center
         </button>
       </div>
 
