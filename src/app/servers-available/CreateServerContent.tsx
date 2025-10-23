@@ -186,6 +186,8 @@ export default function ServerGpuSelector() {
   const [progressText, setProgressText] = useState("");
   const [showSummary, setShowSummary] = useState(false);
 
+  const [serverId, setServerId] = useState<string | null>(null);
+
   // ======================
   // LOCAL STORAGE
   // ======================
@@ -217,38 +219,60 @@ export default function ServerGpuSelector() {
     setShowSummary(true);
   };
 
+  // ======================
+  // CONFIRMAR CREACION (POST AL BACKEND COMO EL SCRIPT ORIGINAL)
+  // ======================
   const confirmCreate = async () => {
+    if (!selectedServer || !selectedGpu) return;
     setShowSummary(false);
     setLoading(true);
     setProgress(0);
-    const messages = [
-      "Inicializando servidor...",
-      "Asignando recursos...",
-      "Configurando GPU...",
-      "Aplicando seguridad...",
-      "Finalizando despliegue...",
-    ];
-    let msgIndex = 0;
 
-    const msgInterval = setInterval(() => {
-      setProgressText(messages[msgIndex]);
-      msgIndex = (msgIndex + 1) % messages.length;
-    }, 1000);
+    try {
+      // Llamada POST idéntica a tu script original
+      const res = await fetch("/api/create-user-server", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serverType: servers.find((s) => s.id === selectedServer)?.title,
+          gpuType: gpus.find((g) => g.id === selectedGpu)?.title,
+          osImage: "ubuntu-22.04",
+        }),
+      });
 
-    const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al crear servidor");
 
-    await new Promise((r) => setTimeout(r, 5000));
-    clearInterval(interval);
-    clearInterval(msgInterval);
+      setServerId(data.hetznerId || data.serverId || data.id);
 
-    // Simular API POST
-    await fetch("/api/create-server", {
-      method: "POST",
-      body: JSON.stringify({ server: selectedServer, gpu: selectedGpu }),
-      headers: { "Content-Type": "application/json" },
-    });
+      // Simular progreso
+      const messages = [
+        "Inicializando servidor...",
+        "Asignando recursos...",
+        "Configurando GPU...",
+        "Aplicando seguridad...",
+        "Finalizando despliegue...",
+      ];
+      let msgIndex = 0;
 
-    router.push("/dashboard/command-center");
+      const msgInterval = setInterval(() => {
+        setProgressText(messages[msgIndex]);
+        msgIndex = (msgIndex + 1) % messages.length;
+      }, 1000);
+
+      const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
+
+      await new Promise((r) => setTimeout(r, 5000));
+      clearInterval(interval);
+      clearInterval(msgInterval);
+
+      // REDIRIGIR AL DASHBOARD CON EL SERVER CREADO
+      router.push("/dashboard/command-center");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Error desconocido");
+      setLoading(false);
+    }
   };
 
   // ======================
