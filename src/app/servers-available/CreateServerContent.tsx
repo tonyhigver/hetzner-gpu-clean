@@ -12,7 +12,7 @@ export default function ServerGpuSelector() {
   // ======================
   const servers = [
     {
-      id: "1",
+      id: "srv-1",
       title: "Nimbus I",
       cpu: "2 (Intel)",
       ram: "4GB",
@@ -27,7 +27,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "2",
+      id: "srv-2",
       title: "Nimbus II",
       cpu: "4 (Intel)",
       ram: "8GB",
@@ -42,7 +42,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "3",
+      id: "srv-3",
       title: "Nimbus III",
       cpu: "8 (Intel)",
       ram: "16GB",
@@ -57,7 +57,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "4",
+      id: "srv-4",
       title: "Nimbus IV",
       cpu: "16 (Intel)",
       ram: "32GB",
@@ -72,7 +72,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "5",
+      id: "srv-5",
       title: "Stratus II",
       cpu: "4 (AMD)",
       ram: "8GB",
@@ -87,7 +87,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "6",
+      id: "srv-6",
       title: "Stratus III",
       cpu: "8 (AMD)",
       ram: "16GB",
@@ -102,7 +102,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "7",
+      id: "srv-7",
       title: "Stratus IV",
       cpu: "12 (AMD)",
       ram: "24GB",
@@ -117,7 +117,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "8",
+      id: "srv-8",
       title: "Stratus V",
       cpu: "16 (AMD)",
       ram: "32GB",
@@ -132,7 +132,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "9",
+      id: "srv-9",
       title: "Titan I",
       cpu: "2 (AMD)",
       ram: "8GB",
@@ -147,7 +147,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "10",
+      id: "srv-10",
       title: "Titan II",
       cpu: "4 (AMD)",
       ram: "16GB",
@@ -162,7 +162,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "11",
+      id: "srv-11",
       title: "Titan III",
       cpu: "8 (AMD)",
       ram: "32GB",
@@ -177,7 +177,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "12",
+      id: "srv-12",
       title: "Titan IV",
       cpu: "16 (AMD)",
       ram: "64GB",
@@ -192,7 +192,7 @@ export default function ServerGpuSelector() {
       ],
     },
     {
-      id: "13",
+      id: "srv-13",
       title: "Titan V",
       cpu: "4 (AMD)",
       ram: "16GB",
@@ -239,7 +239,7 @@ export default function ServerGpuSelector() {
   ].map(([name, vram, price], i) => {
     const hourly = (price as number) / (30 * 24);
     return {
-      id: String(i + 1),
+      id: `gpu-${i + 1}`,
       title: name as string,
       vram: `${vram} GB`,
       architecture:
