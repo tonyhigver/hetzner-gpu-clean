@@ -249,7 +249,7 @@ export default function ServerGpuSelector() {
 
       setServerId(data.hetznerId || data.serverId || data.id);
 
-      // Simular progreso
+      // Simular progreso durante 25 segundos
       const messages = [
         "Inicializando servidor...",
         "Asignando recursos...",
@@ -262,11 +262,13 @@ export default function ServerGpuSelector() {
       const msgInterval = setInterval(() => {
         setProgressText(messages[msgIndex]);
         msgIndex = (msgIndex + 1) % messages.length;
-      }, 1000);
+      }, 5000); // Cambiado a 5s por mensaje
 
-      const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
+      const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 2)), 500); 
+      // 25 segundos -> 100/25=4 cada segundo -> interval cada 0.5s incrementa 2
 
-      await new Promise((r) => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 25000)); // <-- 25 segundos
+
       clearInterval(interval);
       clearInterval(msgInterval);
 
