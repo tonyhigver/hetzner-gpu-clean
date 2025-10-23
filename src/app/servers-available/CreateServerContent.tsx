@@ -11,20 +11,14 @@ export default function ServerGpuSelector() {
   // SERVIDORES
   // ======================
   const servers = [
+    // Nimbus
     {
       id: "srv-1",
       title: "Nimbus I",
       cpu: "2 (Intel)",
       ram: "4GB",
       price: 9.9,
-      specs: [
-        "RAM: 4GB",
-        "SSD: 80GB",
-        "vCPU: 2 (Intel)",
-        "Tráfico: 10TB",
-        "Precio/h: 0.0137€",
-        "Precio: 9.9€",
-      ],
+      specs: ["RAM: 4GB", "SSD: 80GB", "vCPU: 2 (Intel)", "Tráfico: 10TB", "Precio/h: 0.0137€", "Precio: 9.9€"],
     },
     {
       id: "srv-2",
@@ -32,14 +26,7 @@ export default function ServerGpuSelector() {
       cpu: "4 (Intel)",
       ram: "8GB",
       price: 18.5,
-      specs: [
-        "RAM: 8GB",
-        "SSD: 160GB",
-        "vCPU: 4 (Intel)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0256€",
-        "Precio: 18.5€",
-      ],
+      specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (Intel)", "Tráfico: 20TB", "Precio/h: 0.0256€", "Precio: 18.5€"],
     },
     {
       id: "srv-3",
@@ -47,14 +34,7 @@ export default function ServerGpuSelector() {
       cpu: "8 (Intel)",
       ram: "16GB",
       price: 34.9,
-      specs: [
-        "RAM: 16GB",
-        "SSD: 320GB",
-        "vCPU: 8 (Intel)",
-        "Tráfico: 30TB",
-        "Precio/h: 0.0484€",
-        "Precio: 34.9€",
-      ],
+      specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (Intel)", "Tráfico: 30TB", "Precio/h: 0.0484€", "Precio: 34.9€"],
     },
     {
       id: "srv-4",
@@ -62,29 +42,17 @@ export default function ServerGpuSelector() {
       cpu: "16 (Intel)",
       ram: "32GB",
       price: 66.5,
-      specs: [
-        "RAM: 32GB",
-        "SSD: 640GB",
-        "vCPU: 16 (Intel)",
-        "Tráfico: 40TB",
-        "Precio/h: 0.0924€",
-        "Precio: 66.5€",
-      ],
+      specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (Intel)", "Tráfico: 40TB", "Precio/h: 0.0924€", "Precio: 66.5€"],
     },
+
+    // Stratus
     {
       id: "srv-5",
       title: "Stratus II",
       cpu: "4 (AMD)",
       ram: "8GB",
       price: 16.5,
-      specs: [
-        "RAM: 8GB",
-        "SSD: 160GB",
-        "vCPU: 4 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0229€",
-        "Precio: 16.5€",
-      ],
+      specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0229€", "Precio: 16.5€"],
     },
     {
       id: "srv-6",
@@ -92,14 +60,7 @@ export default function ServerGpuSelector() {
       cpu: "8 (AMD)",
       ram: "16GB",
       price: 29.5,
-      specs: [
-        "RAM: 16GB",
-        "SSD: 320GB",
-        "vCPU: 8 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0410€",
-        "Precio: 29.5€",
-      ],
+      specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0410€", "Precio: 29.5€"],
     },
     {
       id: "srv-7",
@@ -107,14 +68,7 @@ export default function ServerGpuSelector() {
       cpu: "12 (AMD)",
       ram: "24GB",
       price: 39.96,
-      specs: [
-        "RAM: 24GB",
-        "SSD: 480GB",
-        "vCPU: 12 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0555€",
-        "Precio: 39.96€",
-      ],
+      specs: ["RAM: 24GB", "SSD: 480GB", "vCPU: 12 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0555€", "Precio: 39.96€"],
     },
     {
       id: "srv-8",
@@ -122,29 +76,17 @@ export default function ServerGpuSelector() {
       cpu: "16 (AMD)",
       ram: "32GB",
       price: 54.95,
-      specs: [
-        "RAM: 32GB",
-        "SSD: 640GB",
-        "vCPU: 16 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0763€",
-        "Precio: 54.95€",
-      ],
+      specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0763€", "Precio: 54.95€"],
     },
+
+    // Titan
     {
       id: "srv-9",
       title: "Titan I",
       cpu: "2 (AMD)",
       ram: "8GB",
       price: 18.86,
-      specs: [
-        "RAM: 8GB",
-        "SSD: 80GB",
-        "vCPU: 2 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0262€",
-        "Precio: 18.86€",
-      ],
+      specs: ["RAM: 8GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0262€", "Precio: 18.86€"],
     },
     {
       id: "srv-10",
@@ -152,14 +94,7 @@ export default function ServerGpuSelector() {
       cpu: "4 (AMD)",
       ram: "16GB",
       price: 34.25,
-      specs: [
-        "RAM: 16GB",
-        "SSD: 160GB",
-        "vCPU: 4 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.0475€",
-        "Precio: 34.25€",
-      ],
+      specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0475€", "Precio: 34.25€"],
     },
     {
       id: "srv-11",
@@ -167,14 +102,7 @@ export default function ServerGpuSelector() {
       cpu: "8 (AMD)",
       ram: "32GB",
       price: 67.45,
-      specs: [
-        "RAM: 32GB",
-        "SSD: 240GB",
-        "vCPU: 8 (AMD)",
-        "Tráfico: 30TB",
-        "Precio/h: 0.0937€",
-        "Precio: 67.45€",
-      ],
+      specs: ["RAM: 32GB", "SSD: 240GB", "vCPU: 8 (AMD)", "Tráfico: 30TB", "Precio/h: 0.0937€", "Precio: 67.45€"],
     },
     {
       id: "srv-12",
@@ -182,14 +110,7 @@ export default function ServerGpuSelector() {
       cpu: "16 (AMD)",
       ram: "64GB",
       price: 125.29,
-      specs: [
-        "RAM: 64GB",
-        "SSD: 360GB",
-        "vCPU: 16 (AMD)",
-        "Tráfico: 40TB",
-        "Precio/h: 0.174€",
-        "Precio: 125.29€",
-      ],
+      specs: ["RAM: 64GB", "SSD: 360GB", "vCPU: 16 (AMD)", "Tráfico: 40TB", "Precio/h: 0.174€", "Precio: 125.29€"],
     },
     {
       id: "srv-13",
@@ -197,14 +118,7 @@ export default function ServerGpuSelector() {
       cpu: "4 (AMD)",
       ram: "16GB",
       price: 250.58,
-      specs: [
-        "RAM: 16GB",
-        "SSD: 160GB",
-        "vCPU: 4 (AMD)",
-        "Tráfico: 20TB",
-        "Precio/h: 0.348€",
-        "Precio: 250.58€",
-      ],
+      specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.348€", "Precio: 250.58€"],
     },
   ];
 
@@ -274,9 +188,6 @@ export default function ServerGpuSelector() {
     (selectedServer ? servers.find((s) => s.id === selectedServer)?.price || 0 : 0) +
     (selectedGpu ? gpus.find((g) => g.id === selectedGpu)?.price || 0 : 0);
 
-  // ======================
-  // FUNCIONES
-  // ======================
   const handleSelect = (type: "server" | "gpu", id: string) => {
     if (type === "server") setSelectedServer(selectedServer === id ? null : id);
     else setSelectedGpu(selectedGpu === id ? null : id);
@@ -285,10 +196,7 @@ export default function ServerGpuSelector() {
   const handleCreate = async () => {
     setLoading(true);
     setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((p) => (p >= 100 ? 100 : p + 5));
-    }, 200);
-
+    const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
     await new Promise((r) => setTimeout(r, 4000));
     clearInterval(interval);
     router.push("/dashboard/command-center");
@@ -297,68 +205,74 @@ export default function ServerGpuSelector() {
   // ======================
   // RENDER
   // ======================
+  const renderServerGroup = (title: string, filter: string) => (
+    <div className="mt-8">
+      <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {servers
+          .filter((s) => s.title.includes(filter))
+          .map((s) => (
+            <div
+              key={s.id}
+              className={`p-4 rounded-2xl border transition ${
+                selectedServer === s.id ? "border-green-500 bg-green-900/20" : "border-gray-700 bg-gray-800/40"
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold">{s.title}</h3>
+                  <p className="text-sm text-gray-400">
+                    {s.cpu} • {s.ram} • {s.price}€
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className="text-blue-400"
+                    onClick={() => setOpenServerInfo(openServerInfo === s.id ? null : s.id)}
+                  >
+                    ℹ️
+                  </button>
+                  <button
+                    className="px-3 py-1 rounded bg-green-700 hover:bg-green-600"
+                    onClick={() => handleSelect("server", s.id)}
+                  >
+                    {selectedServer === s.id ? "Deseleccionar" : "Elegir"}
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {openServerInfo === s.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mt-2 text-sm text-gray-300"
+                  >
+                    {s.specs.map((sp) => (
+                      <div key={sp}>• {sp}</div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+      </div>
+      <div className="border-t border-dashed border-gray-600/50 mt-8 pt-8" />
+    </div>
+  );
+
   return (
     <div className="p-10 text-white max-w-[1600px] mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        Configurador de Servidor y GPU
-      </h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Configurador de Servidor y GPU</h1>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
         {/* SERVIDORES */}
         <div>
           <h2 className="text-xl font-semibold mb-4 text-center">Servidores</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {servers.map((s) => (
-              <div
-                key={s.id}
-                className={`p-4 rounded-2xl border transition ${
-                  selectedServer === s.id
-                    ? "border-green-500 bg-green-900/20"
-                    : "border-gray-700 bg-gray-800/40"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold">{s.title}</h3>
-                    <p className="text-sm text-gray-400">
-                      {s.cpu} • {s.ram} • {s.price}€
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="text-blue-400"
-                      onClick={() =>
-                        setOpenServerInfo(openServerInfo === s.id ? null : s.id)
-                      }
-                    >
-                      ℹ️
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded bg-green-700 hover:bg-green-600"
-                      onClick={() => handleSelect("server", s.id)}
-                    >
-                      {selectedServer === s.id ? "Deseleccionar" : "Elegir"}
-                    </button>
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {openServerInfo === s.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden mt-2 text-sm text-gray-300"
-                    >
-                      {s.specs.map((sp) => (
-                        <div key={sp}>• {sp}</div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
+          {renderServerGroup("Nimbus", "Nimbus")}
+          {renderServerGroup("Stratus", "Stratus")}
+          {renderServerGroup("Titan", "Titan")}
         </div>
 
         {/* GPUS */}
@@ -369,9 +283,7 @@ export default function ServerGpuSelector() {
               <div
                 key={g.id}
                 className={`p-4 rounded-2xl border transition ${
-                  selectedGpu === g.id
-                    ? "border-yellow-500 bg-yellow-900/20"
-                    : "border-gray-700 bg-gray-800/40"
+                  selectedGpu === g.id ? "border-yellow-500 bg-yellow-900/20" : "border-gray-700 bg-gray-800/40"
                 }`}
               >
                 <div className="flex justify-between items-center">
@@ -384,9 +296,7 @@ export default function ServerGpuSelector() {
                   <div className="flex gap-2">
                     <button
                       className="text-blue-400"
-                      onClick={() =>
-                        setOpenGpuInfo(openGpuInfo === g.id ? null : g.id)
-                      }
+                      onClick={() => setOpenGpuInfo(openGpuInfo === g.id ? null : g.id)}
                     >
                       ℹ️
                     </button>
