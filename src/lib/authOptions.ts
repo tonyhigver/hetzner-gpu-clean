@@ -2,8 +2,9 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/lib/prisma";
+import { NextAuthOptions } from "next-auth"; // 🔹 Importa el tipo
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
@@ -30,7 +31,7 @@ export const authOptions = {
 
   callbacks: {
     // ✅ Almacenar datos del usuario en la sesión
-    async session({ session, user }: any) {
+    async session({ session, user }) {
       session.user.id = user.id;
       session.user.isAdmin = user.isAdmin;
       session.user.hasPaid = user.hasPaid;
@@ -38,7 +39,7 @@ export const authOptions = {
     },
 
     // ✅ Si es el admin, se le asignan permisos
-    async signIn({ user }: any) {
+    async signIn({ user }) {
       if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
         await prisma.user.update({
           where: { id: user.id },
@@ -50,10 +51,7 @@ export const authOptions = {
 
     // 🔹 Permitimos que la app decida a dónde ir después del login
     async redirect({ url, baseUrl }) {
-      // Si la URL es externa, la devolvemos tal cual
       if (url && url.startsWith(baseUrl)) return url;
-
-      // Si no, devolvemos undefined para que router.push de la app funcione
       return undefined;
     },
   },
