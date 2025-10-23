@@ -1,5 +1,7 @@
 // 📄 src/app/api/create-user-server/route.ts
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth"; // Ajusta según tu ruta de auth
 
 export async function POST(request: Request) {
   try {
@@ -8,13 +10,19 @@ export async function POST(request: Request) {
     // 🌐 Detectar entorno
     const isDev = process.env.NODE_ENV === "development";
 
-    // ✅ Si no se envía userEmail, usar valor de prueba en dev
+    // 🔹 Obtener sesión de NextAuth
+    const session = await getServerSession(authOptions);
+
+    // ✅ Si no se envía userEmail en body, usar el de la sesión
     if (!body.userEmail) {
-      if (isDev) {
+      if (session?.user?.email) {
+        console.log("ℹ️ Obteniendo userEmail desde sesión:", session.user.email);
+        body.userEmail = session.user.email;
+      } else if (isDev) {
         console.warn("⚠️ userEmail no recibido, usando valor de prueba en dev");
         body.userEmail = "test@local.dev";
       } else {
-        console.error("❌ userEmail no recibido en producción");
+        console.error("❌ userEmail no recibido y no hay sesión activa");
         return NextResponse.json(
           { error: "userEmail es obligatorio" },
           { status: 400 }
@@ -50,7 +58,7 @@ export async function POST(request: Request) {
     // ✅ Todo OK → reenviamos el JSON al frontend
     const data = await res.json();
     return NextResponse.json(data, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("🔥 Error en proxy Next.js:", err);
     return NextResponse.json(
       { error: "Error conectando con el backend", details: err.message },
