@@ -1,7 +1,7 @@
 // 📄 src/app/api/create-user-server/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth"; // Ajusta según tu ruta de auth
+import { authOptions } from "../auth/[...nextauth]/route"; // 🔹 ruta relativa correcta
 
 export async function POST(request: Request) {
   try {
