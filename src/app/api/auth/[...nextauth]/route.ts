@@ -1,22 +1,9 @@
 // 📄 src/app/api/auth/[...nextauth]/route.ts
+import NextAuth from "next-auth/next";
+import { authOptions } from "@/lib/authOptions"; // 🔹 Importamos la configuración desde lib
 
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-
-// 🔹 Configuración de NextAuth
-export const authOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt", // recomendable para APIs
-  },
-};
-
-// 🔹 Exportar el handler para GET y POST
+// 🔹 Creamos el handler de NextAuth con la configuración
 const handler = NextAuth(authOptions);
+
+// 🔹 Exportamos GET y POST para que Next.js reconozca la ruta
 export { handler as GET, handler as POST };

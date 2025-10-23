@@ -1,7 +1,7 @@
 // 📄 src/app/api/create-user-server/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route"; // ruta relativa a tu auth
+import { authOptions } from "@/lib/authOptions"; // 🔹 Import correcto de authOptions
 
 export async function POST(request: Request) {
   try {
