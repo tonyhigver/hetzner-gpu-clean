@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     // 🌐 Detectar entorno
     const isDev = process.env.NODE_ENV === "development";
 
-    // 🔹 Obtener sesión de NextAuth desde la request
-    const session = await getServerSession({ req: request }, authOptions);
+    // 🔹 Obtener sesión de NextAuth directamente (App Router)
+    const session = await getServerSession(authOptions);
 
     // ✅ Si no se envía userEmail en body, usar el de la sesión
     if (!body.userEmail) {
