@@ -11,21 +11,115 @@ export default function ServerGpuSelector() {
   // SERVIDORES
   // ======================
   const servers = [
-    { id: "srv-1", title: "Nimbus I", cpu: "2 (Intel)", ram: "4GB", price: 9.9, specs: ["RAM: 4GB", "SSD: 80GB", "vCPU: 2 (Intel)", "Tráfico: 10TB", "Precio/h: 0.0137€", "Precio: 9.9€"] },
-    { id: "srv-2", title: "Nimbus II", cpu: "4 (Intel)", ram: "8GB", price: 18.5, specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (Intel)", "Tráfico: 20TB", "Precio/h: 0.0256€", "Precio: 18.5€"] },
-    { id: "srv-3", title: "Nimbus III", cpu: "8 (Intel)", ram: "16GB", price: 34.9, specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (Intel)", "Tráfico: 30TB", "Precio/h: 0.0484€", "Precio: 34.9€"] },
-    { id: "srv-4", title: "Nimbus IV", cpu: "16 (Intel)", ram: "32GB", price: 66.5, specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (Intel)", "Tráfico: 40TB", "Precio/h: 0.0924€", "Precio: 66.5€"] },
+    // Nimbus
+    {
+      id: "srv-1",
+      title: "Nimbus I",
+      cpu: "2 (Intel)",
+      ram: "4GB",
+      price: 9.9,
+      specs: ["RAM: 4GB", "SSD: 80GB", "vCPU: 2 (Intel)", "Tráfico: 10TB", "Precio/h: 0.0137€", "Precio: 9.9€"],
+    },
+    {
+      id: "srv-2",
+      title: "Nimbus II",
+      cpu: "4 (Intel)",
+      ram: "8GB",
+      price: 18.5,
+      specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (Intel)", "Tráfico: 20TB", "Precio/h: 0.0256€", "Precio: 18.5€"],
+    },
+    {
+      id: "srv-3",
+      title: "Nimbus III",
+      cpu: "8 (Intel)",
+      ram: "16GB",
+      price: 34.9,
+      specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (Intel)", "Tráfico: 30TB", "Precio/h: 0.0484€", "Precio: 34.9€"],
+    },
+    {
+      id: "srv-4",
+      title: "Nimbus IV",
+      cpu: "16 (Intel)",
+      ram: "32GB",
+      price: 66.5,
+      specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (Intel)", "Tráfico: 40TB", "Precio/h: 0.0924€", "Precio: 66.5€"],
+    },
 
-    { id: "srv-5", title: "Stratus II", cpu: "4 (AMD)", ram: "8GB", price: 16.5, specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0229€", "Precio: 16.5€"] },
-    { id: "srv-6", title: "Stratus III", cpu: "8 (AMD)", ram: "16GB", price: 29.5, specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0410€", "Precio: 29.5€"] },
-    { id: "srv-7", title: "Stratus IV", cpu: "12 (AMD)", ram: "24GB", price: 39.96, specs: ["RAM: 24GB", "SSD: 480GB", "vCPU: 12 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0555€", "Precio: 39.96€"] },
-    { id: "srv-8", title: "Stratus V", cpu: "16 (AMD)", ram: "32GB", price: 54.95, specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0763€", "Precio: 54.95€"] },
+    // Stratus
+    {
+      id: "srv-5",
+      title: "Stratus II",
+      cpu: "4 (AMD)",
+      ram: "8GB",
+      price: 16.5,
+      specs: ["RAM: 8GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0229€", "Precio: 16.5€"],
+    },
+    {
+      id: "srv-6",
+      title: "Stratus III",
+      cpu: "8 (AMD)",
+      ram: "16GB",
+      price: 29.5,
+      specs: ["RAM: 16GB", "SSD: 320GB", "vCPU: 8 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0410€", "Precio: 29.5€"],
+    },
+    {
+      id: "srv-7",
+      title: "Stratus IV",
+      cpu: "12 (AMD)",
+      ram: "24GB",
+      price: 39.96,
+      specs: ["RAM: 24GB", "SSD: 480GB", "vCPU: 12 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0555€", "Precio: 39.96€"],
+    },
+    {
+      id: "srv-8",
+      title: "Stratus V",
+      cpu: "16 (AMD)",
+      ram: "32GB",
+      price: 54.95,
+      specs: ["RAM: 32GB", "SSD: 640GB", "vCPU: 16 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0763€", "Precio: 54.95€"],
+    },
 
-    { id: "srv-9", title: "Titan I", cpu: "2 (AMD)", ram: "8GB", price: 18.86, specs: ["RAM: 8GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0262€", "Precio: 18.86€"] },
-    { id: "srv-10", title: "Titan II", cpu: "4 (AMD)", ram: "16GB", price: 34.25, specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0475€", "Precio: 34.25€"] },
-    { id: "srv-11", title: "Titan III", cpu: "8 (AMD)", ram: "32GB", price: 67.45, specs: ["RAM: 32GB", "SSD: 240GB", "vCPU: 8 (AMD)", "Tráfico: 30TB", "Precio/h: 0.0937€", "Precio: 67.45€"] },
-    { id: "srv-12", title: "Titan IV", cpu: "16 (AMD)", ram: "64GB", price: 125.29, specs: ["RAM: 64GB", "SSD: 360GB", "vCPU: 16 (AMD)", "Tráfico: 40TB", "Precio/h: 0.174€", "Precio: 125.29€"] },
-    { id: "srv-13", title: "Titan V", cpu: "4 (AMD)", ram: "16GB", price: 250.58, specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.348€", "Precio: 250.58€"] },
+    // Titan
+    {
+      id: "srv-9",
+      title: "Titan I",
+      cpu: "2 (AMD)",
+      ram: "8GB",
+      price: 18.86,
+      specs: ["RAM: 8GB", "SSD: 80GB", "vCPU: 2 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0262€", "Precio: 18.86€"],
+    },
+    {
+      id: "srv-10",
+      title: "Titan II",
+      cpu: "4 (AMD)",
+      ram: "16GB",
+      price: 34.25,
+      specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.0475€", "Precio: 34.25€"],
+    },
+    {
+      id: "srv-11",
+      title: "Titan III",
+      cpu: "8 (AMD)",
+      ram: "32GB",
+      price: 67.45,
+      specs: ["RAM: 32GB", "SSD: 240GB", "vCPU: 8 (AMD)", "Tráfico: 30TB", "Precio/h: 0.0937€", "Precio: 67.45€"],
+    },
+    {
+      id: "srv-12",
+      title: "Titan IV",
+      cpu: "16 (AMD)",
+      ram: "64GB",
+      price: 125.29,
+      specs: ["RAM: 64GB", "SSD: 360GB", "vCPU: 16 (AMD)", "Tráfico: 40TB", "Precio/h: 0.174€", "Precio: 125.29€"],
+    },
+    {
+      id: "srv-13",
+      title: "Titan V",
+      cpu: "4 (AMD)",
+      ram: "16GB",
+      price: 250.58,
+      specs: ["RAM: 16GB", "SSD: 160GB", "vCPU: 4 (AMD)", "Tráfico: 20TB", "Precio/h: 0.348€", "Precio: 250.58€"],
+    },
   ];
 
   // ======================
@@ -57,16 +151,23 @@ export default function ServerGpuSelector() {
     ["A100 (80GB SXM)", 80, 230],
     ["H100 NVL", 94, 460],
   ].map(([name, vram, price], i) => {
-    const hourly = price / (30 * 24);
+    const hourly = (price as number) / (30 * 24);
     return {
       id: `gpu-${i + 1}`,
-      title: name,
+      title: name as string,
       vram: `${vram} GB`,
-      architecture: name.includes("A100") || name.includes("H100") ? "Data Center" : "RTX Ada/Lovelace",
-      price,
+      architecture:
+        name.toString().includes("A100") || name.toString().includes("H100")
+          ? "Data Center"
+          : "RTX Ada/Lovelace",
+      price: price as number,
       specs: [
         `VRAM: ${vram} GB`,
-        `Arquitectura: ${name.includes("A100") || name.includes("H100") ? "Data Center" : "RTX Ada/Lovelace"}`,
+        `Arquitectura: ${
+          name.toString().includes("A100") || name.toString().includes("H100")
+            ? "Data Center"
+            : "RTX Ada/Lovelace"
+        }`,
         `Precio/h: ${hourly.toFixed(3)}€`,
         `Precio: ${price}€`,
       ],
@@ -101,7 +202,7 @@ export default function ServerGpuSelector() {
   }, [selectedServer, selectedGpu]);
 
   // ======================
-  // TOTAL
+  // FUNCIONES
   // ======================
   const total =
     (selectedServer ? servers.find((s) => s.id === selectedServer)?.price || 0 : 0) +
@@ -116,92 +217,105 @@ export default function ServerGpuSelector() {
     setShowSummary(true);
   };
 
-  // ======================
-  // FUNCION CONFIRMAR CREACION
-  // ======================
   const confirmCreate = async () => {
-    if (!selectedServer || !selectedGpu) return;
-
     setShowSummary(false);
     setLoading(true);
     setProgress(0);
-    setProgressText("Enviando datos al servidor...");
+    const messages = [
+      "Inicializando servidor...",
+      "Asignando recursos...",
+      "Configurando GPU...",
+      "Aplicando seguridad...",
+      "Finalizando despliegue...",
+    ];
+    let msgIndex = 0;
 
-    try {
-      // POST al backend
-      const response = await fetch("/api/create-server", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ server: selectedServer, gpu: selectedGpu }),
-      });
+    const msgInterval = setInterval(() => {
+      setProgressText(messages[msgIndex]);
+      msgIndex = (msgIndex + 1) % messages.length;
+    }, 1000);
 
-      if (!response.ok) throw new Error("Error al crear el servidor");
+    const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
 
-      // Simular progreso animado
-      const messages = [
-        "Inicializando servidor...",
-        "Asignando recursos...",
-        "Configurando GPU...",
-        "Aplicando seguridad...",
-        "Finalizando despliegue...",
-      ];
-      let index = 0;
-      const msgInterval = setInterval(() => {
-        setProgressText(messages[index]);
-        index = (index + 1) % messages.length;
-      }, 800);
+    await new Promise((r) => setTimeout(r, 5000));
+    clearInterval(interval);
+    clearInterval(msgInterval);
 
-      const interval = setInterval(() => setProgress((p) => (p >= 100 ? 100 : p + 5)), 200);
+    // Simular API POST
+    await fetch("/api/create-server", {
+      method: "POST",
+      body: JSON.stringify({ server: selectedServer, gpu: selectedGpu }),
+      headers: { "Content-Type": "application/json" },
+    });
 
-      await new Promise((r) => setTimeout(r, 5000));
-      clearInterval(interval);
-      clearInterval(msgInterval);
-
-      // Redirigir al dashboard
-      router.push("/dashboard/command-center");
-    } catch (err) {
-      console.error(err);
-      setProgressText("Error al crear servidor");
-      setLoading(false);
-    }
+    router.push("/dashboard/command-center");
   };
 
   // ======================
-  // RENDER SERVERS
+  // RENDER
   // ======================
   const renderServerGroup = (title: string, filter: string) => (
-    <motion.div className="mt-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div
+      className="mt-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {servers.filter((s) => s.title.includes(filter)).map((s) => (
-          <div key={s.id} className={`p-4 rounded-2xl border transition ${selectedServer === s.id ? "border-green-500 bg-green-900/20" : "border-gray-700 bg-gray-800/40"}`}>
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-bold">{s.title}</h3>
-                <p className="text-sm text-gray-400">{s.cpu} • {s.ram} • {s.price}€</p>
+        {servers
+          .filter((s) => s.title.includes(filter))
+          .map((s) => (
+            <div
+              key={s.id}
+              className={`p-4 rounded-2xl border transition ${
+                selectedServer === s.id ? "border-green-500 bg-green-900/20" : "border-gray-700 bg-gray-800/40"
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold">{s.title}</h3>
+                  <p className="text-sm text-gray-400">
+                    {s.cpu} • {s.ram} • {s.price}€
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className="text-blue-400"
+                    onClick={() => setOpenServerInfo(openServerInfo === s.id ? null : s.id)}
+                  >
+                    ℹ️
+                  </button>
+                  <button
+                    className="px-3 py-1 rounded bg-green-700 hover:bg-green-600"
+                    onClick={() => handleSelect("server", s.id)}
+                  >
+                    {selectedServer === s.id ? "Deseleccionar" : "Elegir"}
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button className="text-blue-400" onClick={() => setOpenServerInfo(openServerInfo === s.id ? null : s.id)}>ℹ️</button>
-                <button className="px-3 py-1 rounded bg-green-700 hover:bg-green-600" onClick={() => handleSelect("server", s.id)}>{selectedServer === s.id ? "Deseleccionar" : "Elegir"}</button>
-              </div>
+
+              <AnimatePresence>
+                {openServerInfo === s.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mt-2 text-sm text-gray-300"
+                  >
+                    {s.specs.map((sp) => (
+                      <div key={sp}>• {sp}</div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <AnimatePresence>
-              {openServerInfo === s.id && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2 text-sm text-gray-300">
-                  {s.specs.map((sp) => <div key={sp}>• {sp}</div>)}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
+          ))}
       </div>
       <div className="border-t border-dashed border-gray-600/50 mt-8 pt-8" />
     </motion.div>
   );
 
-  // ======================
-  // RENDER
-  // ======================
   return (
     <div className="p-10 text-white max-w-[1600px] mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-center">Configurador de Servidor y GPU</h1>
@@ -218,21 +332,46 @@ export default function ServerGpuSelector() {
           <h2 className="text-xl font-semibold mb-4 text-center">GPUs</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {gpus.map((g) => (
-              <div key={g.id} className={`p-4 rounded-2xl border transition ${selectedGpu === g.id ? "border-yellow-500 bg-yellow-900/20" : "border-gray-700 bg-gray-800/40"}`}>
+              <div
+                key={g.id}
+                className={`p-4 rounded-2xl border transition ${
+                  selectedGpu === g.id ? "border-yellow-500 bg-yellow-900/20" : "border-gray-700 bg-gray-800/40"
+                }`}
+              >
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-bold">{g.title}</h3>
-                    <p className="text-sm text-gray-400">{g.vram} • {g.architecture} • {g.price}€</p>
+                    <p className="text-sm text-gray-400">
+                      {g.vram} • {g.architecture} • {g.price}€
+                    </p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="text-blue-400" onClick={() => setOpenGpuInfo(openGpuInfo === g.id ? null : g.id)}>ℹ️</button>
-                    <button className="px-3 py-1 rounded bg-yellow-700 hover:bg-yellow-600" onClick={() => handleSelect("gpu", g.id)}>{selectedGpu === g.id ? "Deseleccionar" : "Elegir"}</button>
+                    <button
+                      className="text-blue-400"
+                      onClick={() => setOpenGpuInfo(openGpuInfo === g.id ? null : g.id)}
+                    >
+                      ℹ️
+                    </button>
+                    <button
+                      className="px-3 py-1 rounded bg-yellow-700 hover:bg-yellow-600"
+                      onClick={() => handleSelect("gpu", g.id)}
+                    >
+                      {selectedGpu === g.id ? "Deseleccionar" : "Elegir"}
+                    </button>
                   </div>
                 </div>
+
                 <AnimatePresence>
                   {openGpuInfo === g.id && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2 text-sm text-gray-300">
-                      {g.specs.map((sp) => <div key={sp}>• {sp}</div>)}
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mt-2 text-sm text-gray-300"
+                    >
+                      {g.specs.map((sp) => (
+                        <div key={sp}>• {sp}</div>
+                      ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -249,7 +388,11 @@ export default function ServerGpuSelector() {
 
       {/* BOTÓN CREAR */}
       <div className="text-center mt-6">
-        <button onClick={handleCreate} disabled={!selectedServer || !selectedGpu || loading} className="px-6 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 disabled:bg-gray-600">
+        <button
+          onClick={handleCreate}
+          disabled={!selectedServer || !selectedGpu || loading}
+          className="px-6 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 disabled:bg-gray-600"
+        >
           {loading ? "Creando servidor..." : "Crear Servidor"}
         </button>
       </div>
@@ -259,7 +402,12 @@ export default function ServerGpuSelector() {
         <div className="mt-4 text-center">
           <p className="mb-2 text-sm text-gray-400">{progressText}</p>
           <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
-            <motion.div className="bg-green-500 h-3" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ ease: "linear" }} />
+            <motion.div
+              className="bg-green-500 h-3"
+              initial={{ width: "0%" }}
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: "linear" }}
+            />
           </div>
         </div>
       )}
@@ -267,15 +415,42 @@ export default function ServerGpuSelector() {
       {/* RESUMEN MODAL */}
       <AnimatePresence>
         {showSummary && (
-          <motion.div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="bg-gray-800 p-6 rounded-2xl max-w-md text-center" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
+          <motion.div
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-gray-800 p-6 rounded-2xl max-w-md text-center"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+            >
               <h3 className="text-xl font-bold mb-4">Confirmar Creación</h3>
-              <p className="text-gray-300 mb-2"><strong>Servidor:</strong> {servers.find((s) => s.id === selectedServer)?.title}</p>
-              <p className="text-gray-300 mb-2"><strong>GPU:</strong> {gpus.find((g) => g.id === selectedGpu)?.title}</p>
-              <p className="text-lg font-bold mt-4">Total: {total.toFixed(2)} € / mes</p>
+              <p className="text-gray-300 mb-2">
+                <strong>Servidor:</strong>{" "}
+                {servers.find((s) => s.id === selectedServer)?.title}
+              </p>
+              <p className="text-gray-300 mb-2">
+                <strong>GPU:</strong> {gpus.find((g) => g.id === selectedGpu)?.title}
+              </p>
+              <p className="text-lg font-bold mt-4">
+                Total: {total.toFixed(2)} € / mes
+              </p>
               <div className="mt-6 flex justify-center gap-4">
-                <button onClick={() => setShowSummary(false)} className="px-4 py-2 bg-gray-600 rounded-lg hover:bg-gray-500">Cancelar</button>
-                <button onClick={confirmCreate} className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-500 font-bold">Confirmar</button>
+                <button
+                  onClick={() => setShowSummary(false)}
+                  className="px-4 py-2 bg-gray-600 rounded-lg hover:bg-gray-500"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmCreate}
+                  className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-500 font-bold"
+                >
+                  Confirmar
+                </button>
               </div>
             </motion.div>
           </motion.div>
