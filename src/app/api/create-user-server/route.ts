@@ -8,12 +8,27 @@ export async function POST(request: Request) {
     // 🌐 Detectar entorno
     const isDev = process.env.NODE_ENV === "development";
 
+    // ✅ Si no se envía userEmail, usar valor de prueba en dev
+    if (!body.userEmail) {
+      if (isDev) {
+        console.warn("⚠️ userEmail no recibido, usando valor de prueba en dev");
+        body.userEmail = "test@local.dev";
+      } else {
+        console.error("❌ userEmail no recibido en producción");
+        return NextResponse.json(
+          { error: "userEmail es obligatorio" },
+          { status: 400 }
+        );
+      }
+    }
+
     // ✅ URL del backend (en dev usa localhost, en prod tu IP pública)
     const backendUrl = isDev
       ? "http://localhost:4000/api/create-user-server"
       : "http://157.180.118.67:4000/api/create-user-server";
 
     console.log("🔁 Reenviando petición al backend:", backendUrl);
+    console.log("📦 Body enviado:", body);
 
     // 🔹 Reenviar al backend
     const res = await fetch(backendUrl, {
@@ -27,7 +42,7 @@ export async function POST(request: Request) {
       const errorText = await res.text();
       console.error("❌ Error desde backend:", res.status, errorText);
       return NextResponse.json(
-        { error: `Backend error: ${res.status}` },
+        { error: `Backend error: ${res.status}`, details: errorText },
         { status: res.status }
       );
     }
@@ -38,7 +53,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("🔥 Error en proxy Next.js:", err);
     return NextResponse.json(
-      { error: "Error conectando con el backend" },
+      { error: "Error conectando con el backend", details: err.message },
       { status: 500 }
     );
   }
