@@ -47,17 +47,26 @@ async function fetchHetznerServers() {
    🔄 SINCRONIZACIÓN SEGURA
 ────────────────────────────────── */
 async function syncUserServers(userEmail: string) {
+  console.log("🔍 Buscando servidores en Supabase para:", userEmail);
+
   // 1️⃣ Obtener todos los servidores del usuario en Supabase
   const { data: dbServers, error } = await supabase
     .from("user_servers")
     .select("*")
-    .eq("user_id", userEmail);
+    .eq("user_email", userEmail); // 🔧 CORREGIDO: antes era user_id
 
-  if (error) throw new Error(`Error obteniendo servidores del usuario: ${error.message}`);
+  if (error) {
+    console.error("❌ Error obteniendo servidores del usuario:", error.message);
+    throw new Error(`Error obteniendo servidores del usuario: ${error.message}`);
+  }
+
+  console.log(`📦 Servidores obtenidos (${dbServers?.length || 0}):`, dbServers);
+
   if (!dbServers || dbServers.length === 0) return [];
 
   // 2️⃣ Obtener IDs actuales de Hetzner
   const hetznerIds = await fetchHetznerServers();
+  console.log(`🧩 IDs actuales en Hetzner (${hetznerIds.length}):`, hetznerIds);
 
   // 3️⃣ Identificar los que ya no existen
   const serversToDelete = dbServers.filter(
@@ -82,6 +91,8 @@ async function syncUserServers(userEmail: string) {
     hetznerIds.includes(s.hetzner_server_id)
   );
 
+  console.log(`✅ Servidores activos (${activeServers.length}):`, activeServers);
+
   return activeServers;
 }
 
@@ -93,7 +104,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
-    // 🚫 Validar email antes de seguir
     if (
       !rawEmail ||
       rawEmail === "undefined" ||
