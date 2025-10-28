@@ -100,7 +100,7 @@ export default function ServerDetailPage() {
     }
   }, [countdown]);
 
-  // ⚡ Encender GPU
+  // ⚡ Encender GPU (MODIFICADO)
   const handlePowerOnGPU = async () => {
     console.log("[ServerDetailPage] handlePowerOnGPU pulsado.");
 
@@ -118,22 +118,22 @@ export default function ServerDetailPage() {
     setCountdown(30);
 
     try {
+      // 🔹 Datos que se enviarán al backend
       const payload = {
-        name: `gpu-${server.gpu_type?.toLowerCase()}-${Date.now()}`,
-        gpuClass: server.gpu_type,
+        server_name: server.server_name,
+        gpu_type: server.gpu_type,
       };
 
-      console.log("[ServerDetailPage] Payload enviado al backend local:", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend:", payload);
 
-      // 🚀 Nueva ruta API sin CORS
-      const res = await fetch("/api/salad/power-on", {
+      // 🚀 Enviar petición al backend real (no a /api local)
+      const res = await fetch("http://localhost:4000/power-on-gpu", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log("[ServerDetailPage] Respuesta HTTP local:", res.status, res.statusText);
-
+      console.log("[ServerDetailPage] Respuesta HTTP backend:", res.status, res.statusText);
       const text = await res.text();
       console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
 
@@ -141,7 +141,7 @@ export default function ServerDetailPage() {
         throw new Error(`[${res.status}] ${text}`);
       }
 
-      console.log("✅ GPU encendida correctamente (via backend SaladCloud)");
+      console.log("✅ GPU encendida correctamente (via backend)");
       alert("GPU encendida correctamente ✅");
     } catch (err) {
       console.error("❌ Error encendiendo GPU:", err);
