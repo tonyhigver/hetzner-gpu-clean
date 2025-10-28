@@ -123,10 +123,10 @@ export default function ServerDetailPage() {
         gpuClass: server.gpu_type,
       };
 
-      console.log("[ServerDetailPage] Payload enviado al backend (puerto 3001):", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend (dominio):", payload);
 
-      // 🚀 ENVÍO AL BACKEND INDEX.JS (puerto 3001)
-      const res = await fetch("http://localhost:3001/power-on", {
+      // 🚀 ENVÍO AL BACKEND INDEX.JS A TRAVÉS DEL DOMINIO
+      const res = await fetch("https://allyrogue.site:3001/power-on", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
