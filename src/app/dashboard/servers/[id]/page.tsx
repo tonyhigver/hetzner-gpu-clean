@@ -30,40 +30,35 @@ export default function ServerDetailPage() {
 
   // 🧠 Fetch de servidor
   useEffect(() => {
-    console.log("[GPU-DEBUG] useEffect iniciado, ID en URL:", id);
-
     if (!id) {
-      console.warn("[GPU-DEBUG] No hay ID en URL.");
+      console.warn("[ServerDetailPage] No hay ID en URL.");
       return;
     }
 
     const fetchServer = async () => {
-      console.log("[GPU-DEBUG] Iniciando fetchServer con ID:", id);
+      console.log("[ServerDetailPage] Iniciando fetchServer para ID:", id);
 
-      // 🔹 LocalStorage cache
+      // LocalStorage cache
       if (typeof window !== "undefined") {
         const stored = localStorage.getItem("selectedServer");
-        console.log("[GPU-DEBUG] Revisando localStorage: ", stored);
-
         if (stored) {
           try {
             const parsed = JSON.parse(stored) as Server;
-            console.log("[GPU-DEBUG] Servidor encontrado en localStorage:", parsed);
+            console.log("[ServerDetailPage] Encontrado en localStorage:", parsed);
             if (String(parsed.id) === String(id)) {
               setServer(parsed);
               setLoading(false);
-              console.log("[GPU-DEBUG] Servidor cargado desde localStorage OK ✅");
               return;
             }
           } catch (e) {
-            console.error("[GPU-DEBUG] Error al parsear localStorage:", e);
+            console.error("[ServerDetailPage] Error al parsear localStorage:", e);
           }
         }
       }
 
-      // 🔹 Supabase fallback
+      // Supabase fallback
       try {
-        console.log("[GPU-DEBUG] No encontrado en cache, buscando en Supabase...");
+        console.log("[ServerDetailPage] Buscando en Supabase...");
         const numericId = Number(id);
         const { data, error } = await supabase
           .from("user_servers")
@@ -72,25 +67,25 @@ export default function ServerDetailPage() {
           .single();
 
         if (error || !data) {
-          console.error("[GPU-DEBUG] Error o sin datos en Supabase:", error);
+          console.error("[ServerDetailPage] Error desde Supabase:", error);
           setServer(null);
           return;
         }
 
-        console.log("[GPU-DEBUG] Datos recibidos de Supabase:", data);
+        console.log("[ServerDetailPage] Datos de Supabase:", data);
         const serverData = { ...data, id: String(data.id) };
         setServer(serverData);
 
         if (typeof window !== "undefined") {
           localStorage.setItem("selectedServer", JSON.stringify(serverData));
-          console.log("[GPU-DEBUG] Guardado en localStorage:", serverData);
+          console.log("[ServerDetailPage] Guardado en localStorage.");
         }
       } catch (err) {
-        console.error("[GPU-DEBUG] Excepción en fetchServer:", err);
+        console.error("[ServerDetailPage] Excepción al obtener servidor:", err);
         setServer(null);
       } finally {
         setLoading(false);
-        console.log("[GPU-DEBUG] fetchServer finalizado ✅");
+        console.log("[ServerDetailPage] fetchServer finalizado.");
       }
     };
 
@@ -100,7 +95,6 @@ export default function ServerDetailPage() {
   // 🕒 Countdown
   useEffect(() => {
     if (countdown > 0) {
-      console.log(`[GPU-DEBUG] Countdown: ${countdown}s restante`);
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
@@ -108,17 +102,17 @@ export default function ServerDetailPage() {
 
   // ⚡ Encender GPU
   const handlePowerOnGPU = async () => {
-    console.log("[GPU-DEBUG] 🔘 handlePowerOnGPU pulsado.");
+    console.log("[ServerDetailPage] handlePowerOnGPU pulsado.");
 
     if (!server?.gpu_type) {
       alert("No se encontró el tipo de GPU para este servidor.");
-      console.error("[GPU-DEBUG] GPU_TYPE no definido en servidor:", server);
+      console.error("[ServerDetailPage] GPU_TYPE no definido en servidor:", server);
       return;
     }
 
-    console.log("[GPU-DEBUG] Preparando activación GPU...");
-    console.log("  → GPU_TYPE:", server.gpu_type);
-    console.log("  → SERVER:", server);
+    console.log("[ServerDetailPage] Preparando activación GPU...");
+    console.log("  GPU_TYPE:", server.gpu_type);
+    console.log("  SERVER:", server);
 
     setActivating(true);
     setCountdown(30);
@@ -127,52 +121,40 @@ export default function ServerDetailPage() {
       const payload = {
         name: `gpu-${server.gpu_type?.toLowerCase()}-${Date.now()}`,
         gpuClass: server.gpu_type,
-        serverId: server.id,
-        serverName: server.server_name,
-        ip: server.ip,
-        project: server.project,
       };
 
-      console.log("[GPU-DEBUG] Payload a enviar al backend:", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend (dominio):", payload);
 
-      const backendUrl = "https://allyrogue.site:3001/power-on";
-      console.log("[GPU-DEBUG] Enviando POST a:", backendUrl);
-
-      const res = await fetch(backendUrl, {
+      // 🚀 ENVÍO AL BACKEND INDEX.JS A TRAVÉS DEL DOMINIO
+      const res = await fetch("https://allyrogue.site:3001/power-on", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log("[GPU-DEBUG] Respuesta recibida del backend:");
-      console.log("  → status:", res.status);
-      console.log("  → statusText:", res.statusText);
+      console.log("[ServerDetailPage] Respuesta HTTP backend:", res.status, res.statusText);
 
       const text = await res.text();
-      console.log("[GPU-DEBUG] Cuerpo de respuesta backend:", text);
+      console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
 
       if (!res.ok) {
         throw new Error(`[${res.status}] ${text}`);
       }
 
-      console.log("[GPU-DEBUG] ✅ GPU encendida correctamente (via backend GPU)");
+      console.log("✅ GPU encendida correctamente (via backend GPU)");
       alert("GPU encendida correctamente ✅");
     } catch (err) {
-      console.error("[GPU-DEBUG] ❌ Error encendiendo GPU:", err);
-      alert("Error al intentar encender la GPU. Revisa la consola (ver logs con [GPU-DEBUG]).");
+      console.error("❌ Error encendiendo GPU:", err);
+      alert("Error al intentar encender la GPU. Revisa la consola (ver logs con [ServerDetailPage]).");
     } finally {
       setActivating(false);
-      console.log("[GPU-DEBUG] handlePowerOnGPU finalizado 🔚");
+      console.log("[ServerDetailPage] handlePowerOnGPU completado.");
     }
   };
 
   // 🖥️ UI
   if (loading)
-    return (
-      <div className="text-center text-gray-400 mt-32">
-        Cargando detalles del servidor...
-      </div>
-    );
+    return <div className="text-center text-gray-400 mt-32">Cargando detalles del servidor...</div>;
 
   if (!server)
     return (
@@ -180,8 +162,6 @@ export default function ServerDetailPage() {
         No se encontró información del servidor con ID: {id}
       </div>
     );
-
-  console.log("[GPU-DEBUG] Renderizando UI con servidor:", server);
 
   return (
     <div className="flex flex-col w-screen h-screen bg-[#0B0C10] text-[#E6E6E6] pt-32">
