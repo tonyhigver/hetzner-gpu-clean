@@ -123,21 +123,16 @@ export default function ServerDetailPage() {
         gpuClass: server.gpu_type,
       };
 
-      console.log("[ServerDetailPage] Payload listo para enviar al backend:", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend (puerto 3001):", payload);
 
-      // 🚀 ENVÍO AL BACKEND (DOMINIO allyrogue.site)
-      const backendURL = "https://allyrogue.site/api/gpu/power-on";
-      console.log(`[ServerDetailPage] Enviando solicitud POST a ${backendURL} ...`);
-
-      const res = await fetch(backendURL, {
+      // 🚀 ENVÍO AL BACKEND INDEX.JS (puerto 3001)
+      const res = await fetch("http://localhost:3001/power-on", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log("[ServerDetailPage] Respuesta recibida del backend:");
-      console.log("  ➜ Código HTTP:", res.status);
-      console.log("  ➜ Texto:", res.statusText);
+      console.log("[ServerDetailPage] Respuesta HTTP backend:", res.status, res.statusText);
 
       const text = await res.text();
       console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
@@ -146,7 +141,7 @@ export default function ServerDetailPage() {
         throw new Error(`[${res.status}] ${text}`);
       }
 
-      console.log("✅ GPU encendida correctamente (via backend allyrogue.site)");
+      console.log("✅ GPU encendida correctamente (via backend GPU)");
       alert("GPU encendida correctamente ✅");
     } catch (err) {
       console.error("❌ Error encendiendo GPU:", err);
