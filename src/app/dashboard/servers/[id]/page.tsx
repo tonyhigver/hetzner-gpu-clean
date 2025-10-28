@@ -123,16 +123,16 @@ export default function ServerDetailPage() {
         gpuClass: server.gpu_type,
       };
 
-      console.log("[ServerDetailPage] Payload enviado al backend local:", payload);
+      console.log("[ServerDetailPage] Payload enviado al backend (puerto 3001):", payload);
 
-      // 🚀 Nueva ruta API sin CORS
-      const res = await fetch("/api/salad/power-on", {
+      // 🚀 ENVÍO AL BACKEND INDEX.JS (puerto 3001)
+      const res = await fetch("http://localhost:3001/power-on", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log("[ServerDetailPage] Respuesta HTTP local:", res.status, res.statusText);
+      console.log("[ServerDetailPage] Respuesta HTTP backend:", res.status, res.statusText);
 
       const text = await res.text();
       console.log("[ServerDetailPage] Cuerpo de respuesta:", text);
@@ -141,7 +141,7 @@ export default function ServerDetailPage() {
         throw new Error(`[${res.status}] ${text}`);
       }
 
-      console.log("✅ GPU encendida correctamente (via backend SaladCloud)");
+      console.log("✅ GPU encendida correctamente (via backend GPU)");
       alert("GPU encendida correctamente ✅");
     } catch (err) {
       console.error("❌ Error encendiendo GPU:", err);
