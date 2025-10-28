@@ -49,11 +49,11 @@ async function fetchHetznerServers() {
 async function syncUserServers(userEmail: string) {
   console.log("🔍 Buscando servidores en Supabase para:", userEmail);
 
-  // 1️⃣ Obtener todos los servidores del usuario en Supabase
+  // 🔧 Aquí usamos user_id porque en tu tabla ese campo guarda el email
   const { data: dbServers, error } = await supabase
     .from("user_servers")
     .select("*")
-    .eq("user_email", userEmail); // 🔧 CORREGIDO: antes era user_id
+    .eq("user_id", userEmail);
 
   if (error) {
     console.error("❌ Error obteniendo servidores del usuario:", error.message);
@@ -64,16 +64,13 @@ async function syncUserServers(userEmail: string) {
 
   if (!dbServers || dbServers.length === 0) return [];
 
-  // 2️⃣ Obtener IDs actuales de Hetzner
   const hetznerIds = await fetchHetznerServers();
   console.log(`🧩 IDs actuales en Hetzner (${hetznerIds.length}):`, hetznerIds);
 
-  // 3️⃣ Identificar los que ya no existen
   const serversToDelete = dbServers.filter(
     (s) => !hetznerIds.includes(s.hetzner_server_id)
   );
 
-  // 4️⃣ Eliminar solo los que no existen en Hetzner
   for (const s of serversToDelete) {
     const { error: delError } = await supabase
       .from("user_servers")
@@ -86,7 +83,6 @@ async function syncUserServers(userEmail: string) {
       console.log(`🗑️ Eliminado servidor no existente en Hetzner: ${s.server_name}`);
   }
 
-  // 5️⃣ Devolver solo los activos
   const activeServers = dbServers.filter((s) =>
     hetznerIds.includes(s.hetzner_server_id)
   );
@@ -104,12 +100,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawEmail = searchParams.get("email");
 
-    if (
-      !rawEmail ||
-      rawEmail === "undefined" ||
-      rawEmail === "null" ||
-      !rawEmail.includes("@")
-    ) {
+    if (!rawEmail || rawEmail === "undefined" || rawEmail === "null" || !rawEmail.includes("@")) {
       console.warn("🚫 Petición rechazada: email inválido →", rawEmail);
       return NextResponse.json({ servers: [], error: "Email inválido" }, { status: 400 });
     }
