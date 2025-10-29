@@ -23,7 +23,7 @@ const hetznerProjects = [
    📡 OBTENER SERVIDORES DE HETZNER
 ────────────────────────────────── */
 async function fetchHetznerServers() {
-  const allServers: string[] = [];
+  const allServers: { id: string; name: string }[] = [];
 
   for (const { name, token } of hetznerProjects) {
     try {
@@ -33,7 +33,7 @@ async function fetchHetznerServers() {
 
       const servers = res.data.servers || [];
       for (const s of servers) {
-        allServers.push(s.id.toString());
+        allServers.push({ id: s.id.toString(), name: s.name });
       }
     } catch (err: any) {
       console.error(`❌ Error obteniendo servidores de ${name}:`, err.message);
@@ -49,7 +49,6 @@ async function fetchHetznerServers() {
 async function syncUserServers(userEmail: string) {
   console.log("🔍 Buscando servidores en Supabase para:", userEmail);
 
-  // 🔧 Aquí usamos user_id porque en tu tabla ese campo guarda el email
   const { data: dbServers, error } = await supabase
     .from("user_servers")
     .select("*")
@@ -64,11 +63,13 @@ async function syncUserServers(userEmail: string) {
 
   if (!dbServers || dbServers.length === 0) return [];
 
-  const hetznerIds = await fetchHetznerServers();
+  const hetznerServers = await fetchHetznerServers();
+  const hetznerIds = hetznerServers.map((s) => s.id);
   console.log(`🧩 IDs actuales en Hetzner (${hetznerIds.length}):`, hetznerIds);
 
+  // Eliminar servidores que ya no existen en Hetzner
   const serversToDelete = dbServers.filter(
-    (s) => !hetznerIds.includes(s.hetzner_server_id)
+    (s) => !hetznerIds.includes(s.hetzner_server_id.toString())
   );
 
   for (const s of serversToDelete) {
@@ -83,8 +84,9 @@ async function syncUserServers(userEmail: string) {
       console.log(`🗑️ Eliminado servidor no existente en Hetzner: ${s.server_name}`);
   }
 
+  // Filtrar solo los activos
   const activeServers = dbServers.filter((s) =>
-    hetznerIds.includes(s.hetzner_server_id)
+    hetznerIds.includes(s.hetzner_server_id.toString())
   );
 
   console.log(`✅ Servidores activos (${activeServers.length}):`, activeServers);
