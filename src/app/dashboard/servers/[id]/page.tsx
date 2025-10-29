@@ -125,7 +125,7 @@ export default function ServerDetailPage() {
 
       console.log("[ServerDetailPage] Payload listo para enviar al backend:", payload);
 
-      // 🚀 ENVÍO AL BACKEND (DOMINIO api.allyrogue.site)
+      // 🚀 ENVÍO AL BACKEND (DOMINIO API ACTUALIZADO)
       const backendURL = "https://api.allyrogue.site/api/gpu/power-on";
       console.log(`[ServerDetailPage] Enviando solicitud POST a ${backendURL} ...`);
 
